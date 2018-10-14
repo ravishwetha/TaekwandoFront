@@ -1,6 +1,7 @@
 import Vue from "vue"
 import Router from "vue-router"
 import Attendance from "@/views/AttendancePage"
+import Login from "@/components/Login"
 
 Vue.use(Router)
 
@@ -9,7 +10,7 @@ export default new Router({
     {
       path: "/",
       name: "home",
-      component: Attendance,
+      component: Login,
     },
     {
       path: "/about",
