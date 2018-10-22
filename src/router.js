@@ -3,6 +3,7 @@ import Router from "vue-router"
 import Attendance from "@/views/AttendancePage"
 import Login from "@/components/Login"
 import NewLessonForm from "@/components/NewLessonForm"
+import UserDetailsForm from "@/components/UserDetailsForm"
 
 Vue.use(Router)
 
@@ -11,7 +12,7 @@ export default new Router({
     {
       path: "/",
       name: "home",
-      component: NewLessonForm,
+      component: UserDetailsForm,
     },
     {
       path: "/about",

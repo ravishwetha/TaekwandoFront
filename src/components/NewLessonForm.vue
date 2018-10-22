@@ -51,17 +51,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-/* .formItem {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  justify-self: center;
-}
-
-.formInput {
-  display: flex;
-  justify-content: center;
-} */
-</style>
