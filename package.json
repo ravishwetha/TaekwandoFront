@@ -14,6 +14,7 @@
     "eslint-plugin-html": "^4.0.6",
     "eslint-plugin-prettier": "^3.0.0",
     "eslint-plugin-vue": "^4.7.1",
+    "firebase": "^5.5.5",
     "prettier": "^1.14.3",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
