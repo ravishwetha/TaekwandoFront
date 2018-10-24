@@ -1,9 +1,10 @@
 import Vue from "vue"
 import Router from "vue-router"
-import Attendance from "@/views/AttendancePage"
+import StudentSummary from "@/views/StudentSummary"
 import Login from "@/components/Login"
 import NewLessonForm from "@/components/NewLessonForm"
 import UserDetailsForm from "@/components/UserDetailsForm"
+import AttendancePage from "@/views/AttendancePage"
 
 Vue.use(Router)
 
@@ -12,7 +13,7 @@ export default new Router({
     {
       path: "/",
       name: "home",
-      component: UserDetailsForm,
+      component: AttendancePage,
     },
     {
       path: "/about",
