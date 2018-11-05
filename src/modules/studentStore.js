@@ -1,4 +1,5 @@
 import _ from "lodash"
+import moment from "moment"
 import { firebaseDB } from "@/common/api"
 
 export const usersRef = firebaseDB.database().ref("Users")
@@ -21,8 +22,20 @@ const studentModule = {
     getAllStudentsData(state, studentData) {
       _.merge(state, studentData)
     },
+    addNewUser(state, studentData) {
+      state[studentData.id] = studentData
+    },
   },
   actions: {
+    async addUser({ commit }, userData) {
+      try {
+        const userId = await usersRef.push(userData).key
+
+        commit("addNewUser", { ...userData, id: userId })
+      } catch {
+        console.log("users insertion failed")
+      }
+    },
     async loadStudentsData({ commit }) {
       try {
         const usersObject = await usersRef
@@ -32,6 +45,21 @@ const studentModule = {
       } catch {
         console.log("users retrieval failed")
       }
+    },
+    async submitAttendance({ commit }, { userIdsAndPresence, lessonId }) {
+      console.log(userIdsAndPresence)
+      await Promise.all(
+        userIdsAndPresence.map((userIdAndPresence) =>
+          usersRef
+            .child(userIdAndPresence.userId)
+            .child("attendance")
+            .push({
+              lessonId,
+              presence: userIdAndPresence.presence,
+              timestamp: moment().toISOString(),
+            })
+        )
+      )
     },
   },
 }

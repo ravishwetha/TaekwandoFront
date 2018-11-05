@@ -46,7 +46,7 @@ export default {
   computed: {
     tableData() {
       const filteredData = _.filter(
-        _.map(this.$store.state.students, (value, key) => {
+        _.map(this.$store.getters.getAllStudentsInfo, (value, key) => {
           let userData = {
             ...value,
             userId: key,
@@ -62,8 +62,12 @@ export default {
               ...userData,
               attendance: 0,
             }
+          } else {
+            return {
+              ...userData,
+              attendance: _.keys(value.attendance).length - 2, //Need to - 2 because of elm and isRootInsert
+            }
           }
-          return userData
         }),
         (user) =>
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())

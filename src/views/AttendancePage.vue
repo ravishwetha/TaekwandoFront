@@ -31,27 +31,35 @@
                             >Add a new student to class</el-button>
                         </el-col>
                         <el-col id="presentAbsent" span="6">
-                            <span>Present count : {{present}} / {{totalCount}}</span>
+                            <span>Present count : {{presentCount}} / {{tableData.length}}</span>
                         </el-col>
                         <el-col id="presentAbsent" span="6">
-                            <span>Absent count : {{absent}} / {{totalCount}}</span>
+                            <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
                         </el-col>
                     </el-row>
                 </el-col>
                 <hr>
-                <el-table :empty-text="emptyTableText" :data="tableData" style="width: 100%">
+                <el-table
+                    max-height="530"
+                    :empty-text="emptyTableText"
+                    :data="tableData"
+                    style="width: 100%"
+                >
                     <el-table-column prop="name" label="Name"></el-table-column>
                     <el-table-column label="Present">
                         <template slot-scope="scope">
-                            <el-checkbox label="Present"></el-checkbox>
+                            <el-checkbox v-model="present[scope.row.id]" label="Present"></el-checkbox>
                         </template>
                     </el-table-column>
                     <el-table-column label="Absent">
                         <template slot-scope="scope">
-                            <el-checkbox label="Present"></el-checkbox>
+                            <el-checkbox v-model="absent[scope.row.id]" label="Absent"></el-checkbox>
                         </template>
                     </el-table-column>
                 </el-table>
+                <div style="text-align: center; padding-top: 30px;">
+                    <el-button @click="submitAttendance" type="primary">Submit</el-button>
+                </div>
             </el-main>
         </el-container>
         <el-dialog center width="70%" :visible.sync="modalVisible" title="Add users to lesson">
@@ -74,7 +82,8 @@
 <script>
 import moment from "moment"
 import _ from "lodash"
-import { DAYS } from "@/common/data"
+import { DAYS, PRESENT, ABSENT } from "@/common/data"
+//TODO: Mutually exclude present and not present
 export default {
   computed: {
     lessonData() {
@@ -111,19 +120,22 @@ export default {
       }
       return "There are no users in this lesson. Add one?"
     },
-    totalCount() {
-      return this.tableData.length
+    presentCount() {
+      return _.filter(this.present, (present) => present == true).length
+    },
+    absentCount() {
+      return _.filter(this.absent, (absent) => absent == true).length
     },
   },
   data() {
     return {
       selectedDate: moment().format("DD MMM YYYY"),
       lessonValue: "",
-      present: 0,
-      absent: 0,
       total: 0,
       modalVisible: false,
       studentsAddedToLesson: [],
+      present: {},
+      absent: {},
     }
   },
   methods: {
@@ -142,6 +154,38 @@ export default {
         lessonId: this.lessonValue,
       })
       this.modalVisible = false
+    },
+    submitAttendance() {
+      const present = _.compact(
+        _.map(this.present, (value, key) => {
+          if (value) {
+            return {
+              userId: key,
+              presence: PRESENT,
+            }
+          }
+          return null
+        })
+      )
+      const absent = _.compact(
+        _.map(this.absent, (value, key) => {
+          if (value) {
+            return {
+              userId: key,
+              presence: ABSENT,
+            }
+          }
+          return null
+        })
+      )
+      this.$store.dispatch("submitAttendance", {
+        userIdsAndPresence: present.concat(absent),
+        lessonId: this.lessonValue,
+      })
+
+      this.$router.push({
+        name: "home",
+      })
     },
   },
 }

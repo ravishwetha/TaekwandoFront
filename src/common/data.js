@@ -8,6 +8,9 @@ export const DAYS = {
   Saturday: 6,
 }
 
+export const PRESENT = "PRESENT"
+export const ABSENT = "ABSENT"
+
 export const firebaseConfig = {
   apiKey: process.env.firebaseConfig,
   authDomain: "taekwandobackend-d1edf.firebaseapp.com",

@@ -55,7 +55,7 @@
                     </el-form-item>
                 </el-form>
                 <div id="submitButtonDiv">
-                    <el-button type="primary">Add User</el-button>
+                    <el-button @click="addUser" v-if="!disabled" type="primary">Add User</el-button>
                 </div>
             </el-col>
         </el-main>
@@ -126,6 +126,18 @@ export default {
       contactDetails,
       disabled: true,
     }
+  },
+  methods: {
+    addUser() {
+      const payload = {
+        ...this.userDetails,
+        ...this.contactDetails,
+      }
+      this.$store.dispatch("addUser", payload)
+      this.$router.push({
+        name: "home",
+      })
+    },
   },
 }
 </script>
