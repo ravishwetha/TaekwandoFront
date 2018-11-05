@@ -7,6 +7,14 @@ const studentModule = {
   state: {},
   getters: {
     getStudentInfo: (state) => (id) => state[id],
+    getAllStudentsInfo: (state) => {
+      return _.map(state, (value, key) => {
+        return {
+          ...value,
+          id: key,
+        }
+      })
+    },
   },
   mutations: {
     getAllStudentsData(state, studentData) {

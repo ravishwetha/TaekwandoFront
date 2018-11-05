@@ -1,9 +1,11 @@
 <template>
   <el-container>
     <el-header>
-      <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
-      <el-button @click="routeToAddUser()" type="primary" round>Add user</el-button>
-      <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
+      <div id="headerDiv">
+        <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
+        <el-button @click="routeToAddUser()" type="primary" round>Add user</el-button>
+        <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
+      </div>
     </el-header>
     <el-main>
       <div class="lessonAndDate">
@@ -142,5 +144,10 @@ export default {
 #searchBar {
   margin-top: 200px;
   margin-bottom: 200px;
+}
+
+#headerDiv {
+  display: flex;
+  justify-content: center;
 }
 </style>

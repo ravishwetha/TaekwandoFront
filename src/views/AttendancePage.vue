@@ -1,57 +1,77 @@
 <template>
-    <el-container>
-        <el-header>
-            <div id="header">
-                <span id="date">{{selectedDate}}</span>
-                <el-button type="primary" @click="routeToAddUser()">Add user</el-button>
-                <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
+    <div>
+        <el-container>
+            <el-header>
+                <div id="header">
+                    <span id="date">{{selectedDate}}</span>
+                    <el-button type="primary" @click="routeToAddUser()">Add user</el-button>
+                    <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
+                </div>
+            </el-header>
+            <el-main>
+                <hr>
+                <el-col id="center">
+                    <el-row :gutter="10">
+                        <el-col span="6">
+                            <el-select v-model="lessonValue" placeholder="Select lesson">
+                                <el-option
+                                    v-for="lesson in lessonData"
+                                    :key="lesson.id"
+                                    :label="lesson.name"
+                                    :value="lesson.id"
+                                ></el-option>
+                            </el-select>
+                        </el-col>
+                        <el-col span="6">
+                            <el-button
+                                id="newStudentDiv"
+                                type="primary"
+                                @click="modalVisible = true"
+                            >Add a new student to class</el-button>
+                        </el-col>
+                        <el-col id="presentAbsent" span="6">
+                            <span>Present count : {{present}} / {{total}}</span>
+                        </el-col>
+                        <el-col id="presentAbsent" span="6">
+                            <span>Absent count : {{absent}} / {{total}}</span>
+                        </el-col>
+                    </el-row>
+                </el-col>
+                <hr>
+                <el-table :data="tableData" style="width: 100%">
+                    <el-table-column label="Name">
+                        <template slot-scope="scope">
+                            <a href="">{{scope.row.name}}</a>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="Present">
+                        <template slot-scope="scope">
+                            <el-checkbox label="Present"></el-checkbox>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="Absent">
+                        <template slot-scope="scope">
+                            <el-checkbox label="Present"></el-checkbox>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-main>
+        </el-container>
+        <el-dialog center width="70%" :visible.sync="modalVisible" title="Add users to lesson">
+            <div id="addStudentTransferDiv">
+                <el-transfer
+                    id="addStudentTransfer"
+                    v-model="studentsAddedToLesson"
+                    :data="studentData"
+                    :titles="['Unassigned', 'To be added']"
+                ></el-transfer>
             </div>
-        </el-header>
-        <el-main>
-            <hr>
-            <el-col id="center">
-                <el-row :gutter="10">
-                    <el-col span="6">
-                        <el-select v-model="lessonValue" placeholder="Select lesson">
-                            <el-option
-                                v-for="lesson in lessonData"
-                                :key="lesson.id"
-                                :label="lesson.name"
-                                :value="lesson.id"
-                            ></el-option>
-                        </el-select>
-                    </el-col>
-                    <el-col span="6">
-                        <el-button id="newStudentDiv" type="primary">Add a new student to class</el-button>
-                    </el-col>
-                    <el-col id="presentAbsent" span="6">
-                        <span>Present count : {{present}} / {{total}}</span>
-                    </el-col>
-                    <el-col id="presentAbsent" span="6">
-                        <span>Absent count : {{absent}} / {{total}}</span>
-                    </el-col>
-                </el-row>
-            </el-col>
-            <hr>
-            <el-table :data="tableData" style="width: 100%">
-                <el-table-column label="Name">
-                    <template slot-scope="scope">
-                        <a href="">{{scope.row.name}}</a>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Present">
-                    <template slot-scope="scope">
-                        <el-checkbox label="Present"></el-checkbox>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Absent">
-                    <template slot-scope="scope">
-                        <el-checkbox label="Present"></el-checkbox>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-main>
-    </el-container>
+            <span slot="footer">
+                <el-button @click="addToLesson" type="primary">Add users to lesson</el-button>
+                <el-button @click="modalVisible = false">Cancel</el-button>
+            </span>
+        </el-dialog>
+    </div>
 </template>
 
 <script>
@@ -61,19 +81,28 @@ import { DAYS } from "@/common/data"
 export default {
   computed: {
     lessonData() {
-      console.log(this.$store.getters.getLessonData)
-      const lol = _.filter(this.$store.getters.getLessonData, (lesson) => {
+      return _.filter(this.$store.getters.getLessonData, (lesson) => {
         for (const day of lesson.days) {
-          console.log(moment().day() === DAYS[day])
           if (moment().day() === DAYS[day]) {
             return true
           }
         }
       })
-      return lol
     },
     tableData() {
       return [{ name: "Dummy" }]
+    },
+    studentData() {
+      const filteredStudentInfo = _.filter(
+        this.$store.getters.getAllStudentsInfo,
+        (student) => !_.includes(student.lesson, this.lessonValue)
+      )
+      return _.map(filteredStudentInfo, (studentInfo) => {
+        return {
+          key: studentInfo.id,
+          label: studentInfo.name,
+        }
+      })
     },
   },
   data() {
@@ -83,6 +112,8 @@ export default {
       present: 0,
       absent: 0,
       total: 0,
+      modalVisible: false,
+      studentsAddedToLesson: [],
     }
   },
   methods: {
@@ -94,6 +125,13 @@ export default {
         name: "userDetails",
         query: { userId: "NEW" },
       })
+    },
+    addToLesson() {
+      this.$store.dispatch("addUsersToLesson", {
+        userIds: this.studentsAddedToLesson,
+        lessonId: this.lessonValue,
+      })
+      this.modalVisible = false
     },
   },
 }
@@ -114,5 +152,10 @@ export default {
 
 #presentAbsent {
   margin-top: 20px;
+}
+
+#addStudentTransferDiv {
+  display: flex;
+  justify-content: center;
 }
 </style>

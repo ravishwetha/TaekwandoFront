@@ -27,6 +27,8 @@ const lessonsModule = {
       const newLessonId = await lessonsRef.push(formData).key
       commit("createNewLesson", { ...formData, id: newLessonId })
     },
+
+    async addUsersToLesson({ commit }, { userIds, lessonId }) {},
   },
   getters: {
     getLessonData: (state) => {
