@@ -2,24 +2,14 @@
   <el-container>
     <el-header>
       <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
-      <el-button type="primary" round>Add user</el-button>
+      <el-button @click="routeToAddUser()" type="primary" round>Add user</el-button>
       <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
     </el-header>
     <el-main>
       <div class="lessonAndDate">
-        <el-dropdown trigger="click" placement="bottom">
-          <el-button type="primary">
-            Lesson type
-            <i class="el-icon-arrow-down el-icon--right"></i>
-          </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>Action 1</el-dropdown-item>
-            <el-dropdown-item>Action 2</el-dropdown-item>
-            <el-dropdown-item>Action 3</el-dropdown-item>
-            <el-dropdown-item disabled>Action 4</el-dropdown-item>
-            <el-dropdown-item divided>Action 5</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+        <el-select v-model="selectedLessonId">
+          <el-option v-for="item in lessonData" :key="item.id" :value="item.id" :label="item.name"></el-option>
+        </el-select>
         <el-date-picker
           v-model="date"
           type="date"
@@ -49,10 +39,11 @@ export default {
   name: "AttendancePage",
   created() {
     this.$store.dispatch("loadStudentsData")
+    this.$store.dispatch("loadLessonsData")
   },
   computed: {
     tableData() {
-      return _.filter(
+      const filteredData = _.filter(
         _.map(this.$store.state.students, (value, key) => {
           let userData = {
             ...value,
@@ -75,6 +66,10 @@ export default {
         (user) =>
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
+      return filteredData
+    },
+    lessonData() {
+      return this.$store.getters.getLessonData
     },
   },
   methods: {
@@ -92,10 +87,17 @@ export default {
     routeToAddLesson() {
       this.$router.push("newLesson")
     },
+    routeToAddUser() {
+      this.$router.push({
+        name: "userDetails",
+        query: { userId: "NEW" },
+      })
+    },
   },
   data() {
     return {
       searchString: "",
+      selectedLessonId: "",
       datePickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now()

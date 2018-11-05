@@ -3,7 +3,7 @@
         <el-header>
             <div id="header">
                 <span id="date">{{selectedDate}}</span>
-                <el-button type="primary">Add user</el-button>
+                <el-button type="primary" @click="routeToAddUser()">Add user</el-button>
                 <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
             </div>
         </el-header>
@@ -14,10 +14,10 @@
                     <el-col span="6">
                         <el-select v-model="lessonValue" placeholder="Select lesson">
                             <el-option
-                                v-for="lesson in lessons"
-                                :key="lesson.value"
-                                :label="lesson.label"
-                                :value="lesson.value"
+                                v-for="lesson in lessonData"
+                                :key="lesson.id"
+                                :label="lesson.name"
+                                :value="lesson.id"
                             ></el-option>
                         </el-select>
                     </el-col>
@@ -56,21 +56,44 @@
 
 <script>
 import moment from "moment"
+import _ from "lodash"
+import { DAYS } from "@/common/data"
 export default {
+  computed: {
+    lessonData() {
+      console.log(this.$store.getters.getLessonData)
+      const lol = _.filter(this.$store.getters.getLessonData, (lesson) => {
+        for (const day of lesson.days) {
+          console.log(moment().day() === DAYS[day])
+          if (moment().day() === DAYS[day]) {
+            return true
+          }
+        }
+      })
+      return lol
+    },
+    tableData() {
+      return [{ name: "Dummy" }]
+    },
+  },
   data() {
     return {
       selectedDate: moment().format("DD MMM YYYY"),
-      lessons: [{ label: "Dummy Lesson", value: "1" }],
       lessonValue: "",
       present: 0,
       absent: 0,
       total: 0,
-      tableData: [{ name: "Dummy" }],
     }
   },
   methods: {
     routeToAddLesson() {
       this.$router.push("newLesson")
+    },
+    routeToAddUser() {
+      this.$router.push({
+        name: "userDetails",
+        query: { userId: "NEW" },
+      })
     },
   },
 }

@@ -54,6 +54,9 @@
                         <el-input type="textarea" v-model="contactDetails.address"></el-input>
                     </el-form-item>
                 </el-form>
+                <div id="submitButtonDiv">
+                    <el-button type="primary">Add User</el-button>
+                </div>
             </el-col>
         </el-main>
         <el-footer>
@@ -87,6 +90,24 @@
 import _ from "lodash"
 export default {
   data() {
+    if (this.$route.query["userId"] === "NEW") {
+      return {
+        userDetails: {
+          name: "",
+          belt: "",
+          classType: "",
+          dob: "",
+          nric: "",
+          enrollmentDate: "",
+        },
+        contactDetails: {
+          email: "",
+          contact: "",
+          address: "",
+        },
+        disabled: false,
+      }
+    }
     const details = this.$store.getters.getStudentInfo(
       this.$route.query["userId"]
     )
@@ -103,7 +124,7 @@ export default {
     return {
       userDetails,
       contactDetails,
-      disabled: false,
+      disabled: true,
     }
   },
 }
