@@ -15,10 +15,11 @@
                     </el-form-item>
                     <el-form-item label="Date Enrolled">
                         <el-date-picker
-                            v-model="userDetails.dateEnrolled"
+                            v-model="userDetails.enrollmentDate"
                             type="date"
                             placeholder="Pick a day"
                             class="datePicker"
+                            format="dd-MM-yyyy"
                         ></el-date-picker>
                     </el-form-item>
                     <el-form-item label="DOB">
@@ -27,10 +28,11 @@
                             type="date"
                             placeholder="Pick a day"
                             class="datePicker"
+                            format="dd-MM-yyyy"
                         ></el-date-picker>
                     </el-form-item>
                     <el-form-item label="NRIC">
-                        <el-input v-model="userDetails.ic"></el-input>
+                        <el-input v-model="userDetails.nric"></el-input>
                     </el-form-item>
                 </el-form>
             </el-col>
@@ -46,7 +48,7 @@
                         <el-input v-model="contactDetails.email"></el-input>
                     </el-form-item>
                     <el-form-item label="Phone">
-                        <el-input v-model="contactDetails.phone"></el-input>
+                        <el-input v-model="contactDetails.contact"></el-input>
                     </el-form-item>
                     <el-form-item label="Address">
                         <el-input type="textarea" v-model="contactDetails.address"></el-input>
@@ -82,22 +84,25 @@
 </template>
 
 <script>
+import _ from "lodash"
 export default {
   data() {
+    const details = this.$store.getters.getStudentInfo(
+      this.$route.query["userId"]
+    )
+    const userDetails = _.pick(details, [
+      "name",
+      "belt",
+      "classType",
+      "dob",
+      "nric",
+      "enrollmentDate",
+    ])
+
+    const contactDetails = _.pick(details, ["email", "contact", "address"])
     return {
-      userDetails: {
-        name: "",
-        belt: "",
-        classType: "",
-        dateEnrolled: "",
-        dob: "",
-        ic: "",
-      },
-      contactDetails: {
-        email: "",
-        phone: "",
-        address: "",
-      },
+      userDetails,
+      contactDetails,
       disabled: false,
     }
   },

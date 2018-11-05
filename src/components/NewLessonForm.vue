@@ -1,8 +1,12 @@
 <template>
     <div class="formDiv">
-        <el-form :model="form" class="form" label-position="top" size="medium">
+        <el-form :model="form" class="form" label-position="top" size="medium" ref="form">
             <el-form-item label="Lesson Name" class="formItem">
-                <el-input v-model="form.name" class="formInput"></el-input>
+                <el-input
+                    placeholder="Please input lesson name"
+                    v-model="form.name"
+                    class="formInput"
+                ></el-input>
             </el-form-item>
             <el-form-item label="Frequency:" class="formItem">
                 <br>
@@ -30,13 +34,23 @@
                 <el-time-picker class="formInput" v-model="form.to" placeholder="Select end time"></el-time-picker>
             </el-form-item>
             <el-form-item label="Price:" class="formItem">
-                <el-input-number class="formInput" v-model="price" :precision="2" controls="false"></el-input-number>
+                <el-input
+                    placeholder="Please input price"
+                    type="number"
+                    class="formInput"
+                    v-model="form.price"
+                ></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="createNewLesson()">Submit</el-button>
             </el-form-item>
         </el-form>
     </div>
 </template>
 
 <script>
+import _ from "lodash"
+import moment from "moment"
 export default {
   data() {
     return {
@@ -45,9 +59,21 @@ export default {
         days: [],
         from: "",
         to: "",
-        price: 0,
+        price: "",
       },
     }
+  },
+  methods: {
+    createNewLesson() {
+      let formData = _.pick(this.form, ["name", "days", "from", "to", "price"])
+      formData = {
+        ...formData,
+        to: moment(formData.to).toISOString(),
+        from: moment(formData.from).toISOString(),
+      }
+      this.$store.dispatch("createNewLesson", formData)
+      this.$router.back()
+    },
   },
 }
 </script>

@@ -4,7 +4,7 @@
             <div id="header">
                 <span id="date">{{selectedDate}}</span>
                 <el-button type="primary">Add user</el-button>
-                <el-button type="primary">Add lesson</el-button>
+                <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
             </div>
         </el-header>
         <el-main>
@@ -12,7 +12,7 @@
             <el-col id="center">
                 <el-row :gutter="10">
                     <el-col span="6">
-                        <el-select v-model="lessonValue">
+                        <el-select v-model="lessonValue" placeholder="Select lesson">
                             <el-option
                                 v-for="lesson in lessons"
                                 :key="lesson.value"
@@ -55,10 +55,11 @@
 </template>
 
 <script>
+import moment from "moment"
 export default {
   data() {
     return {
-      selectedDate: "dummy date",
+      selectedDate: moment().format("DD MMM YYYY"),
       lessons: [{ label: "Dummy Lesson", value: "1" }],
       lessonValue: "",
       present: 0,
@@ -66,6 +67,11 @@ export default {
       total: 0,
       tableData: [{ name: "Dummy" }],
     }
+  },
+  methods: {
+    routeToAddLesson() {
+      this.$router.push("newLesson")
+    },
   },
 }
 </script>

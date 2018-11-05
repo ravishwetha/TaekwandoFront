@@ -13,7 +13,7 @@ export default new Router({
     {
       path: "/",
       name: "home",
-      component: AttendancePage,
+      component: StudentSummary,
     },
     {
       path: "/about",
@@ -23,6 +23,21 @@ export default new Router({
       // which is lazy-loaded when the route is visited.
       component: () =>
         import(/* webpackChunkName: "about" */ "./views/About.vue"),
+    },
+    {
+      path: "/userDetails",
+      name: "userDetails",
+      component: UserDetailsForm,
+    },
+    {
+      path: "/attendance",
+      name: "attendance",
+      component: AttendancePage,
+    },
+    {
+      path: "/newLesson",
+      name: "newLesson",
+      component: NewLessonForm,
     },
   ],
 })

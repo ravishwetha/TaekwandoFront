@@ -1,9 +1,9 @@
 <template>
   <el-container>
     <el-header>
-      <el-button type="primary" round>Take attendance</el-button>
+      <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
       <el-button type="primary" round>Add user</el-button>
-      <el-button type="primary" round>Add lesson</el-button>
+      <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
     </el-header>
     <el-main>
       <div class="lessonAndDate">
@@ -27,42 +27,75 @@
           :picker-options="datePickerOptions"
         ></el-date-picker>
       </div>
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="date" label="Date" width="180"></el-table-column>
-        <el-table-column prop="name" label="Name" width="180"></el-table-column>
-        <el-table-column prop="address" label="Address"></el-table-column>
+      <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
+      <el-table stripe max-height="730" :data="tableData" style="width: 100%">
+        <el-table-column prop="name" label="Name"></el-table-column>
+        <el-table-column prop="attendance" label="Total Count"></el-table-column>
+        <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
+        <el-table-column label="Operations" fixed="right">
+          <template slot-scope="scope">
+            <el-button @click="routeToUserDetails(scope.row)" type="text" size="small">Details</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-main>
   </el-container>
 </template>
 
 <script>
+import _ from "lodash"
+
 export default {
   name: "AttendancePage",
+  created() {
+    this.$store.dispatch("loadStudentsData")
+  },
+  computed: {
+    tableData() {
+      return _.filter(
+        _.map(this.$store.state.students, (value, key) => {
+          let userData = {
+            ...value,
+            userId: key,
+          }
+          if (!value.payments) {
+            userData = {
+              ...userData,
+              lastPayment: "Have not made any payments",
+            }
+          }
+          if (!value.attendance) {
+            return {
+              ...userData,
+              attendance: 0,
+            }
+          }
+          return userData
+        }),
+        (user) =>
+          _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
+      )
+    },
+  },
+  methods: {
+    routeToUserDetails(val) {
+      this.$router.push({
+        name: "userDetails",
+        query: { userId: val.userId },
+      })
+    },
+    routeToAttendancePage() {
+      this.$router.push({
+        name: "attendance",
+      })
+    },
+    routeToAddLesson() {
+      this.$router.push("newLesson")
+    },
+  },
   data() {
     return {
-      tableData: [
-        {
-          date: "2016-05-03",
-          name: "Tom",
-          address: "No. 189, Grove St, Los Angeles",
-        },
-        {
-          date: "2016-05-02",
-          name: "Tom",
-          address: "No. 189, Grove St, Los Angeles",
-        },
-        {
-          date: "2016-05-04",
-          name: "Tom",
-          address: "No. 189, Grove St, Los Angeles",
-        },
-        {
-          date: "2016-05-01",
-          name: "Tom",
-          address: "No. 189, Grove St, Los Angeles",
-        },
-      ],
+      searchString: "",
       datePickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now()
@@ -102,5 +135,10 @@ export default {
 .lessonAndDate {
   display: flex;
   justify-content: space-around;
+}
+
+#searchBar {
+  margin-top: 200px;
+  margin-bottom: 200px;
 }
 </style>
