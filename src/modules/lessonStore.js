@@ -1,5 +1,6 @@
 import _ from "lodash"
 import { firebaseDB } from "@/common/api"
+import { usersRef } from "@/modules/studentStore"
 const lessonsRef = firebaseDB.database().ref("Lessons")
 
 const lessonsModule = {
@@ -28,7 +29,22 @@ const lessonsModule = {
       commit("createNewLesson", { ...formData, id: newLessonId })
     },
 
-    async addUsersToLesson({ commit }, { userIds, lessonId }) {},
+    async addUsersToLesson({ commit }, { userIds, lessonId }) {
+      const lessonPromises = userIds.map((userId) =>
+        lessonsRef
+          .child(lessonId)
+          .child("users")
+          .push(userId)
+      )
+      const userPromises = userIds.map((userId) => {
+        usersRef
+          .child(userId)
+          .child("lessons")
+          .push(lessonId)
+      })
+      await Promise.all(lessonPromises.concat(userPromises))
+      //TODO: Append it into state. As of now, can reload
+    },
   },
   getters: {
     getLessonData: (state) => {

@@ -1,7 +1,7 @@
 import _ from "lodash"
 import { firebaseDB } from "@/common/api"
 
-const usersRef = firebaseDB.database().ref("Users")
+export const usersRef = firebaseDB.database().ref("Users")
 
 const studentModule = {
   state: {},
@@ -12,6 +12,7 @@ const studentModule = {
         return {
           ...value,
           id: key,
+          lessons: _.map(value.lessons, (lesson) => lesson),
         }
       })
     },

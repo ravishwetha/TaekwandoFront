@@ -27,23 +27,20 @@
                                 id="newStudentDiv"
                                 type="primary"
                                 @click="modalVisible = true"
+                                :disabled="lessonValue === ``"
                             >Add a new student to class</el-button>
                         </el-col>
                         <el-col id="presentAbsent" span="6">
-                            <span>Present count : {{present}} / {{total}}</span>
+                            <span>Present count : {{present}} / {{totalCount}}</span>
                         </el-col>
                         <el-col id="presentAbsent" span="6">
-                            <span>Absent count : {{absent}} / {{total}}</span>
+                            <span>Absent count : {{absent}} / {{totalCount}}</span>
                         </el-col>
                     </el-row>
                 </el-col>
                 <hr>
-                <el-table :data="tableData" style="width: 100%">
-                    <el-table-column label="Name">
-                        <template slot-scope="scope">
-                            <a href="">{{scope.row.name}}</a>
-                        </template>
-                    </el-table-column>
+                <el-table :empty-text="emptyTableText" :data="tableData" style="width: 100%">
+                    <el-table-column prop="name" label="Name"></el-table-column>
                     <el-table-column label="Present">
                         <template slot-scope="scope">
                             <el-checkbox label="Present"></el-checkbox>
@@ -90,12 +87,16 @@ export default {
       })
     },
     tableData() {
-      return [{ name: "Dummy" }]
+      const filteredStudentInfo = _.filter(
+        this.$store.getters.getAllStudentsInfo,
+        (student) => _.includes(student.lessons, this.lessonValue)
+      )
+      return filteredStudentInfo
     },
     studentData() {
       const filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
-        (student) => !_.includes(student.lesson, this.lessonValue)
+        (student) => !_.includes(student.lessons, this.lessonValue)
       )
       return _.map(filteredStudentInfo, (studentInfo) => {
         return {
@@ -103,6 +104,15 @@ export default {
           label: studentInfo.name,
         }
       })
+    },
+    emptyTableText() {
+      if (this.lessonValue === "") {
+        return "Please select a lesson"
+      }
+      return "There are no users in this lesson. Add one?"
+    },
+    totalCount() {
+      return this.tableData.length
     },
   },
   data() {
