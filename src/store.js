@@ -8,8 +8,9 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   plugins: [createPersistedState({ storage: window.sessionStorage })],
+  state: {},
   modules: {
-    lessons: lessonStore,
-    students: studentStore,
+    lessonsModule: lessonStore,
+    studentsModule: studentStore,
   },
 })

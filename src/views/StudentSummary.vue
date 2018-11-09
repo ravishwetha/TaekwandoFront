@@ -20,7 +20,7 @@
         ></el-date-picker>
       </div>
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
-      <el-table stripe max-height="730" :data="tableData" style="width: 100%">
+      <el-table v-loading="isLoading" stripe max-height="730" :data="tableData" style="width: 100%">
         <el-table-column prop="name" label="Name"></el-table-column>
         <el-table-column prop="attendance" label="Total Count"></el-table-column>
         <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
@@ -36,39 +36,16 @@
 
 <script>
 import _ from "lodash"
-
 export default {
   name: "AttendancePage",
-  created() {
-    this.$store.dispatch("loadStudentsData")
-    this.$store.dispatch("loadLessonsData")
+  beforeCreate: async function() {
+    await this.$store.dispatch("loadStudentsData")
+    await this.$store.dispatch("loadLessonsData")
   },
   computed: {
     tableData() {
       const filteredData = _.filter(
-        _.map(this.$store.getters.getAllStudentsInfo, (value, key) => {
-          let userData = {
-            ...value,
-            userId: key,
-          }
-          if (!value.payments) {
-            userData = {
-              ...userData,
-              lastPayment: "Have not made any payments",
-            }
-          }
-          if (!value.attendance) {
-            return {
-              ...userData,
-              attendance: 0,
-            }
-          } else {
-            return {
-              ...userData,
-              attendance: _.keys(value.attendance).length - 2, //Need to - 2 because of elm and isRootInsert
-            }
-          }
-        }),
+        this.$store.getters.getAllStudentsInfo,
         (user) =>
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
@@ -76,6 +53,9 @@ export default {
     },
     lessonData() {
       return this.$store.getters.getLessonData
+    },
+    isLoading() {
+      return this.$store.getters.getStudentDataLoading
     },
   },
   methods: {

@@ -1,89 +1,96 @@
 <template>
-    <div>
-        <el-container>
-            <el-header>
-                <div id="header">
-                    <span id="date">{{selectedDate}}</span>
-                    <el-button type="primary" @click="routeToAddUser()">Add user</el-button>
-                    <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
-                </div>
-            </el-header>
-            <el-main>
-                <hr>
-                <el-col id="center">
-                    <el-row :gutter="10">
-                        <el-col span="6">
-                            <el-select v-model="lessonValue" placeholder="Select lesson">
-                                <el-option
-                                    v-for="lesson in lessonData"
-                                    :key="lesson.id"
-                                    :label="lesson.name"
-                                    :value="lesson.id"
-                                ></el-option>
-                            </el-select>
-                        </el-col>
-                        <el-col span="6">
-                            <el-button
-                                id="newStudentDiv"
-                                type="primary"
-                                @click="modalVisible = true"
-                                :disabled="lessonValue === ``"
-                            >Add a new student to class</el-button>
-                        </el-col>
-                        <el-col id="presentAbsent" span="6">
-                            <span>Present count : {{presentCount}} / {{tableData.length}}</span>
-                        </el-col>
-                        <el-col id="presentAbsent" span="6">
-                            <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
-                        </el-col>
-                    </el-row>
-                </el-col>
-                <hr>
-                <el-table
-                    max-height="530"
-                    :empty-text="emptyTableText"
-                    :data="tableData"
-                    style="width: 100%"
-                >
-                    <el-table-column prop="name" label="Name"></el-table-column>
-                    <el-table-column label="Present">
-                        <template slot-scope="scope">
-                            <el-checkbox v-model="present[scope.row.id]" label="Present"></el-checkbox>
-                        </template>
-                    </el-table-column>
-                    <el-table-column label="Absent">
-                        <template slot-scope="scope">
-                            <el-checkbox v-model="absent[scope.row.id]" label="Absent"></el-checkbox>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <div style="text-align: center; padding-top: 30px;">
-                    <el-button @click="submitAttendance" type="primary">Submit</el-button>
-                </div>
-            </el-main>
-        </el-container>
-        <el-dialog center width="70%" :visible.sync="modalVisible" title="Add users to lesson">
-            <div id="addStudentTransferDiv">
-                <el-transfer
-                    id="addStudentTransfer"
-                    v-model="studentsAddedToLesson"
-                    :data="studentData"
-                    :titles="['Unassigned', 'To be added']"
-                ></el-transfer>
-            </div>
-            <span slot="footer">
-                <el-button @click="addToLesson" type="primary">Add users to lesson</el-button>
-                <el-button @click="modalVisible = false">Cancel</el-button>
-            </span>
-        </el-dialog>
-    </div>
+  <div>
+    <el-container>
+      <el-header>
+        <div id="header">
+          <span id="date">{{selectedDate}}</span>
+          <el-button type="primary" @click="routeToAddUser()">Add user</el-button>
+          <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
+        </div>
+      </el-header>
+      <el-main>
+        <hr>
+        <el-col id="center">
+          <el-row :gutter="10">
+            <el-col span="6">
+              <el-select v-model="lessonValue" placeholder="Select lesson">
+                <el-option
+                  v-for="lesson in lessonData"
+                  :key="lesson.id"
+                  :label="lesson.name"
+                  :value="lesson.id"
+                ></el-option>
+              </el-select>
+            </el-col>
+            <el-col span="6">
+              <el-button
+                id="newStudentDiv"
+                type="primary"
+                @click="modalVisible = true"
+                :disabled="lessonValue === ``"
+              >Add a new student to class</el-button>
+            </el-col>
+            <el-col id="presentAbsent" span="6">
+              <span>Present count : {{presentCount}} / {{tableData.length}}</span>
+            </el-col>
+            <el-col id="presentAbsent" span="6">
+              <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
+            </el-col>
+          </el-row>
+        </el-col>
+        <hr>
+        <el-table
+          max-height="530"
+          :empty-text="emptyTableText"
+          :data="tableData"
+          style="width: 100%"
+        >
+          <el-table-column prop="name" label="Name"></el-table-column>
+          <el-table-column label="Present">
+            <template slot-scope="scope">
+              <el-checkbox
+                v-model="present[scope.row.userId]"
+                @change="(change) => change ? untickAbsent(scope.row.userId) : null"
+                label="Present"
+              ></el-checkbox>
+            </template>
+          </el-table-column>
+          <el-table-column label="Absent">
+            <template slot-scope="scope">
+              <el-checkbox
+                v-model="absent[scope.row.userId]"
+                @change="(change) => change ? untickPresent(scope.row.userId) : null"
+                label="Absent"
+              ></el-checkbox>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div style="text-align: center; padding-top: 30px;">
+          <el-button @click="submitAttendance" type="primary">Submit</el-button>
+        </div>
+      </el-main>
+    </el-container>
+    <el-dialog center width="70%" :visible.sync="modalVisible" title="Add users to lesson">
+      <div id="addStudentTransferDiv">
+        <el-transfer
+          id="addStudentTransfer"
+          v-model="studentsAddedToLesson"
+          :data="studentData"
+          :titles="['Unassigned', 'To be added']"
+        ></el-transfer>
+      </div>
+      <span slot="footer">
+        <el-button @click="addToLesson" type="primary">Add users to lesson</el-button>
+        <el-button @click="modalVisible = false">Cancel</el-button>
+      </span>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
 import moment from "moment"
 import _ from "lodash"
 import { DAYS, PRESENT, ABSENT } from "@/common/data"
-//TODO: Mutually exclude present and not present
 export default {
   computed: {
     lessonData() {
@@ -109,7 +116,7 @@ export default {
       )
       return _.map(filteredStudentInfo, (studentInfo) => {
         return {
-          key: studentInfo.id,
+          key: studentInfo.userId,
           label: studentInfo.name,
         }
       })
@@ -139,6 +146,12 @@ export default {
     }
   },
   methods: {
+    untickAbsent(id) {
+      this.absent[id] = false
+    },
+    untickPresent(id) {
+      this.present[id] = false
+    },
     routeToAddLesson() {
       this.$router.push("newLesson")
     },
