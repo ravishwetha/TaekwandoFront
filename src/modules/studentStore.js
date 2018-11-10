@@ -49,6 +49,12 @@ const studentModule = {
     modifyStudentDataLoadingStatus(state, { status }) {
       state.studentDataLoading = status
     },
+
+    addLessonToUsers(state, { addLessonToUsers, lessonId }) {
+      addLessonToUsers.forEach(({ key, userId }) => {
+        Vue.set(state.studentData[userId], "lessons", { [key]: lessonId })
+      })
+    },
   },
   actions: {
     async addUser({ commit }, userData) {

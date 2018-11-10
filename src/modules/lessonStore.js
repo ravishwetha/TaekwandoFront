@@ -1,6 +1,7 @@
 import _ from "lodash"
 import { firebaseDB } from "@/common/api"
 import { usersRef } from "@/modules/studentStore"
+import Vue from "vue"
 const lessonsRef = firebaseDB.database().ref("Lessons")
 
 const lessonsModule = {
@@ -14,7 +15,11 @@ const lessonsModule = {
     createNewLesson(state, lessonData) {
       state.lessons[lessonData.id] = lessonData
     },
-    addUserToLesson(state, { userId, lessonId }) {},
+    addUsersToLesson(state, { addUsersToLesson, lessonId }) {
+      addUsersToLesson.forEach(({ key, userId }) => {
+        Vue.set(state.lessons[lessonId], key, userId)
+      })
+    },
   },
   actions: {
     async loadLessonsData({ commit }) {
@@ -33,24 +38,24 @@ const lessonsModule = {
     },
 
     async addUsersToLesson({ commit }, { userIds, lessonId }) {
-      const lessonPromises = userIds.map((userId) =>
-        lessonsRef
+      const lessonPromises = userIds.map((userId) => {
+        const key = lessonsRef
           .child(lessonId)
           .child("users")
-          .push(userId)
-          .once("value")
-          .then((snapshot) => snapshot.val())
-      )
-      const userPromises = userIds.map((userId) =>
-        usersRef
+          .push(userId).key
+        return { key, userId }
+      })
+      const userPromises = userIds.map((userId) => {
+        const key = usersRef
           .child(userId)
           .child("lessons")
-          .push(lessonId)
-          .once("value")
-          .then((snapshot) => snapshot.val())
-      )
-      await Promise.all(lessonPromises.concat(userPromises))
-      commit("addUserToLesson", { userIds, lessonId })
+          .push(lessonId).key
+        return { key, userId }
+      })
+      const addUsersToLesson = await Promise.all(lessonPromises)
+      const addLessonToUsers = await Promise.all(userPromises)
+      commit("addUsersToLesson", { addUsersToLesson, lessonId })
+      commit("addLessonToUsers", { addLessonToUsers, lessonId })
     },
   },
   getters: {
