@@ -2,7 +2,7 @@
     <el-container>
         <el-main>
             <el-col class="userDetailsCol">
-                <span class="detailsHeader">User Details</span>
+                <span id="detailsHeader">User Details</span>
                 <el-form :model="userDetails" :disabled="disabled" label-width="100px" ref="form">
                     <el-form-item label="Name">
                         <el-input v-model="userDetails.name"></el-input>
@@ -37,7 +37,7 @@
                 </el-form>
             </el-col>
             <el-col class="contactDetailsCol">
-                <span class="detailsHeader">Contact Details</span>
+                <span id="detailsHeader">Contact Details</span>
                 <el-form
                     :model="contactDetails"
                     :disabled="disabled"
@@ -182,6 +182,11 @@ export default {
 .el-main {
   display: flex;
   flex-direction: row;
+}
+#detailsHeader {
+  display: block;
+  text-align: center;
+  padding-bottom: 20px;
 }
 
 #commentsRow {

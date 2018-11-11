@@ -8,9 +8,24 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   plugins: [createPersistedState({ storage: window.sessionStorage })],
-  state: {},
+  state: {
+    loggedIn: false,
+  },
+  mutations: {
+    isLoggedIn(state, { loggedIn }) {
+      state.loggedIn = loggedIn
+    },
+  },
   modules: {
     lessonsModule: lessonStore,
     studentsModule: studentStore,
+  },
+  actions: {
+    login({ commit }) {
+      commit("isLoggedIn", { loggedIn: true })
+    },
+  },
+  getters: {
+    getLoggedInStatus: (state) => state.loggedIn,
   },
 })

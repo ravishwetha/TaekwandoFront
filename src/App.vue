@@ -2,13 +2,15 @@
   <div id="app">
     <div>
       <div v-if="loggedIn" id="nav">
-        <img src="@/assets/tkdlogo.jpg" style="width: 10%; height: 10%;">
-        <div>
-          <el-button @click="routeToHome">Home</el-button>
-        </div>
-        <el-select disabled>
-          <el-option label="Haig Branch"></el-option>
-        </el-select>
+        <span id="header">
+          <el-button type="primary" @click="routeToHome">Home</el-button>
+        </span>
+        <img src="@/assets/tkdlogo.jpg" style="width: 20%; height: 20%;">
+        <span id="header">
+          <el-select disabled>
+            <el-option label="Haig Branch"></el-option>
+          </el-select>
+        </span>
       </div>
     </div>
     <router-view/>
@@ -24,7 +26,7 @@ export default {
   },
   computed: {
     loggedIn() {
-      return sessionStorage.getItem("token") !== null
+      return this.$store.getters.getLoggedInStatus
     },
   },
 }
@@ -44,5 +46,8 @@ export default {
 
   justify-content: space-around;
   padding-bottom: 20px;
+}
+#header {
+  padding-top: 7%;
 }
 </style>

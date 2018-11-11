@@ -57,6 +57,7 @@ export default {
             password: this.loginDetails.password,
           })
           sessionStorage.setItem("token", token)
+          this.$store.dispatch("login")
           this.$router.push({
             name: "home",
           })

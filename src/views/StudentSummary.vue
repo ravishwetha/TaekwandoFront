@@ -1,16 +1,16 @@
 <template>
   <el-container>
-    <el-header>
-      <div id="headerDiv">
-        <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
-        <el-button @click="routeToAddUser()" type="primary" round>Add user</el-button>
-        <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
-      </div>
-    </el-header>
     <el-main>
-      <div class="lessonAndDate">
-        <lesson-selector v-model="selectedLessonId"></lesson-selector>
-        <date-selector v-model="dateRange"></date-selector>
+      <div id="lessonAndDate">
+        <div>
+          <lesson-selector style="padding-right: 20px;" v-model="selectedLessonId"></lesson-selector>
+          <date-selector v-model="dateRange"></date-selector>
+        </div>
+        <div id="headerDiv">
+          <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
+          <el-button @click="routeToAddUser()" type="primary" round>Add user</el-button>
+          <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
+        </div>
       </div>
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
       <el-table v-loading="isLoading" stripe max-height="730" :data="tableData" style="width: 100%">
@@ -129,9 +129,9 @@ export default {
 </script>
 
 <style scoped>
-.lessonAndDate {
+#lessonAndDate {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
