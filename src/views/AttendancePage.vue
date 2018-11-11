@@ -13,7 +13,11 @@
         <el-col id="center">
           <el-row :gutter="10">
             <el-col span="6">
-              <el-select v-model="lessonValue" placeholder="Select lesson">
+              <el-select
+                @change="updatePresentAbsent"
+                v-model="lessonValue"
+                placeholder="Select lesson"
+              >
                 <el-option
                   v-for="lesson in lessonData"
                   :key="lesson.id"
@@ -91,10 +95,14 @@
 import moment from "moment"
 import _ from "lodash"
 import { DAYS, PRESENT, ABSENT } from "@/common/data"
+import Vue from "vue"
 export default {
+  beforeMount() {
+    this.updatePresentAbsent()
+  },
   computed: {
     lessonData() {
-      return _.filter(this.$store.getters.getLessonAllData, (lesson) => {
+      return _.filter(this.$store.getters.getAllLessonData, (lesson) => {
         for (const day of lesson.days) {
           if (moment().day() === DAYS[day]) {
             return true
@@ -128,24 +136,49 @@ export default {
       return "There are no users in this lesson. Add one?"
     },
     presentCount() {
-      return _.filter(this.present, (present) => present == true).length
+      return _.filter(this.present, (present) => present === true).length
     },
     absentCount() {
-      return _.filter(this.absent, (absent) => absent == true).length
+      return _.filter(this.absent, (absent) => absent === true).length
     },
   },
   data() {
+    let present = {}
+    let absent = {}
+
     return {
       selectedDate: moment().format("DD MMM YYYY"),
       lessonValue: "",
       total: 0,
       modalVisible: false,
       studentsAddedToLesson: [],
-      present: {},
-      absent: {},
+      present,
+      absent,
+      toBeUpdated: {},
     }
   },
   methods: {
+    updatePresentAbsent() {
+      _.forEach(this.$store.getters.getAllStudentsInfo, (student) => {
+        _.forEach(student.attendance, (lessonsAttended, key) => {
+          if (
+            moment(lessonsAttended.timestamp)
+              .startOf("day")
+              .isSame(moment().startOf("day")) &&
+            (this.lessonValue && lessonsAttended.lessonId === this.lessonValue)
+          ) {
+            if (lessonsAttended.presence === PRESENT) {
+              Vue.set(this.present, student.userId, true)
+              this.toBeUpdated[student.userId] = key
+            }
+            if (lessonsAttended.presence === ABSENT) {
+              Vue.set(this.absent, student.userId, true)
+              this.toBeUpdated[student.userId] = key
+            }
+          }
+        })
+      })
+    },
     untickAbsent(id) {
       this.absent[id] = false
     },
@@ -194,6 +227,7 @@ export default {
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: present.concat(absent),
         lessonId: this.lessonValue,
+        studentsToBeUpdated: this.toBeUpdated,
       })
 
       this.$router.push({

@@ -160,10 +160,6 @@ export default {
     ])
 
     const contactDetails = _.pick(details, ["email", "contact", "address"])
-    console.log({
-      selectedLessonId,
-      dateRange,
-    })
     return {
       userDetails,
       contactDetails,

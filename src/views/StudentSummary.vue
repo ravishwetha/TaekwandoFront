@@ -128,11 +128,7 @@ export default {
 .lessonAndDate {
   display: flex;
   justify-content: space-around;
-}
-
-#searchBar {
-  margin-top: 200px;
-  margin-bottom: 200px;
+  margin-bottom: 20px;
 }
 
 #headerDiv {

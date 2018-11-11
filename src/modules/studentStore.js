@@ -89,20 +89,36 @@ const studentModule = {
         console.log(e)
       }
     },
-    async submitAttendance({ commit }, { userIdsAndPresence, lessonId }) {
-      const stuff = await Promise.all(
-        userIdsAndPresence.map((userIdAndPresence) =>
-          usersRef
-            .child(userIdAndPresence.userId)
-            .child("attendance")
-            .push({
-              lessonId,
-              presence: userIdAndPresence.presence,
-              timestamp: moment().toISOString(),
-            })
-        )
+    async submitAttendance(
+      { commit },
+      { userIdsAndPresence, lessonId, studentsToBeUpdated }
+    ) {
+      await Promise.all(
+        userIdsAndPresence.map((userIdAndPresence) => {
+          const attendanceToBeUpdated =
+            studentsToBeUpdated[userIdAndPresence.userId]
+          if (attendanceToBeUpdated) {
+            usersRef
+              .child(userIdAndPresence.userId)
+              .child("attendance")
+              .child(attendanceToBeUpdated)
+              .update({
+                lessonId,
+                presence: userIdAndPresence.presence,
+                timestamp: moment().toISOString(),
+              })
+          } else {
+            usersRef
+              .child(userIdAndPresence.userId)
+              .child("attendance")
+              .push({
+                lessonId,
+                presence: userIdAndPresence.presence,
+                timestamp: moment().toISOString(),
+              })
+          }
+        })
       )
-      console.log(stuff)
     },
   },
 }
