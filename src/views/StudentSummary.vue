@@ -9,19 +9,8 @@
     </el-header>
     <el-main>
       <div class="lessonAndDate">
-        <el-select v-model="selectedLessonId">
-          <el-option v-for="item in lessonData" :key="item.id" :value="item.id" :label="item.name"></el-option>
-        </el-select>
-        <el-date-picker
-          v-model="date"
-          type="daterange"
-          placeholder="Pick a day"
-          range-separator="To"
-          start-placeholder="Start Date"
-          end-placeholder="End Date"
-          :picker-options="datePickerOptions"
-          format="dd-MM-yyyy"
-        ></el-date-picker>
+        <lesson-selector v-model="selectedLessonId"></lesson-selector>
+        <date-selector v-model="dateRange"></date-selector>
       </div>
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
       <el-table v-loading="isLoading" stripe max-height="730" :data="tableData" style="width: 100%">
@@ -42,12 +31,19 @@
 import _ from "lodash"
 import Moment from "moment"
 import { extendMoment } from "moment-range"
+import LessonSelector from "@/components/lessons/LessonSelector"
+import DateSelector from "@/components/utils/DateSelector"
+
 const moment = extendMoment(Moment)
 export default {
   name: "AttendancePage",
   beforeCreate: async function() {
     await this.$store.dispatch("loadStudentsData")
     await this.$store.dispatch("loadLessonsData")
+  },
+  components: {
+    LessonSelector,
+    DateSelector,
   },
   computed: {
     tableData() {
@@ -57,9 +53,9 @@ export default {
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
 
-      if (this.date.length > 0) {
-        const startDate = this.date[0]
-        const endDate = this.date[1]
+      if (this.dateRange.length > 0 && !this.dateRange[0].isSame(moment(0))) {
+        const startDate = this.dateRange[0]
+        const endDate = this.dateRange[1]
         const selectionRange = moment.range(startDate, endDate)
         filteredData = _.filter(filteredData, (user) => {
           for (const attendance of _.values(user.attendance)) {
@@ -68,10 +64,23 @@ export default {
           return false
         })
       }
+      if (this.selectedLessonId) {
+        filteredData = _.filter(filteredData, (user) => {
+          return _.includes(
+            _.values(user.attendance).map(
+              (attendanceObject) => attendanceObject.lessonId
+            ),
+            this.selectedLessonId
+          )
+        })
+      }
       return filteredData
     },
     lessonData() {
-      return this.$store.getters.getLessonAllData
+      return [
+        { name: "All lessons", id: "" },
+        ...this.$store.getters.getAllLessonData,
+      ]
     },
     isLoading() {
       return this.$store.getters.getStudentDataLoading
@@ -81,7 +90,13 @@ export default {
     routeToUserDetails(val) {
       this.$router.push({
         name: "userDetails",
-        query: { userId: val.userId },
+        query: {
+          userId: val.userId,
+          filters: {
+            dateRange: this.dateRange.map((date) => date.toISOString()),
+            selectedLessonId: this.selectedLessonId,
+          },
+        },
       })
     },
     routeToAttendancePage() {
@@ -103,38 +118,7 @@ export default {
     return {
       searchString: "",
       selectedLessonId: "",
-      datePickerOptions: {
-        disabledDate(time) {
-          return time.getTime() > Date.now()
-        },
-        shortcuts: [
-          {
-            text: "Today",
-            onClick(picker) {
-              const start = moment()
-              const end = moment()
-              picker.$emit("pick", [start, end])
-            },
-          },
-          {
-            text: "This week",
-            onClick(picker) {
-              const start = moment().startOf("week")
-              const end = moment()
-              picker.$emit("pick", [start, end])
-            },
-          },
-          {
-            text: "This month",
-            onClick(picker) {
-              const start = moment().startOf("month")
-              const end = moment()
-              picker.$emit("pick", [start, end])
-            },
-          },
-        ],
-      },
-      date: [],
+      dateRange: [],
     }
   },
 }

@@ -67,7 +67,11 @@
                     <el-col>
                         <el-row id="commentsRow">
                             <a>List of Lessons</a>
-                            <el-table :data="attendanceData" style="width: 70%">
+                            <el-row>
+                                <lesson-selector v-model="selectedLessonId"></lesson-selector>
+                                <date-selector style="margin-left: 20px;" v-model="dateRange"></date-selector>
+                            </el-row>
+                            <el-table max-height="500" :data="attendanceData" style="width: 70%">
                                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
                                 <el-table-column prop="timestamp" label="Date of attendance taken"></el-table-column>
                                 <el-table-column prop="presence" label="Presence"></el-table-column>
@@ -94,8 +98,35 @@
 <script>
 import _ from "lodash"
 import moment from "moment"
+import LessonSelector from "@/components/lessons/LessonSelector"
+import DateSelector from "@/components/utils/DateSelector"
+
 export default {
+  components: {
+    LessonSelector,
+    DateSelector,
+  },
+  computed: {
+    attendanceData() {
+      const details = this.$store.getters.getStudentInfo(
+        this.$route.query["userId"]
+      )
+      const filteredData = _.filter(details.attendance, (attendance) => {
+        if (this.selectedLessonId) {
+          return attendance.lessonId === this.selectedLessonId
+        }
+        return true
+      })
+      return _.map(filteredData, (attendanceData) => ({
+        ...attendanceData,
+        timestamp: moment(attendanceData.timestamp).format("DD-MM-YY"),
+        lessonType: this.$store.getters.getLessonData(attendanceData.lessonId)
+          .name,
+      }))
+    },
+  },
   data() {
+    const { selectedLessonId, dateRange } = this.$route.query["filters"]
     if (this.$route.query["userId"] === "NEW") {
       return {
         userDetails: {
@@ -112,6 +143,8 @@ export default {
           address: "",
         },
         disabled: false,
+        selectedLessonId,
+        dateRange,
       }
     }
     const details = this.$store.getters.getStudentInfo(
@@ -127,16 +160,16 @@ export default {
     ])
 
     const contactDetails = _.pick(details, ["email", "contact", "address"])
+    console.log({
+      selectedLessonId,
+      dateRange,
+    })
     return {
       userDetails,
       contactDetails,
       disabled: true,
-      attendanceData: _.map(details.attendance, (attendanceData) => ({
-        ...attendanceData,
-        timestamp: moment(attendanceData.timestamp).format("DD-MM-YY"),
-        lessonType: this.$store.getters.getLessonData(attendanceData.lessonId)
-          .name,
-      })),
+      selectedLessonId,
+      dateRange: dateRange.map((date) => moment(date)),
     }
   },
   methods: {
