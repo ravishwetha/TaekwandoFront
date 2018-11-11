@@ -2,6 +2,7 @@ import _ from "lodash"
 import moment from "moment"
 import { firebaseDB } from "@/common/api"
 import Vue from "vue"
+import { PRESENT } from "@/common/data"
 
 export const usersRef = firebaseDB.database().ref("Users")
 
@@ -11,7 +12,7 @@ const studentModule = {
     studentDataLoading: false,
   },
   getters: {
-    getStudentInfo: (state) => (id) => state[id],
+    getStudentInfo: (state) => (id) => state.studentData[id],
     getAllStudentsInfo: (state) => {
       return _.map(state.studentData, (value, key) => {
         let userData = {
@@ -27,12 +28,17 @@ const studentModule = {
         if (!value.attendance) {
           return {
             ...userData,
-            attendance: 0,
+            presentCount: 0,
           }
         } else {
           return {
             ...userData,
-            attendance: _.keys(value.attendance).length,
+            presentCount: _.keys(
+              _.filter(
+                value.attendance,
+                (attendance) => attendance.presence === PRESENT
+              )
+            ).length,
           }
         }
       })

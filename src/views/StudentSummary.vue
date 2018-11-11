@@ -14,15 +14,19 @@
         </el-select>
         <el-date-picker
           v-model="date"
-          type="date"
+          type="daterange"
           placeholder="Pick a day"
+          range-separator="To"
+          start-placeholder="Start Date"
+          end-placeholder="End Date"
           :picker-options="datePickerOptions"
+          format="dd-MM-yyyy"
         ></el-date-picker>
       </div>
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
       <el-table v-loading="isLoading" stripe max-height="730" :data="tableData" style="width: 100%">
         <el-table-column prop="name" label="Name"></el-table-column>
-        <el-table-column prop="attendance" label="Total Count"></el-table-column>
+        <el-table-column prop="presentCount" label="Total Present Count"></el-table-column>
         <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
         <el-table-column label="Operations" fixed="right">
           <template slot-scope="scope">
@@ -36,6 +40,9 @@
 
 <script>
 import _ from "lodash"
+import Moment from "moment"
+import { extendMoment } from "moment-range"
+const moment = extendMoment(Moment)
 export default {
   name: "AttendancePage",
   beforeCreate: async function() {
@@ -44,15 +51,27 @@ export default {
   },
   computed: {
     tableData() {
-      const filteredData = _.filter(
+      let filteredData = _.filter(
         this.$store.getters.getAllStudentsInfo,
         (user) =>
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
+
+      if (this.date.length > 0) {
+        const startDate = this.date[0]
+        const endDate = this.date[1]
+        const selectionRange = moment.range(startDate, endDate)
+        filteredData = _.filter(filteredData, (user) => {
+          for (const attendance of _.values(user.attendance)) {
+            return selectionRange.contains(moment(attendance.timestamp))
+          }
+          return false
+        })
+      }
       return filteredData
     },
     lessonData() {
-      return this.$store.getters.getLessonData
+      return this.$store.getters.getLessonAllData
     },
     isLoading() {
       return this.$store.getters.getStudentDataLoading
@@ -92,28 +111,30 @@ export default {
           {
             text: "Today",
             onClick(picker) {
-              picker.$emit("pick", new Date())
+              const start = moment()
+              const end = moment()
+              picker.$emit("pick", [start, end])
             },
           },
           {
-            text: "Yesterday",
+            text: "This week",
             onClick(picker) {
-              const date = new Date()
-              date.setTime(date.getTime() - 3600 * 1000 * 24)
-              picker.$emit("pick", date)
+              const start = moment().startOf("week")
+              const end = moment()
+              picker.$emit("pick", [start, end])
             },
           },
           {
-            text: "A week ago",
+            text: "This month",
             onClick(picker) {
-              const date = new Date()
-              date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
-              picker.$emit("pick", date)
+              const start = moment().startOf("month")
+              const end = moment()
+              picker.$emit("pick", [start, end])
             },
           },
         ],
       },
-      date: "",
+      date: [],
     }
   },
 }

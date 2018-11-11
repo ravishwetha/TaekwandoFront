@@ -14,6 +14,7 @@ const lessonsModule = {
     },
     createNewLesson(state, lessonData) {
       state.lessons[lessonData.id] = lessonData
+      Vue.set(state.lessons, lessonData.id, lessonData)
     },
     addUsersToLesson(state, { addUsersToLesson, lessonId }) {
       addUsersToLesson.forEach(({ key, userId }) => {
@@ -59,7 +60,7 @@ const lessonsModule = {
     },
   },
   getters: {
-    getLessonData: (state) => {
+    getAllLessonData: (state) => {
       return _.map(state.lessons, (value, key) => {
         return {
           ...value,
@@ -67,6 +68,7 @@ const lessonsModule = {
         }
       })
     },
+    getLessonData: (state) => (id) => state.lessons[id],
   },
 }
 

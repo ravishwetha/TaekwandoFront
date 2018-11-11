@@ -67,6 +67,11 @@
                     <el-col>
                         <el-row id="commentsRow">
                             <a>List of Lessons</a>
+                            <el-table :data="attendanceData" style="width: 70%">
+                                <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
+                                <el-table-column prop="timestamp" label="Date of attendance taken"></el-table-column>
+                                <el-table-column prop="presence" label="Presence"></el-table-column>
+                            </el-table>
                         </el-row>
                         <el-row id="commentsRow">
                             <a>Payment History</a>
@@ -88,6 +93,7 @@
 
 <script>
 import _ from "lodash"
+import moment from "moment"
 export default {
   data() {
     if (this.$route.query["userId"] === "NEW") {
@@ -125,6 +131,12 @@ export default {
       userDetails,
       contactDetails,
       disabled: true,
+      attendanceData: _.map(details.attendance, (attendanceData) => ({
+        ...attendanceData,
+        timestamp: moment(attendanceData.timestamp).format("DD-MM-YY"),
+        lessonType: this.$store.getters.getLessonData(attendanceData.lessonId)
+          .name,
+      })),
     }
   },
   methods: {

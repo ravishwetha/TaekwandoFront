@@ -94,7 +94,7 @@ import { DAYS, PRESENT, ABSENT } from "@/common/data"
 export default {
   computed: {
     lessonData() {
-      return _.filter(this.$store.getters.getLessonData, (lesson) => {
+      return _.filter(this.$store.getters.getLessonAllData, (lesson) => {
         for (const day of lesson.days) {
           if (moment().day() === DAYS[day]) {
             return true
