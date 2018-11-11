@@ -7,7 +7,7 @@
       <el-input v-model="loginDetails.password"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="submitForm('loginDetails')">Login</el-button>
+      <el-button :loading="loggingIn" type="primary" @click="submitForm('loginDetails')">Login</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -38,6 +38,7 @@ export default {
           },
         ],
       },
+      loggingIn: false,
     }
   },
   methods: {
@@ -51,6 +52,7 @@ export default {
         this.loginDetails.username != "" &&
         this.loginDetails.password != ""
       ) {
+        this.loggingIn = true
         try {
           const token = await loginAPI({
             username: this.loginDetails.username,
@@ -67,6 +69,7 @@ export default {
             message: "Username does not match password",
             duration: 0,
           })
+          this.loggingIn = false
         }
       }
     },

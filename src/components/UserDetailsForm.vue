@@ -54,9 +54,6 @@
                         <el-input type="textarea" v-model="contactDetails.address"></el-input>
                     </el-form-item>
                 </el-form>
-                <div id="submitButtonDiv">
-                    <el-button @click="addUser" v-if="!disabled" type="primary">Add User</el-button>
-                </div>
             </el-col>
         </el-main>
         <el-footer>

@@ -1,17 +1,21 @@
 <template>
   <div id="app">
-    <div>
-      <div v-if="loggedIn" id="nav">
-        <span id="header">
-          <el-button type="primary" @click="routeToHome">Home</el-button>
-        </span>
-        <img src="@/assets/tkdlogo.jpg" style="width: 20%; height: 20%;">
-        <span id="header">
-          <el-select disabled>
-            <el-option label="Haig Branch"></el-option>
-          </el-select>
-        </span>
-      </div>
+    <div id="nav">
+      <el-row style="width: 98%;">
+        <el-col :span="8" style="padding-top: 7%;">
+          <span v-if="loggedIn" id="header">
+            <el-select disabled>
+              <el-option label="Haig Branch"></el-option>
+            </el-select>
+          </span>
+        </el-col>
+        <el-col :offset="1" :span="8">
+          <router-link to="/">
+            <img src="@/assets/tkdlogo.jpg" style="width: 50%; height: 50%;">
+          </router-link>
+        </el-col>
+        <el-col :span="8"></el-col>
+      </el-row>
     </div>
     <router-view/>
   </div>
@@ -47,7 +51,9 @@ export default {
   justify-content: space-around;
   padding-bottom: 20px;
 }
+
 #header {
-  padding-top: 7%;
+  display: flex;
+  justify-content: left;
 }
 </style>
