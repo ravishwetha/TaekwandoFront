@@ -2,7 +2,7 @@ import _ from "lodash"
 import { firebaseDB } from "@/common/api"
 import { usersRef } from "@/modules/studentStore"
 import Vue from "vue"
-const lessonsRef = firebaseDB.database().ref("Lessons")
+export const lessonsRef = firebaseDB.database().ref("Lessons")
 
 const lessonsModule = {
   state: {

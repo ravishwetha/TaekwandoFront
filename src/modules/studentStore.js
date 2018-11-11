@@ -49,6 +49,12 @@ const studentModule = {
     getAllStudentsData(state, studentData) {
       state.studentData = studentData
     },
+    removeUser(state, { userId }) {
+      state.studentData = _.filter(
+        state.studentData,
+        (value, key) => key != userId
+      )
+    },
     addNewUser(state, studentData) {
       Vue.set(state.studentData, studentData.id, studentData)
     },
@@ -63,6 +69,13 @@ const studentModule = {
     },
   },
   actions: {
+    async deleteUser({ commit }, { userId }) {
+      try {
+        await usersRef.child(userId).remove()
+      } catch (e) {
+        console.log(e)
+      }
+    },
     async addUser({ commit }, userData) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })

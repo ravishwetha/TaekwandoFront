@@ -54,6 +54,9 @@
                         <el-input type="textarea" v-model="contactDetails.address"></el-input>
                     </el-form-item>
                 </el-form>
+                <div style="margin-left: 200px;">
+                    <el-button @click="deleteUser()" style="width: 80%" type="danger">Delete User</el-button>
+                </div>
             </el-col>
         </el-main>
         <el-footer>
@@ -153,6 +156,19 @@ export default {
         ...this.contactDetails,
       }
       this.$store.dispatch("addUser", payload)
+      this.$router.push({
+        name: "home",
+      })
+    },
+    deleteUser() {
+      this.$store.dispatch("deleteUser", {
+        userId: this.$route.query["userId"],
+      })
+      this.$notify({
+        title: "User deleted",
+        message: "User has been deleted.",
+        duration: 0,
+      })
       this.$router.push({
         name: "home",
       })
