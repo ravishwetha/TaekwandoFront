@@ -7,7 +7,7 @@
           <el-button @click="routeToHome">Home</el-button>
         </div>
         <el-select disabled>
-          <el-option label="Haji Lane"></el-option>
+          <el-option label="Haig Branch"></el-option>
         </el-select>
       </div>
     </div>

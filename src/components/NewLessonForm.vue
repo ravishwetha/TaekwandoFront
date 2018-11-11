@@ -8,9 +8,6 @@
                     class="formInput"
                 ></el-input>
             </el-form-item>
-            <el-form-item label="Frequency:" class="formItem">
-                <br>
-            </el-form-item>
             <el-form-item label="Days:" class="formItem">
                 <el-checkbox-group v-model="form.days" class="formInput">
                     <el-checkbox label="Monday" name="type"></el-checkbox>
@@ -72,7 +69,9 @@ export default {
         from: moment(formData.from).toISOString(),
       }
       this.$store.dispatch("createNewLesson", formData)
-      this.$router.back()
+      this.$router.push({
+        name: "home",
+      })
     },
   },
 }

@@ -127,26 +127,6 @@ export default {
   },
   data() {
     const { selectedLessonId, dateRange } = this.$route.query["filters"]
-    if (this.$route.query["userId"] === "NEW") {
-      return {
-        userDetails: {
-          name: "",
-          belt: "",
-          classType: "",
-          dob: "",
-          nric: "",
-          enrollmentDate: "",
-        },
-        contactDetails: {
-          email: "",
-          contact: "",
-          address: "",
-        },
-        disabled: false,
-        selectedLessonId,
-        dateRange,
-      }
-    }
     const details = this.$store.getters.getStudentInfo(
       this.$route.query["userId"]
     )
@@ -157,6 +137,7 @@ export default {
       "dob",
       "nric",
       "enrollmentDate",
+      "comments",
     ])
 
     const contactDetails = _.pick(details, ["email", "contact", "address"])

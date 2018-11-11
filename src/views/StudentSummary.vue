@@ -22,6 +22,7 @@
             <el-button @click="routeToUserDetails(scope.row)" type="text" size="small">Details</el-button>
           </template>
         </el-table-column>
+        <el-table-column prop="branch" label="Branch"></el-table-column>
       </el-table>
     </el-main>
   </el-container>
@@ -74,6 +75,10 @@ export default {
           )
         })
       }
+      filteredData = _.map(filteredData, (data) => ({
+        ...data,
+        branch: "Haig Branch",
+      }))
       return filteredData
     },
     lessonData() {
