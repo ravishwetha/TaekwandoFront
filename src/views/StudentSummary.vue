@@ -109,8 +109,7 @@ export default {
     },
     routeToAddUser() {
       this.$router.push({
-        name: "userDetails",
-        query: { userId: "NEW" },
+        name: "signup",
       })
     },
   },

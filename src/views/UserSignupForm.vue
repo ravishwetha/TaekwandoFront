@@ -3,7 +3,7 @@
         <el-main>
             <el-col class="userDetailsCol">
                 <span class="detailsHeader">User Details</span>
-                <el-form :model="userDetails" :disabled="disabled" label-width="100px" ref="form">
+                <el-form :model="userDetails" label-width="100px" ref="form">
                     <el-form-item label="Name">
                         <el-input v-model="userDetails.name"></el-input>
                     </el-form-item>
@@ -34,16 +34,14 @@
                     <el-form-item label="NRIC">
                         <el-input v-model="userDetails.nric"></el-input>
                     </el-form-item>
+                    <el-form-item label="Comments">
+                        <el-input type="textarea" v-model="userDetails.comments"></el-input>
+                    </el-form-item>
                 </el-form>
             </el-col>
             <el-col class="contactDetailsCol">
                 <span class="detailsHeader">Contact Details</span>
-                <el-form
-                    :model="contactDetails"
-                    :disabled="disabled"
-                    label-width="100px"
-                    ref="form"
-                >
+                <el-form :model="contactDetails" label-width="100px" ref="form">
                     <el-form-item label="Email">
                         <el-input v-model="contactDetails.email"></el-input>
                     </el-form-item>
@@ -55,7 +53,7 @@
                     </el-form-item>
                 </el-form>
                 <div id="submitButtonDiv">
-                    <el-button @click="addUser" v-if="!disabled" type="primary">Add User</el-button>
+                    <el-button @click="addUser" type="primary">Add User</el-button>
                 </div>
             </el-col>
         </el-main>
@@ -73,6 +71,7 @@ export default {
         dob: "",
         nric: "",
         enrollmentDate: "",
+        comments: "",
       },
       contactDetails: {
         email: "",
