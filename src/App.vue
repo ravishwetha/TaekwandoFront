@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div>
-      <div id="nav">
+      <div v-if="loggedIn" id="nav">
         <img src="@/assets/tkdlogo.jpg" style="width: 10%; height: 10%;">
         <div>
           <el-button @click="routeToHome">Home</el-button>
@@ -20,6 +20,11 @@ export default {
   methods: {
     routeToHome() {
       this.$router.push("/")
+    },
+  },
+  computed: {
+    loggedIn() {
+      return sessionStorage.getItem("token") !== null
     },
   },
 }

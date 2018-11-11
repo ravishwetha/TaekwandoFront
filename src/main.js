@@ -5,6 +5,9 @@ import App from "./App.vue"
 import router from "./router"
 import store from "./store"
 import locale from "element-ui/lib/locale/lang/en"
+import dotenv from "dotenv"
+
+dotenv.config()
 
 Vue.config.productionTip = false
 

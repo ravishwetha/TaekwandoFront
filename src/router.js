@@ -8,7 +8,7 @@ import AttendancePage from "@/views/AttendancePage"
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: "/",
@@ -16,13 +16,9 @@ export default new Router({
       component: StudentSummary,
     },
     {
-      path: "/about",
-      name: "about",
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () =>
-        import(/* webpackChunkName: "about" */ "./views/About.vue"),
+      path: "/login",
+      name: "login",
+      component: Login,
     },
     {
       path: "/userDetails",
@@ -41,3 +37,18 @@ export default new Router({
     },
   ],
 })
+
+router.beforeEach((to, from, next) => {
+  if (to.name != "login") {
+    const token = sessionStorage.getItem("token")
+    if (token === null) {
+      next({ name: "login" })
+      // next("/login")
+    } else {
+      next()
+    }
+  }
+  next()
+})
+
+export default router

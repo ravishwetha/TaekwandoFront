@@ -10,9 +10,8 @@ export const DAYS = {
 
 export const PRESENT = "PRESENT"
 export const ABSENT = "ABSENT"
-
 export const firebaseConfig = {
-  apiKey: process.env.firebaseConfig,
+  apiKey: process.env.VUE_APP_FIREBASE,
   authDomain: "taekwandobackend-d1edf.firebaseapp.com",
   databaseURL: "https://taekwandobackend-d1edf.firebaseio.com",
   projectId: "taekwandobackend-d1edf",

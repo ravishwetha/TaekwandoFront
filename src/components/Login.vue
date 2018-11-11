@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import { loginAPI } from "@/common/api"
 export default {
   name: "login",
   data() {
@@ -40,15 +41,33 @@ export default {
     }
   },
   methods: {
-    submitForm(loginDetails) {
-      console.log(
-        this.$refs[loginDetails].validate((valid) => {
-          if (valid) {
-            alert("valid")
-          }
-          alert("invaid")
-        })
-      )
+    async submitForm(loginDetails) {
+      this.$refs[loginDetails].validate((valid) => {
+        if (!valid) {
+          alert("Please enter your username or password")
+        }
+      })
+      if (
+        this.loginDetails.username != "" &&
+        this.loginDetails.password != ""
+      ) {
+        try {
+          const token = await loginAPI({
+            username: this.loginDetails.username,
+            password: this.loginDetails.password,
+          })
+          sessionStorage.setItem("token", token)
+          this.$router.push({
+            name: "home",
+          })
+        } catch (e) {
+          this.$notify({
+            title: "Login failed",
+            message: "Username does not match password",
+            duration: 0,
+          })
+        }
+      }
     },
   },
 }

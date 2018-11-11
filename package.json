@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "@vue/eslint-config-prettier": "^3.0.5",
+    "axios": "^0.18.0",
+    "css-loader": "^1.0.1",
+    "dotenv": "^6.1.0",
     "element-ui": "^2.4.8",
     "eslint-config-prettier": "^3.1.0",
     "eslint-plugin-html": "^4.0.6",
@@ -20,7 +23,9 @@
     "moment-range": "^4.0.1",
     "prettier": "^1.14.3",
     "vue": "^2.5.17",
+    "vue-loader": "^15.4.2",
     "vue-router": "^3.0.1",
+    "vue-style-loader": "^4.1.2",
     "vuex": "^3.0.1",
     "vuex-persistedstate": "^2.5.4",
     "vuex-router-sync": "^5.0.0"
