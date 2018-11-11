@@ -7,7 +7,7 @@
       <el-input v-model="loginDetails.password"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="submitForm('loginDetails')">Create</el-button>
+      <el-button type="primary" @click="submitForm('loginDetails')">Login</el-button>
     </el-form-item>
   </el-form>
 </template>

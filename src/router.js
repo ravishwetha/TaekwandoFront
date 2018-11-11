@@ -42,9 +42,10 @@ router.beforeEach((to, from, next) => {
   if (to.name != "login") {
     const token = sessionStorage.getItem("token")
     if (token === null) {
+      console.log("token is null")
       next({ name: "login" })
-      // next("/login")
     } else {
+      console.log(token)
       next()
     }
   }
