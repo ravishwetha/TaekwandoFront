@@ -44,9 +44,7 @@ router.beforeEach((to, from, next) => {
     if (token === null) {
       console.log("token is null")
       next({ name: "login" })
-    } else {
-      console.log(token)
-      next()
+      return
     }
   }
   next()
