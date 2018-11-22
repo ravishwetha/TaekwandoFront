@@ -65,7 +65,7 @@ export default {
         name: [
           {
             required: true,
-            message: "Please input Activity name",
+            message: "Please input class name",
             trigger: "blur",
           },
           {
@@ -78,7 +78,7 @@ export default {
           {
             required: true,
             type: "array",
-            message: "Please select Activity zone",
+            message: "Please select the days for this class",
             trigger: "change",
           },
         ],
@@ -110,17 +110,26 @@ export default {
   },
   methods: {
     createNewLesson(formName) {
-      this.$refs[formName].validate()
-      let formData = _.pick(this.form, ["name", "days", "from", "to", "price"])
-      formData = {
-        ...formData,
-        to: moment(formData.to).toISOString(),
-        from: moment(formData.from).toISOString(),
-      }
-      //   this.$store.dispatch("createNewLesson", formData)
-      //   this.$router.push({
-      //     name: "home",
-      //   })
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let formData = _.pick(this.form, [
+            "name",
+            "days",
+            "from",
+            "to",
+            "price",
+          ])
+          formData = {
+            ...formData,
+            to: moment(formData.to).toISOString(),
+            from: moment(formData.from).toISOString(),
+          }
+          this.$store.dispatch("createNewLesson", formData)
+          this.$router.push({
+            name: "home",
+          })
+        }
+      })
     },
   },
 }
