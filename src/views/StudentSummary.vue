@@ -97,10 +97,8 @@ export default {
         name: "userDetails",
         query: {
           userId: val.userId,
-          filters: {
-            dateRange: this.dateRange.map((date) => date.toISOString()),
-            selectedLessonId: this.selectedLessonId,
-          },
+          dateRange: this.dateRange.map((date) => date.toISOString()),
+          selectedLessonId: this.selectedLessonId,
         },
       })
     },

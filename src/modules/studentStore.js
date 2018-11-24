@@ -58,6 +58,12 @@ const studentModule = {
     addNewUser(state, studentData) {
       Vue.set(state.studentData, studentData.id, studentData)
     },
+    editUser(state, studentData) {
+      state.studentData[studentData.id] = {
+        ...state.studentData[studentData.id],
+        ...studentData,
+      }
+    },
     modifyStudentDataLoadingStatus(state, { status }) {
       state.studentDataLoading = status
     },
@@ -82,6 +88,17 @@ const studentModule = {
         const userId = await usersRef.push(userData).key
 
         commit("addNewUser", { ...userData, id: userId })
+        commit("modifyStudentDataLoadingStatus", { status: false })
+      } catch (e) {
+        commit("modifyStudentDataLoadingStatus", { status: false })
+        console.log(e)
+      }
+    },
+    async updateUser({ commit }, { userData, userId }) {
+      try {
+        commit("modifyStudentDataLoadingStatus", { status: true })
+        await usersRef.child(userId).update(userData)
+        commit("editUser", { ...userData, id: userId })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
         commit("modifyStudentDataLoadingStatus", { status: false })

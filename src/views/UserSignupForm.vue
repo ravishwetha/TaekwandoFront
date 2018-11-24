@@ -53,7 +53,8 @@
                     </el-form-item>
                 </el-form>
                 <div id="submitButtonDiv">
-                    <el-button @click="addUser" type="primary">Add User</el-button>
+                    <el-button v-if="edit" @click="editUser" type="primary">Edit User</el-button>
+                    <el-button v-else @click="addUser" type="primary">Add User</el-button>
                 </div>
             </el-col>
         </el-main>
@@ -63,6 +64,26 @@
 <script>
 export default {
   data() {
+    if (this.$route.query["userId"]) {
+      const details = this.$store.getters.getStudentInfo(
+        this.$route.query["userId"]
+      )
+      let userDetails = _.pick(details, [
+        "name",
+        "belt",
+        "classType",
+        "dob",
+        "nric",
+        "enrollmentDate",
+        "comments",
+      ])
+      const contactDetails = _.pick(details, ["email", "contact", "address"])
+      return {
+        userDetails,
+        contactDetails,
+        edit: true,
+      }
+    }
     return {
       userDetails: {
         name: "",
@@ -90,6 +111,17 @@ export default {
       this.$router.push({
         name: "home",
       })
+    },
+    async editUser() {
+      const payload = {
+        userData: {
+          ...this.userDetails,
+          ...this.contactDetails,
+        },
+        userId: this.$route.query["userId"],
+      }
+      await this.$store.dispatch("updateUser", payload)
+      this.$router.back()
     },
   },
 }

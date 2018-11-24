@@ -22,6 +22,11 @@ const router = new Router({
       component: SignupForm,
     },
     {
+      path: "/edit",
+      name: "edit",
+      component: SignupForm,
+    },
+    {
       path: "/login",
       name: "login",
       component: Login,
