@@ -3,7 +3,7 @@
         <el-main>
             <el-col class="userDetailsCol">
                 <span class="detailsHeader">User Details</span>
-                <el-form :model="userDetails" label-width="100px" ref="form">
+                <el-form :model="userDetails" label-width="100px" ref="userForm">
                     <el-form-item label="Name">
                         <el-input v-model="userDetails.name"></el-input>
                     </el-form-item>
@@ -41,12 +41,14 @@
             </el-col>
             <el-col class="contactDetailsCol">
                 <span class="detailsHeader">Contact Details</span>
-                <el-form :model="contactDetails" label-width="100px" ref="form">
+                <el-form :model="contactDetails" label-width="100px" ref="contactForm">
                     <el-form-item label="Email">
                         <el-input v-model="contactDetails.email"></el-input>
                     </el-form-item>
-                    <el-form-item label="Phone">
-                        <el-input v-model="contactDetails.contact"></el-input>
+                    <el-form-item label="Phone" prop="contactDetails.contact">
+                        <el-input v-model="contactDetails.contact">
+                            <template slot="prepend">+65</template>
+                        </el-input>
                     </el-form-item>
                     <el-form-item label="Address">
                         <el-input type="textarea" v-model="contactDetails.address"></el-input>
@@ -106,6 +108,7 @@ export default {
       const payload = {
         ...this.userDetails,
         ...this.contactDetails,
+        contact: "+65" + this.contactDetails.contact,
       }
       this.$store.dispatch("addUser", payload)
       this.$router.push({

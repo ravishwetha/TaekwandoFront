@@ -21,3 +21,23 @@ export const loginAPI = async ({ username, password }) => {
     })
     .then((r) => r.data)
 }
+
+export const emailAPI = async ({ studentData, messageText }) => {
+  const api = await axiosConfig()
+  return api
+    .post("/email", {
+      studentData,
+      messageText,
+    })
+    .then((r) => r.data)
+}
+
+export const smsAPI = async ({ studentData, messageText }) => {
+  const api = await axiosConfig()
+  return api
+    .post("/sms", {
+      studentData,
+      messageText,
+    })
+    .then((r) => r.data)
+}
