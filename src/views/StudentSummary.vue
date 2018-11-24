@@ -148,12 +148,12 @@ export default {
           })
           this.$notify({
             title: "Message sent",
-            message: "Email has been sent.",
+            message: "SMS has been sent.",
           })
         } catch (e) {
           this.$notify({
-            title: "Email failed",
-            message: "Email failed to send.",
+            title: "SMS failed",
+            message: "SMS failed to send.",
             type: "error",
           })
         }
