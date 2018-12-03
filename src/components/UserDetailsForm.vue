@@ -2,14 +2,8 @@
   <el-container>
     <el-main>
       <el-col class="userDetailsCol">
-        <span id="detailsHeader">User Details</span>
-        <el-form
-          style="paddingRight: 10px;"
-          :model="userDetails"
-          :disabled="disabled"
-          label-width="105px"
-          ref="form"
-        >
+        <span id="detailsHeader">Student Details</span>
+        <el-form style="paddingRight: 10px;" :model="userDetails" label-width="105px" ref="form">
           <el-form-item id="detailsText" label="Name:">
             <span>{{userDetails.name}}</span>
           </el-form-item>
@@ -32,7 +26,7 @@
       </el-col>
       <el-col class="contactDetailsCol">
         <span id="detailsHeader">Contact Details</span>
-        <el-form :model="contactDetails" :disabled="disabled" label-width="100px" ref="form">
+        <el-form :model="contactDetails" label-width="100px" ref="form">
           <el-form-item id="detailsText" label="Email:">
             <span>{{contactDetails.email}}</span>
           </el-form-item>
@@ -56,34 +50,75 @@
         <span class="commentsHeader">Comments</span>
         <hr>
         <el-container>
-          <el-col>
+          <el-col :span="18">
+            <div id="paymentAndAttendanceHeader">
+              <span>Student Attendance</span>
+            </div>
             <el-row id="commentsRow">
-              <a>List of Lessons</a>
               <el-row>
                 <lesson-selector v-model="selectedLessonId"></lesson-selector>
                 <date-selector style="margin-left: 20px;" v-model="dateRange"></date-selector>
               </el-row>
-              <el-table max-height="500" :data="attendanceData" style="width: 70%">
+              <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
                 <el-table-column prop="timestamp" label="Date of attendance taken"></el-table-column>
                 <el-table-column prop="presence" label="Presence"></el-table-column>
               </el-table>
             </el-row>
-            <el-row id="commentsRow">
-              <a>Payment History</a>
-            </el-row>
           </el-col>
-          <el-col>
-            <el-row id="commentsRow">
-              <el-button>ADD PAYMENT</el-button>
+          <el-col :span="6">
+            <div id="paymentAndAttendanceHeader">
+              <span>Payment Type</span>
+            </div>
+            <el-switch
+              v-model="payment.paymentType"
+              inactive-text="Pay by credit/debit card"
+              active-text="Pay by cash/nets"
+              :active-value="CASHNETS"
+              :inactive-value="CARD"
+              inactive-color="#13ce66"
+              active-color="#0061ff"
+              style="padding-top: 10px;"
+              :width="60"
+            ></el-switch>
+            <el-row v-if="payment.paymentType === CASHNETS" id="commentsRow">
+              <el-button>Add Payment</el-button>
             </el-row>
             <el-row id="commentsRow">
-              <el-button>MISCELLEANOUS PAYMENT</el-button>
+              <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
             </el-row>
           </el-col>
         </el-container>
       </div>
     </el-footer>
+    <el-dialog
+      title="Miscellaneous Payment"
+      :show-close="!this.paymentLoading"
+      :close-on-click-modal="!this.paymentLoading"
+      :close-on-press-escape="this.paymentLoading"
+      :visible.sync="payment.paymentDialogVisible"
+    >
+      <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
+        <el-form-item label="Type Of Payment" prop="type">
+          <el-input v-model="payment.paymentForm.type"></el-input>
+        </el-form-item>
+        <el-form-item label="Description">
+          <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
+        </el-form-item>
+        <el-form-item label="Price" prop="price">
+          <el-input type="number" v-model="payment.paymentForm.price">
+            <template slot="prepend">$</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="Card Information">
+          <card :stripe="stripeKey"></card>
+        </el-form-item>
+      </el-form>
+      <span slot="footer">
+        <el-button :loading="this.paymentLoading" type="primary" @click="pay('paymentForm')">Pay</el-button>
+        <el-button v-if="!this.paymentLoading" @click="payment.paymentDialogVisible = false">Cancel</el-button>
+      </span>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -92,11 +127,14 @@ import _ from "lodash"
 import moment from "moment"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
+import { Card, createToken } from "vue-stripe-elements-plus"
+import { CARD, CASHNETS } from "@/common/data"
 
 export default {
   components: {
     LessonSelector,
     DateSelector,
+    Card,
   },
   mounted() {
     const { selectedLessonId, dateRange } = this.$route.query
@@ -143,6 +181,9 @@ export default {
           .name,
       }))
     },
+    paymentLoading() {
+      return this.$store.getters.getStudentDataLoading
+    },
   },
   data() {
     return {
@@ -162,9 +203,64 @@ export default {
       },
       selectedLessonId: "",
       dateRange: "",
+      payment: {
+        paymentType: "",
+        paymentForm: {
+          type: "",
+          description: "",
+          price: "",
+        },
+        rules: {
+          type: [
+            {
+              required: true,
+              message: "Please input what you are paying for",
+              trigger: "blur",
+            },
+          ],
+          price: [
+            {
+              required: true,
+              message: "Please input the amount to charge",
+              trigger: "blur",
+            },
+          ],
+        },
+
+        paymentDialogVisible: false,
+      },
+      CARD,
+      CASHNETS,
+      stripeKey: process.env.VUE_APP_STRIPE_KEY,
     }
   },
   methods: {
+    pay(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const token = await createToken()
+          if (token.error) {
+            this.$notify.error({
+              title: "Card Error",
+              message: token.error.message,
+            })
+          }
+          const paymentDataAndVm = {
+            paymentData: {
+              paymentInfo: {
+                ...this.payment.paymentForm,
+                userEmail: this.contactDetails.email,
+              },
+              paymentToken: token.token.id,
+            },
+            userId: this.$route.query["userId"],
+            vm: this,
+          }
+          await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
+          this.payment.paymentDialogVisible = false
+        }
+      })
+    },
     addUser() {
       const payload = {
         ...this.userDetails,
@@ -223,6 +319,7 @@ export default {
   display: block;
   text-align: center;
   padding-bottom: 20px;
+  font-size: 40px;
 }
 
 #commentsRow {
@@ -232,5 +329,9 @@ export default {
 
 #detailsText {
   border: 1px solid black;
+}
+
+#paymentAndAttendanceHeader {
+  font-size: 25px;
 }
 </style>

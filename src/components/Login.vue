@@ -26,14 +26,14 @@ export default {
         username: [
           {
             required: true,
-            message: "Please input Activity name",
+            message: "Please input Username",
             trigger: "blur",
           },
         ],
         password: [
           {
             required: true,
-            message: "Please input password",
+            message: "Please input Password",
             trigger: "blur",
           },
         ],

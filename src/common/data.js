@@ -18,3 +18,6 @@ export const firebaseConfig = {
   storageBucket: "taekwandobackend-d1edf.appspot.com",
   messagingSenderId: "1011970784530",
 }
+
+export const CARD = "CARD"
+export const CASHNETS = "CASHNETS"

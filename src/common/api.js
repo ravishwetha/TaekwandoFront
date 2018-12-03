@@ -41,3 +41,9 @@ export const smsAPI = async ({ studentData, messageText }) => {
     })
     .then((r) => r.data)
 }
+
+export const tokenPaymentAPI = async (paymentInfo) => {
+  const api = await axiosConfig()
+
+  return api.post("/payment/token", paymentInfo).then((r) => r.data)
+}

@@ -8,7 +8,7 @@
         </div>
         <div id="headerDiv">
           <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
-          <el-button @click="routeToAddUser()" type="primary" round>Add user</el-button>
+          <el-button @click="routeToAddUser()" type="primary" round>Add student</el-button>
           <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
           <el-button @click="message.messageModalVisible = true" type="primary" round>Send a message</el-button>
         </div>
@@ -90,12 +90,7 @@ export default {
       }
       if (this.selectedLessonId) {
         filteredData = _.filter(filteredData, (user) => {
-          return _.includes(
-            _.values(user.attendance).map(
-              (attendanceObject) => attendanceObject.lessonId
-            ),
-            this.selectedLessonId
-          )
+          return _.includes(_.values(user.lessons), this.selectedLessonId)
         })
       }
       filteredData = _.map(filteredData, (data) => ({

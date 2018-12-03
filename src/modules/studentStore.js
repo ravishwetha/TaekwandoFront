@@ -1,6 +1,6 @@
 import _ from "lodash"
 import moment from "moment"
-import { firebaseDB } from "@/common/api"
+import { firebaseDB, tokenPaymentAPI } from "@/common/api"
 import Vue from "vue"
 import { PRESENT } from "@/common/data"
 
@@ -82,11 +82,44 @@ const studentModule = {
         console.log(e)
       }
     },
-    async addUser({ commit }, userData) {
+    async addSinglePayment({ commit }, { paymentData, userId, vm }) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        const userId = await usersRef.push(userData).key
-
+        const { chargeId, chargeCreated } = await tokenPaymentAPI(paymentData)
+        console.log(moment.unix(chargeCreated).format("MMM Do YY"))
+        const paymentPayload = {
+          chargeId,
+          created: moment.unix(chargeCreated).toISOString(),
+          price: paymentData.paymentInfo.price,
+        }
+        await usersRef
+          .child(userId)
+          .child("payments")
+          .push(paymentPayload)
+        vm.$notify({
+          type: "success",
+          title: "Payment success",
+          message: "Payment was a success",
+        })
+        commit("modifyStudentDataLoadingStatus", { status: false })
+      } catch (e) {
+        commit("modifyStudentDataLoadingStatus", { status: false })
+        vm.$notify({
+          title: "Card error",
+          message: e.response.data,
+          type: "error",
+        })
+      }
+    },
+    async addUser({ commit, dispatch }, userData) {
+      try {
+        commit("modifyStudentDataLoadingStatus", { status: true })
+        const studentData = _.omit(userData, "lessonId")
+        const userId = await usersRef.push(studentData).key
+        dispatch("addUsersToLesson", {
+          lessonId: userData.lessonId,
+          userIds: [userId],
+        })
         commit("addNewUser", { ...userData, id: userId })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {

@@ -4,15 +4,13 @@
       <el-header>
         <div id="header">
           <span id="date">{{selectedDate}}</span>
-          <el-button type="primary" @click="routeToAddUser()">Add user</el-button>
-          <el-button type="primary" @click="routeToAddLesson()">Add lesson</el-button>
         </div>
       </el-header>
       <el-main>
         <hr>
         <el-col id="center">
           <el-row :gutter="10">
-            <el-col span="6">
+            <el-col span="8">
               <el-select
                 @change="updatePresentAbsent"
                 v-model="lessonValue"
@@ -26,18 +24,18 @@
                 ></el-option>
               </el-select>
             </el-col>
-            <el-col span="6">
+            <!-- <el-col span="6">
               <el-button
                 id="newStudentDiv"
                 type="primary"
                 @click="modalVisible = true"
                 :disabled="lessonValue === ``"
               >Add a new student to class</el-button>
-            </el-col>
-            <el-col id="presentAbsent" span="6">
+            </el-col>-->
+            <el-col id="presentAbsent" span="8">
               <span>Present count : {{presentCount}} / {{tableData.length}}</span>
             </el-col>
-            <el-col id="presentAbsent" span="6">
+            <el-col id="presentAbsent" span="8">
               <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
             </el-col>
           </el-row>
@@ -249,6 +247,7 @@ export default {
 #center {
   padding-top: 50px;
   padding-bottom: 50px;
+  padding-left: 15%;
 }
 
 #presentAbsent {
