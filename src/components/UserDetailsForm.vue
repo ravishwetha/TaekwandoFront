@@ -57,12 +57,25 @@
             <el-row id="commentsRow">
               <el-row>
                 <lesson-selector v-model="selectedLessonId"></lesson-selector>
-                <date-selector style="margin-left: 20px;" v-model="dateRange"></date-selector>
+                <date-selector style="margin-left: 20px;" v-model="attendanceDateRange"></date-selector>
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
                 <el-table-column prop="timestamp" label="Date of attendance taken"></el-table-column>
                 <el-table-column prop="presence" label="Presence"></el-table-column>
+              </el-table>
+            </el-row>
+            <div id="paymentAndAttendanceHeader">
+              <span>Payment History</span>
+            </div>
+            <el-row id="commentsRow">
+              <el-row>
+                <date-selector style="margin-left: 20px;" v-model="paymentDateRange"></date-selector>
+              </el-row>
+              <el-table max-height="500" :data="paymentData" style="width: 90%">
+                <el-table-column prop="type" label="Payment Type"></el-table-column>
+                <el-table-column prop="description" label="Payment Description"></el-table-column>
+                <el-table-column prop="price" label="Amount"></el-table-column>
               </el-table>
             </el-row>
           </el-col>
@@ -161,19 +174,52 @@ export default {
     const contactDetails = _.pick(details, ["email", "contact", "address"])
     this.contactDetails = contactDetails
     this.selectedLessonId = selectedLessonId
-    this.dateRange = dateRange.map((date) => moment(date))
+    this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
   },
   computed: {
+    paymentData() {
+      const details = this.$store.getters.getStudentInfo(
+        this.$route.query["userId"]
+      )
+      let filteredData = _.values(details.payments)
+
+      if (
+        this.paymentDateRange.length > 0 &&
+        !moment(this.paymentDateRange[0]).isSame(moment(0))
+      ) {
+        const startDate = this.paymentDateRange[0]
+        const endDate = this.paymentDateRange[1]
+        const selectionRange = moment.range(startDate, endDate)
+        filteredData = _.filter(filteredData, (data) => {
+          return selectionRange.contains(moment(data.created))
+        })
+      }
+      return filteredData
+    },
     attendanceData() {
       const details = this.$store.getters.getStudentInfo(
         this.$route.query["userId"]
       )
-      const filteredData = _.filter(details.attendance, (attendance) => {
+      let filteredData = _.filter(details.attendance, (attendance) => {
         if (this.selectedLessonId) {
           return attendance.lessonId === this.selectedLessonId
         }
         return true
       })
+      if (
+        this.attendanceDateRange.length > 0 &&
+        !moment(this.attendanceDateRange[0]).isSame(moment(0))
+      ) {
+        const startDate = this.attendanceDateRange[0]
+        const endDate = this.attendanceDateRange[1]
+        const selectionRange = moment.range(startDate, endDate)
+        filteredData = _.filter(filteredData, (user) => {
+          for (const attendance of _.values(user.attendance)) {
+            return selectionRange.contains(moment(attendance.timestamp))
+          }
+          return false
+        })
+      }
       return _.map(filteredData, (attendanceData) => ({
         ...attendanceData,
         timestamp: moment(attendanceData.timestamp).format("DD-MM-YY"),
@@ -202,7 +248,8 @@ export default {
         address: "",
       },
       selectedLessonId: "",
-      dateRange: "",
+      attendanceDateRange: [],
+      paymentDateRange: [],
       payment: {
         paymentType: "",
         paymentForm: {

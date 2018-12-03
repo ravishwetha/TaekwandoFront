@@ -77,7 +77,10 @@ export default {
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
 
-      if (this.dateRange.length > 0 && !this.dateRange[0].isSame(moment(0))) {
+      if (
+        this.dateRange.length > 0 &&
+        !moment(this.dateRange[0]).isSame(moment(0))
+      ) {
         const startDate = this.dateRange[0]
         const endDate = this.dateRange[1]
         const selectionRange = moment.range(startDate, endDate)
@@ -161,7 +164,7 @@ export default {
         name: "userDetails",
         query: {
           userId: val.userId,
-          dateRange: this.dateRange.map((date) => date.toISOString()),
+          dateRange: this.dateRange.map((date) => moment(date).toISOString()),
           selectedLessonId: this.selectedLessonId,
         },
       })

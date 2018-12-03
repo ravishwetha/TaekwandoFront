@@ -73,6 +73,12 @@ const studentModule = {
         Vue.set(state.studentData[userId], "lessons", { [key]: lessonId })
       })
     },
+    addPayment(state, { userId, paymentPayload, paymentKey }) {
+      if (state.studentData[userId].payments == undefined) {
+        Vue.set(state.studentData[userId], "payments", {})
+      }
+      Vue.set(state.studentData[userId].payments, paymentKey, paymentPayload)
+    },
   },
   actions: {
     async deleteUser({ commit }, { userId }) {
@@ -86,21 +92,23 @@ const studentModule = {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
         const { chargeId, chargeCreated } = await tokenPaymentAPI(paymentData)
-        console.log(moment.unix(chargeCreated).format("MMM Do YY"))
-        const paymentPayload = {
+        let paymentPayload = {
           chargeId,
           created: moment.unix(chargeCreated).toISOString(),
           price: paymentData.paymentInfo.price,
+          type: paymentData.paymentInfo.type,
+          description: paymentData.paymentInfo.description,
         }
-        await usersRef
+        const paymentKey = await usersRef
           .child(userId)
           .child("payments")
-          .push(paymentPayload)
+          .push(paymentPayload).key
         vm.$notify({
           type: "success",
           title: "Payment success",
           message: "Payment was a success",
         })
+        commit("addPayment", { userId, paymentPayload, paymentKey })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
         commit("modifyStudentDataLoadingStatus", { status: false })
