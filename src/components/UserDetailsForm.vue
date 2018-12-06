@@ -217,7 +217,10 @@ export default {
         this.$route.query["userId"]
       )
       let filteredData = _.filter(details.attendance, (attendance) => {
-        if (this.selectedLessonId) {
+        if (
+          this.selectedLessonId.length !== 0 &&
+          this.selectedLessonId !== undefined
+        ) {
           return attendance.lessonId === this.selectedLessonId
         }
         return true
@@ -359,9 +362,8 @@ export default {
         userId: this.$route.query["userId"],
       })
       this.$notify({
-        title: "User deleted",
-        message: "User has been deleted.",
-        duration: 0,
+        title: "Student Terminated",
+        message: "Student has been terminated.",
       })
       this.$router.push({
         name: "home",

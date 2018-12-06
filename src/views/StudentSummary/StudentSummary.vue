@@ -11,12 +11,26 @@
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
 
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="Current" name="current">
-          <student-summary-table-current v-model="tableData" :dateRange="dateRange"></student-summary-table-current>
+        <el-tab-pane label="Current" :name="ACTIVE">
+          <student-summary-table-current
+            :selectedLessonId="selectedLessonId"
+            v-model="tableData"
+            :dateRange="dateRange"
+          ></student-summary-table-current>
         </el-tab-pane>
-        <el-tab-pane label="Trial" name="trial">Config</el-tab-pane>
-        <el-tab-pane label="Terminated" name="terminated">
-          <student-summary-table-terminated v-model="tableData" :dateRange="dateRange"></student-summary-table-terminated>
+        <el-tab-pane label="Trial" :name="TRIAL">
+          <student-summary-table-trial
+            :selectedLessonId="selectedLessonId"
+            v-model="tableData"
+            :dateRange="dateRange"
+          ></student-summary-table-trial>
+        </el-tab-pane>
+        <el-tab-pane label="Terminated" :name="TERMINATED">
+          <student-summary-table-terminated
+            :selectedLessonId="selectedLessonId"
+            v-model="tableData"
+            :dateRange="dateRange"
+          ></student-summary-table-terminated>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -54,8 +68,10 @@ import DateSelector from "@/components/utils/DateSelector"
 import StudentSummaryHeaderButtons from "./StudentSummaryHeaderButtons"
 import StudentSummaryTableCurrent from "./StudentSummaryTableCurrent"
 import StudentSummaryTableTerminated from "./StudentSummaryTableTerminated"
+import StudentSummaryTableTrial from "./StudentSummaryTableTrial"
 
 import { emailAPI, smsAPI } from "@/common/api"
+import { ACTIVE, TRIAL, TERMINATED } from "@/common/data"
 
 export default {
   name: "AttendancePage",
@@ -69,6 +85,7 @@ export default {
     StudentSummaryHeaderButtons,
     StudentSummaryTableCurrent,
     StudentSummaryTableTerminated,
+    StudentSummaryTableTrial,
   },
   computed: {
     lessonData() {
@@ -99,19 +116,40 @@ export default {
           return false
         })
       }
-      if (this.selectedLessonId) {
+      if (
+        this.selectedLessonId.length !== 0 &&
+        this.selectedLessonId !== undefined
+      ) {
         filteredData = _.filter(filteredData, (user) => {
-          return _.includes(_.values(user.lessons), this.selectedLessonId)
+          return _.includes(
+            _.values(user.lessons),
+            _.last(this.selectedLessonId)
+          )
         })
       }
       filteredData = _.map(filteredData, (data) => ({
         ...data,
         branch: "Haig Branch",
       }))
+      filteredData = _.filter(
+        filteredData,
+        (user) => user.status === this.activeTab || user.status === undefined
+      )
+
       return filteredData
     },
   },
   methods: {
+    routeToUserDetails(val) {
+      this.$router.push({
+        name: "userDetails",
+        query: {
+          userId: val.userId,
+          dateRange: this.dateRange.map((date) => moment(date).toISOString()),
+          selectedLessonId: this.selectedLessonId,
+        },
+      })
+    },
     async sendAMessage() {
       const studentData = this.tableData.map((student) => ({
         email: student.email,
@@ -165,8 +203,8 @@ export default {
   data() {
     return {
       searchString: "",
-      activeTab: "current",
-      selectedLessonId: "",
+      activeTab: ACTIVE,
+      selectedLessonId: [],
       dateRange: [],
       message: {
         messageModalVisible: false,
@@ -175,6 +213,9 @@ export default {
         messageText: "",
       },
       sending: false,
+      ACTIVE,
+      TRIAL,
+      TERMINATED,
     }
   },
 }

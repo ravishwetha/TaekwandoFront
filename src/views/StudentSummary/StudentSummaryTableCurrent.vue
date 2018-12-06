@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import _ from "lodash"
 import Moment from "moment"
 import { extendMoment } from "moment-range"
 const moment = extendMoment(Moment)
@@ -43,6 +44,10 @@ export default {
       required: true,
     },
     value: {
+      type: Array,
+      required: true,
+    },
+    selectedLessonId: {
       type: Array,
       required: true,
     },

@@ -8,6 +8,16 @@ export const DAYS = {
   Saturday: 6,
 }
 
+export const DAYS_ENGLISH = {
+  Sunday: "Sunday",
+  Monday: "Monday",
+  Tuesday: "Tuesday",
+  Wednesday: "Wednesday",
+  Thursday: "Thursday",
+  Friday: "Friday",
+  Saturday: "Saturday",
+}
+
 export const PRESENT = "PRESENT"
 export const ABSENT = "ABSENT"
 export const firebaseConfig = {
@@ -23,5 +33,5 @@ export const CARD = "CARD"
 export const CASHNETS = "CASHNETS"
 
 export const ACTIVE = "ACTIVE"
-export const INACTIVE = "INACTIVE"
+export const TRIAL = "TRIAL"
 export const TERMINATED = "TERMINATED"

@@ -34,13 +34,13 @@
           <el-form-item v-if="!edit" prop="lessonId" label="Lesson">
             <lesson-selector v-model="formData.lessonId" :allLesson="false"></lesson-selector>
           </el-form-item>
-          <el-form-item prop="userType" label="User Type">
+          <el-form-item prop="status" label="User Type">
             <el-switch
-              v-model="formData.userType"
+              v-model="formData.status"
               inactive-text="Active"
               active-text="Trial"
               :inactive-value="ACTIVE"
-              :active-value="INACTIVE"
+              :active-value="TRIAL"
               inactive-color="#13ce66"
             ></el-switch>
           </el-form-item>
@@ -84,7 +84,7 @@
 <script>
 import LessonSelector from "@/components/lessons/LessonSelector"
 import _ from "lodash"
-import { ACTIVE, INACTIVE } from "@/common/data"
+import { ACTIVE, TRIAL } from "@/common/data"
 
 export default {
   components: {
@@ -173,6 +173,7 @@ export default {
         "nric",
         "enrollmentDate",
         "comments",
+        "status",
       ])
       const contactDetails = _.pick(details, ["email", "contact", "address"])
       return {
@@ -183,7 +184,7 @@ export default {
         rules,
         edit: true,
         ACTIVE,
-        INACTIVE,
+        TRIAL,
       }
     }
     return {
@@ -199,12 +200,12 @@ export default {
         contact: "",
         address: "",
         lessonId: "",
-        userType: ACTIVE,
+        status: ACTIVE,
       },
       rules,
       edit: false,
       ACTIVE,
-      INACTIVE,
+      TRIAL,
     }
   },
   methods: {

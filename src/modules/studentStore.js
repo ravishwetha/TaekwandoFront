@@ -4,6 +4,7 @@ import { firebaseDB, tokenPaymentAPI } from "@/common/api"
 import Vue from "vue"
 import { PRESENT } from "@/common/data"
 import { CARD, CASHNETS } from "@/common/data"
+import { TERMINATED } from "@/common/data"
 
 export const usersRef = firebaseDB.database().ref("Users")
 
@@ -84,7 +85,8 @@ const studentModule = {
   actions: {
     async deleteUser({ commit }, { userId }) {
       try {
-        await usersRef.child(userId).remove()
+        await usersRef.child(userId).update({ status: TERMINATED })
+        // TODO: DELETE THEM FROM LESSON
       } catch (e) {
         console.log(e)
       }
