@@ -6,25 +6,19 @@
           <lesson-selector style="padding-right: 20px;" v-model="selectedLessonId"></lesson-selector>
           <date-selector v-model="dateRange"></date-selector>
         </div>
-        <div id="headerDiv">
-          <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
-          <el-button @click="routeToAddUser()" type="primary" round>Add student</el-button>
-          <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
-          <el-button @click="message.messageModalVisible = true" type="primary" round>Send a message</el-button>
-        </div>
+        <student-summary-header-buttons :openSendMessageModal="openSendMessageModal"></student-summary-header-buttons>
       </div>
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
-      <el-table v-loading="isLoading" stripe max-height="730" :data="tableData" style="width: 100%">
-        <el-table-column prop="name" label="Name"></el-table-column>
-        <el-table-column prop="presentCount" label="Total Present Count"></el-table-column>
-        <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
-        <el-table-column label="Operations" fixed="right">
-          <template slot-scope="scope">
-            <el-button @click="routeToUserDetails(scope.row)" type="text" size="small">Details</el-button>
-          </template>
-        </el-table-column>
-        <el-table-column prop="branch" label="Branch"></el-table-column>
-      </el-table>
+
+      <el-tabs v-model="activeTab">
+        <el-tab-pane label="Current" name="current">
+          <student-summary-table-current v-model="tableData" :dateRange="dateRange"></student-summary-table-current>
+        </el-tab-pane>
+        <el-tab-pane label="Trial" name="trial">Config</el-tab-pane>
+        <el-tab-pane label="Terminated" name="terminated">
+          <student-summary-table-terminated v-model="tableData" :dateRange="dateRange"></student-summary-table-terminated>
+        </el-tab-pane>
+      </el-tabs>
     </el-main>
     <el-dialog
       :show-close="!this.sending"
@@ -54,11 +48,15 @@
 import _ from "lodash"
 import Moment from "moment"
 import { extendMoment } from "moment-range"
+const moment = extendMoment(Moment)
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
+import StudentSummaryHeaderButtons from "./StudentSummaryHeaderButtons"
+import StudentSummaryTableCurrent from "./StudentSummaryTableCurrent"
+import StudentSummaryTableTerminated from "./StudentSummaryTableTerminated"
+
 import { emailAPI, smsAPI } from "@/common/api"
 
-const moment = extendMoment(Moment)
 export default {
   name: "AttendancePage",
   beforeCreate: async function() {
@@ -68,8 +66,18 @@ export default {
   components: {
     LessonSelector,
     DateSelector,
+    StudentSummaryHeaderButtons,
+    StudentSummaryTableCurrent,
+    StudentSummaryTableTerminated,
   },
   computed: {
+    lessonData() {
+      return [
+        { name: "All lessons", id: "" },
+        ...this.$store.getters.getAllLessonData,
+      ]
+    },
+
     tableData() {
       let filteredData = _.filter(
         this.$store.getters.getAllStudentsInfo,
@@ -101,15 +109,6 @@ export default {
         branch: "Haig Branch",
       }))
       return filteredData
-    },
-    lessonData() {
-      return [
-        { name: "All lessons", id: "" },
-        ...this.$store.getters.getAllLessonData,
-      ]
-    },
-    isLoading() {
-      return this.$store.getters.getStudentDataLoading
     },
   },
   methods: {
@@ -159,33 +158,14 @@ export default {
       this.sending = false
       this.message.messageModalVisible = false
     },
-    routeToUserDetails(val) {
-      this.$router.push({
-        name: "userDetails",
-        query: {
-          userId: val.userId,
-          dateRange: this.dateRange.map((date) => moment(date).toISOString()),
-          selectedLessonId: this.selectedLessonId,
-        },
-      })
-    },
-    routeToAttendancePage() {
-      this.$router.push({
-        name: "attendance",
-      })
-    },
-    routeToAddLesson() {
-      this.$router.push("newLesson")
-    },
-    routeToAddUser() {
-      this.$router.push({
-        name: "signup",
-      })
+    openSendMessageModal() {
+      this.message.messageModalVisible = true
     },
   },
   data() {
     return {
       searchString: "",
+      activeTab: "current",
       selectedLessonId: "",
       dateRange: [],
       message: {

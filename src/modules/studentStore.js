@@ -3,6 +3,7 @@ import moment from "moment"
 import { firebaseDB, tokenPaymentAPI } from "@/common/api"
 import Vue from "vue"
 import { PRESENT } from "@/common/data"
+import { CARD, CASHNETS } from "@/common/data"
 
 export const usersRef = firebaseDB.database().ref("Users")
 
@@ -88,32 +89,32 @@ const studentModule = {
         console.log(e)
       }
     },
-    async addSinglePayment({ commit }, { paymentData, userId, vm }) {
+    async addSinglePayment({ commit }, { type, paymentData, userId, vm }) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        const { chargeId, chargeCreated } = await tokenPaymentAPI(paymentData)
-        let paymentPayload = {
-          chargeId,
-          created: moment.unix(chargeCreated).toISOString(),
-          price: paymentData.paymentInfo.price,
-          type: paymentData.paymentInfo.type,
-          description: paymentData.paymentInfo.description,
+        if (type == CARD) {
+          const { paymentKey, paymentPayload } = await addCardPayment(
+            paymentData,
+            userId
+          )
+          commit("addPayment", { userId, paymentPayload, paymentKey })
+        } else {
+          const { paymentKey, paymentPayload } = await addCashNetsPayment(
+            paymentData,
+            userId
+          )
+          commit("addPayment", { userId, paymentPayload, paymentKey })
         }
-        const paymentKey = await usersRef
-          .child(userId)
-          .child("payments")
-          .push(paymentPayload).key
         vm.$notify({
           type: "success",
           title: "Payment success",
           message: "Payment was a success",
         })
-        commit("addPayment", { userId, paymentPayload, paymentKey })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
         commit("modifyStudentDataLoadingStatus", { status: false })
         vm.$notify({
-          title: "Card error",
+          title: "Payment error",
           message: e.response.data,
           type: "error",
         })
@@ -192,6 +193,38 @@ const studentModule = {
       )
     },
   },
+}
+
+const addCardPayment = async (paymentData, userId) => {
+  const { chargeId, chargeCreated } = await tokenPaymentAPI(paymentData)
+  const paymentPayload = {
+    mode: CARD,
+    chargeId,
+    created: moment.unix(chargeCreated).toISOString(),
+    price: paymentData.paymentInfo.price,
+    type: paymentData.paymentInfo.type,
+    description: paymentData.paymentInfo.description,
+  }
+  const paymentKey = await usersRef
+    .child(userId)
+    .child("payments")
+    .push(paymentPayload).key
+  return { paymentKey, paymentPayload }
+}
+
+const addCashNetsPayment = async (paymentData, userId) => {
+  const paymentPayload = {
+    mode: CASHNETS,
+    created: moment().toISOString(),
+    price: paymentData.paymentInfo.price,
+    type: paymentData.paymentInfo.type,
+    description: paymentData.paymentInfo.description,
+  }
+  const paymentKey = await usersRef
+    .child(userId)
+    .child("payments")
+    .push(paymentPayload).key
+  return { paymentKey, paymentPayload }
 }
 
 export default studentModule

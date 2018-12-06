@@ -1,6 +1,6 @@
 import Vue from "vue"
 import Router from "vue-router"
-import StudentSummary from "@/views/StudentSummary"
+import StudentSummary from "@/views/StudentSummary/StudentSummary"
 import Login from "@/components/Login"
 import NewLessonForm from "@/components/NewLessonForm"
 import UserDetailsForm from "@/components/UserDetailsForm"
@@ -12,14 +12,14 @@ Vue.use(Router)
 const router = new Router({
   routes: [
     {
-      path: "/",
-      name: "home",
-      component: StudentSummary,
-    },
-    {
       path: "/signup",
       name: "signup",
       component: SignupForm,
+    },
+    {
+      path: "/",
+      name: "home",
+      component: StudentSummary,
     },
     {
       path: "/edit",

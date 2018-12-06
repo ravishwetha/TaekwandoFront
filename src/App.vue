@@ -1,37 +1,26 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <el-row style="width: 98%;">
-        <el-col :span="8" style="padding-top: 7%;">
-          <span v-if="loggedIn" id="header">
-            <el-select disabled>
-              <el-option label="Haig Branch"></el-option>
-            </el-select>
-          </span>
-        </el-col>
-        <el-col :offset="1" :span="8">
-          <router-link to="/">
-            <img src="@/assets/tkdlogo.jpg" style="width: 50%; height: 50%;">
-          </router-link>
-        </el-col>
-        <el-col :span="8"></el-col>
-      </el-row>
-    </div>
+    <header-t-k-d :loggedIn="loggedIn"></header-t-k-d>
     <router-view/>
   </div>
 </template>
 
 <script>
+import HeaderTKD from "@/components/common/Header.vue"
 export default {
-  methods: {
-    routeToHome() {
-      this.$router.push("/")
-    },
+  components: {
+    HeaderTKD,
   },
+  methods: {},
   computed: {
     loggedIn() {
       return this.$store.getters.getLoggedInStatus
     },
+  },
+  data() {
+    return {
+      activeTab: "current",
+    }
   },
 }
 </script>
@@ -43,17 +32,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   margin-top: 60px;
-}
-
-#nav {
-  display: flex;
-
-  justify-content: space-around;
-  padding-bottom: 20px;
-}
-
-#header {
-  display: flex;
-  justify-content: left;
 }
 </style>

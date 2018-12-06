@@ -21,3 +21,7 @@ export const firebaseConfig = {
 
 export const CARD = "CARD"
 export const CASHNETS = "CASHNETS"
+
+export const ACTIVE = "ACTIVE"
+export const INACTIVE = "INACTIVE"
+export const TERMINATED = "TERMINATED"

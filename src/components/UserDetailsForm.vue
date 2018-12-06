@@ -46,8 +46,12 @@
       </el-col>
     </el-main>
     <el-footer>
-      <div class="comments">
-        <span class="commentsHeader">Comments</span>
+      <div>
+        <span id="commentsHeader">Comments</span>
+        <br>
+        <div id="comments">
+          <span id="commentsText">{{userDetails.comments}}</span>
+        </div>
         <hr>
         <el-container>
           <el-col :span="18">
@@ -73,7 +77,8 @@
                 <date-selector style="margin-left: 20px;" v-model="paymentDateRange"></date-selector>
               </el-row>
               <el-table max-height="500" :data="paymentData" style="width: 90%">
-                <el-table-column prop="type" label="Payment Type"></el-table-column>
+                <el-table-column prop="mode" label="Payment mode"></el-table-column>
+                <el-table-column prop="type" label="Item paid for"></el-table-column>
                 <el-table-column prop="description" label="Payment Description"></el-table-column>
                 <el-table-column prop="price" label="Amount"></el-table-column>
               </el-table>
@@ -112,7 +117,7 @@
       :visible.sync="payment.paymentDialogVisible"
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
-        <el-form-item label="Type Of Payment" prop="type">
+        <el-form-item label="Item paying for" prop="type">
           <el-input v-model="payment.paymentForm.type"></el-input>
         </el-form-item>
         <el-form-item label="Description">
@@ -123,12 +128,23 @@
             <template slot="prepend">$</template>
           </el-input>
         </el-form-item>
-        <el-form-item label="Card Information">
+        <el-form-item v-if="payment.paymentType === CARD" label="Card Information">
           <card :stripe="stripeKey"></card>
         </el-form-item>
       </el-form>
       <span slot="footer">
-        <el-button :loading="this.paymentLoading" type="primary" @click="pay('paymentForm')">Pay</el-button>
+        <el-button
+          v-if="payment.paymentType === CARD"
+          :loading="this.paymentLoading"
+          type="primary"
+          @click="payCard('paymentForm')"
+        >Pay</el-button>
+        <el-button
+          v-else
+          :loading="this.paymentLoading"
+          type="primary"
+          @click="payCash('paymentForm')"
+        >Pay</el-button>
         <el-button v-if="!this.paymentLoading" @click="payment.paymentDialogVisible = false">Cancel</el-button>
       </span>
     </el-dialog>
@@ -282,7 +298,7 @@ export default {
     }
   },
   methods: {
-    pay(formName) {
+    payCard(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const token = await createToken()
@@ -293,12 +309,32 @@ export default {
             })
           }
           const paymentDataAndVm = {
+            type: CARD,
             paymentData: {
               paymentInfo: {
                 ...this.payment.paymentForm,
                 userEmail: this.contactDetails.email,
               },
               paymentToken: token.token.id,
+            },
+            userId: this.$route.query["userId"],
+            vm: this,
+          }
+          await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
+          this.payment.paymentDialogVisible = false
+        }
+      })
+    },
+    payCash(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const paymentDataAndVm = {
+            type: CASHNETS,
+            paymentData: {
+              paymentInfo: {
+                ...this.payment.paymentForm,
+                userEmail: this.contactDetails.email,
+              },
             },
             userId: this.$route.query["userId"],
             vm: this,
@@ -357,6 +393,7 @@ export default {
 .commentsHeader {
   display: inline-block;
   text-align: center;
+  padding-bottom: 10px;
 }
 .el-main {
   display: flex;
@@ -372,6 +409,20 @@ export default {
 #commentsRow {
   margin-bottom: 20px;
   margin-top: 20px;
+}
+
+#comments {
+  margin-top: 10px;
+  border: 1px solid black;
+}
+
+#commentsHeader {
+  font-size: 25px;
+  padding-bottom: 10px;
+}
+
+#commentsText {
+  font-size: 18px;
 }
 
 #detailsText {

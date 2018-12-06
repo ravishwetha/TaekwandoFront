@@ -237,13 +237,6 @@ export default {
 </script>
 
 <style scoped>
-#header {
-  display: flex;
-  justify-content: space-evenly;
-  padding-bottom: 20px;
-  padding-top: 20px;
-}
-
 #center {
   padding-top: 50px;
   padding-bottom: 50px;
