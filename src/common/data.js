@@ -35,3 +35,6 @@ export const CASHNETS = "CASHNETS"
 export const ACTIVE = "ACTIVE"
 export const TRIAL = "TRIAL"
 export const TERMINATED = "TERMINATED"
+
+export const MISCELLEANEOUS = "MISCELLEANEOUS"
+export const LESSONS = "LESSONS"

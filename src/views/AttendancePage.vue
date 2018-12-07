@@ -30,7 +30,7 @@
                 type="primary"
                 @click="modalVisible = true"
                 :disabled="lessonValue === ``"
-              >Other students</el-button>
+              >Make up</el-button>
             </el-col>
             <el-col id="presentAbsent" span="6">
               <span>Present count : {{presentCount}} / {{tableData.length}}</span>
@@ -93,6 +93,7 @@
 import moment from "moment"
 import _ from "lodash"
 import { DAYS, PRESENT, ABSENT } from "@/common/data"
+import { absentSmsAPI } from "@/common/api"
 import Vue from "vue"
 export default {
   beforeMount() {
@@ -195,7 +196,7 @@ export default {
     takeAttendanceUserNotInLesson() {
       const userIdAndPresence = _.map(this.studentsAddedToLesson, (userId) => ({
         userId: userId,
-        presence: PRESENT,
+        presence: "MAKEUP",
       }))
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: userIdAndPresence,
@@ -227,12 +228,16 @@ export default {
           return null
         })
       )
+      const absenteeNumbers = _.map(absent, (absentee) => {
+        const details = this.$store.getters.getStudentInfo(absentee.userId)
+        return details.contact
+      })
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: present.concat(absent),
         lessonId: this.lessonValue,
         studentsToBeUpdated: this.toBeUpdated,
       })
-
+      absentSmsAPI({ absenteeNumbers })
       this.$router.push({
         name: "home",
       })

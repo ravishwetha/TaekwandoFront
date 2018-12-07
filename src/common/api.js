@@ -22,6 +22,14 @@ export const loginAPI = async ({ username, password }) => {
     .then((r) => r.data)
 }
 
+export const priceListAPI = async () => {
+  return await firebase
+    .database()
+    .ref("priceList")
+    .once("value")
+    .then((snapshot) => snapshot.val())
+}
+
 export const emailAPI = async ({ studentData, messageText }) => {
   const api = await axiosConfig()
   return api
@@ -38,6 +46,15 @@ export const smsAPI = async ({ studentData, messageText }) => {
     .post("/sms", {
       studentData,
       messageText,
+    })
+    .then((r) => r.data)
+}
+
+export const absentSmsAPI = async ({ phoneNumbers }) => {
+  const api = await axiosConfig()
+  return api
+    .post("/sms/absent", {
+      phoneNumbers,
     })
     .then((r) => r.data)
 }

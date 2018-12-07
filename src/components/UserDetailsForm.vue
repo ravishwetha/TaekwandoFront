@@ -61,7 +61,6 @@
             <el-row id="commentsRow">
               <el-row>
                 <lesson-selector v-model="selectedLessonId"></lesson-selector>
-                <!-- <date-selector style="margin-left: 20px;" v-model="attendanceDateRange"></date-selector> -->
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
@@ -105,6 +104,7 @@
             <el-row id="commentsRow">
               <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
             </el-row>
+            <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
             <lesson-table :userId="userId"></lesson-table>
           </el-col>
         </el-container>
@@ -119,15 +119,10 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item label="Item paying for" prop="type">
-          <el-input v-model="payment.paymentForm.type"></el-input>
+          <el-cascader :options="miscPaymentCascaderOptions" v-model="payment.paymentForm.type"></el-cascader>
         </el-form-item>
         <el-form-item label="Description">
           <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
-        </el-form-item>
-        <el-form-item label="Price" prop="price">
-          <el-input type="number" v-model="payment.paymentForm.price">
-            <template slot="prepend">$</template>
-          </el-input>
         </el-form-item>
         <el-form-item v-if="payment.paymentType === CARD" label="Card Information">
           <card :stripe="stripeKey"></card>
@@ -138,13 +133,13 @@
           v-if="payment.paymentType === CARD"
           :loading="this.paymentLoading"
           type="primary"
-          @click="payCard('paymentForm')"
+          @click="payCardMisc('paymentForm')"
         >Pay</el-button>
         <el-button
           v-else
           :loading="this.paymentLoading"
           type="primary"
-          @click="payCash('paymentForm')"
+          @click="payCashMisc('paymentForm')"
         >Pay</el-button>
         <el-button v-if="!this.paymentLoading" @click="payment.paymentDialogVisible = false">Cancel</el-button>
       </span>
@@ -160,6 +155,7 @@ import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"
 import { CARD, CASHNETS } from "@/common/data"
 import LessonTable from "@/components/lessons/LessonTable"
+import { MISCELLEANEOUS } from "../common/data"
 
 export default {
   components: {
@@ -168,7 +164,7 @@ export default {
     Card,
     LessonTable,
   },
-  mounted() {
+  async mounted() {
     const { selectedLessonId, dateRange } = this.$route.query
     const details = this.$store.getters.getStudentInfo(
       this.$route.query["userId"]
@@ -213,7 +209,15 @@ export default {
           return selectionRange.contains(moment(data.created))
         })
       }
-      return filteredData
+      const displayData = _.map(filteredData, (data) => {
+        const paymentType = data.type
+        let parsedType = ""
+        for (const type of paymentType) {
+          parsedType = parsedType + `${type} / `
+        }
+        return { ...data, type: parsedType }
+      })
+      return displayData
     },
     attendanceData() {
       const details = this.$store.getters.getStudentInfo(
@@ -252,6 +256,25 @@ export default {
     paymentLoading() {
       return this.$store.getters.getStudentDataLoading
     },
+    miscPaymentCascaderOptions() {
+      const priceList = this.$store.getters.getPriceList[MISCELLEANEOUS]
+      const options = _.map(priceList, (value, category) => {
+        const subCategory = _.map(value, (price, subcategory) => {
+          const label = `${subcategory}, $${price}`
+          const subCategoryOptions = {
+            label,
+            value: subcategory,
+          }
+          return subCategoryOptions
+        })
+        return {
+          label: category,
+          value: category,
+          children: subCategory,
+        }
+      })
+      return options
+    },
   },
   data() {
     return {
@@ -277,7 +300,6 @@ export default {
         paymentForm: {
           type: "",
           description: "",
-          price: "",
         },
         rules: {
           type: [
@@ -305,7 +327,7 @@ export default {
     }
   },
   methods: {
-    payCard(formName) {
+    payCardMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const token = await createToken()
@@ -315,11 +337,18 @@ export default {
               message: token.error.message,
             })
           }
+          const priceList = this.$store.getters.getPriceList
+          let price = priceList[MISCELLEANEOUS]
+          for (const key of this.payment.paymentForm.type) {
+            price = price[key]
+          }
           const paymentDataAndVm = {
             type: CARD,
             paymentData: {
               paymentInfo: {
                 ...this.payment.paymentForm,
+                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type, price],
+
                 userEmail: this.contactDetails.email,
               },
               paymentToken: token.token.id,
@@ -332,20 +361,27 @@ export default {
         }
       })
     },
-    payCash(formName) {
+    payCashMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
+          const priceList = this.$store.getters.getPriceList
+          let price = priceList[MISCELLEANEOUS]
+          for (const key of this.payment.paymentForm.type) {
+            price = price[key]
+          }
           const paymentDataAndVm = {
             type: CASHNETS,
             paymentData: {
               paymentInfo: {
                 ...this.payment.paymentForm,
+                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type, price],
                 userEmail: this.contactDetails.email,
               },
             },
             userId: this.$route.query["userId"],
             vm: this,
           }
+
           await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
           this.payment.paymentDialogVisible = false
         }

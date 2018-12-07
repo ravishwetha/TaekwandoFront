@@ -8,6 +8,23 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-button style="margin-top: 20px" @click="addDialogVisible = true">Add student into lesson</el-button>
+    <el-dialog title="Add student into lesson" :visible.sync="addDialogVisible">
+      <span>Select which lesson to add student into</span>
+      <br>
+      <el-select v-model="lessonAddingTo" style="margin-top: 20px">
+        <el-option
+          v-for="lesson in swapLessonData"
+          :key="lesson.id"
+          :value="lesson.id"
+          :label="lesson.name"
+        ></el-option>
+      </el-select>
+      <span slot="footer">
+        <el-button type="primary" @click="addUserToLesson">Add</el-button>
+        <el-button @click="addDialogVisible = false">Cancel</el-button>
+      </span>
+    </el-dialog>
     <el-dialog title="Swap lesson" :visible.sync="swapDialogVisible">
       <span>Select which lesson to swap to from below</span>
       <br>
@@ -53,6 +70,8 @@ export default {
       lessonIdToBeSwapped: "",
       lessonSwappingTo: "",
       swapDialogVisible: false,
+      addDialogVisible: false,
+      lessonAddingTo: "",
     }
   },
   methods: {
@@ -86,6 +105,13 @@ export default {
       }
       this.$store.dispatch("swapLessonForUser", swapLessonPayload)
       this.swapDialogVisible = false
+    },
+    addUserToLesson() {
+      this.$store.dispatch("addUsersToLesson", {
+        userIds: [this.userId],
+        lessonId: this.lessonAddingTo,
+      })
+      this.addDialogVisible = false
     },
   },
 }

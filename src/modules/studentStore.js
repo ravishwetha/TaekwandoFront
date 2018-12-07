@@ -26,6 +26,19 @@ const studentModule = {
             ...userData,
             lastPayment: "Have not made any payments",
           }
+        } else {
+          const paymentObjects = _.values(value.payments)
+          const sortedAscendingPayment = _.sortBy(paymentObjects, (payment) => {
+            return moment(payment.created).unix()
+          })
+          const lastPayment = _.last(sortedAscendingPayment)
+          const lastPaymentDate = moment(lastPayment.created).format(
+            "DD-MM-YYYY"
+          )
+          userData = {
+            ...userData,
+            lastPayment: lastPaymentDate,
+          }
         }
         if (!value.attendance) {
           return {
@@ -206,8 +219,8 @@ const addCardPayment = async (paymentData, userId) => {
     mode: CARD,
     chargeId,
     created: moment.unix(chargeCreated).toISOString(),
-    price: paymentData.paymentInfo.price,
-    type: paymentData.paymentInfo.type,
+    price: _.last(paymentData.paymentInfo.type),
+    type: _.initial(paymentData.paymentInfo.type),
     description: paymentData.paymentInfo.description,
   }
   const paymentKey = await usersRef
@@ -221,8 +234,8 @@ const addCashNetsPayment = async (paymentData, userId) => {
   const paymentPayload = {
     mode: CASHNETS,
     created: moment().toISOString(),
-    price: paymentData.paymentInfo.price,
-    type: paymentData.paymentInfo.type,
+    price: _.last(paymentData.paymentInfo.type),
+    type: _.initial(paymentData.paymentInfo.type),
     description: paymentData.paymentInfo.description,
   }
   const paymentKey = await usersRef

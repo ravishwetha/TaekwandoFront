@@ -4,7 +4,7 @@
       <div id="lessonAndDate">
         <div>
           <lesson-selector style="padding-right: 20px;" v-model="selectedLessonId"></lesson-selector>
-          <date-selector v-model="dateRange"></date-selector>
+          <!-- <date-selector v-model="dateRange"></date-selector> -->
         </div>
         <student-summary-header-buttons :openSendMessageModal="openSendMessageModal"></student-summary-header-buttons>
       </div>
@@ -78,6 +78,7 @@ export default {
   beforeCreate: async function() {
     await this.$store.dispatch("loadStudentsData")
     await this.$store.dispatch("loadLessonsData")
+    await this.$store.dispatch("loadPriceList")
   },
   components: {
     LessonSelector,

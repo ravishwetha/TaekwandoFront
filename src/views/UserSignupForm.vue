@@ -215,7 +215,6 @@ export default {
           if (userFormValid && contactFormValid) {
             let payload = {
               ...this.formData,
-              contact: "+65" + this.formData.contact,
             }
             this.$store.dispatch("addUser", payload)
             this.$router.push({
