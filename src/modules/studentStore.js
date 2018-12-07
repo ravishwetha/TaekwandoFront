@@ -75,6 +75,9 @@ const studentModule = {
         Vue.set(state.studentData[userId], "lessons", { [key]: lessonId })
       })
     },
+    removeLessonFromUser(state, { userId, userLessonIdToBeDeletedKey }) {
+      Vue.delete(state.studentData[userId].lessons, userLessonIdToBeDeletedKey)
+    },
     addPayment(state, { userId, paymentPayload, paymentKey }) {
       if (state.studentData[userId].payments == undefined) {
         Vue.set(state.studentData[userId], "payments", {})

@@ -1,5 +1,6 @@
 import pyrebase
 import xlrd
+import json
 
 config = {
     "apiKey": "AIzaSyBHWG0CQwlwct1F0-_CnCrjN3r-aYiNuRY",
@@ -9,10 +10,8 @@ config = {
     "storageBucket": "taekwandobackend-d1edf.appspot.com",
     "messagingSenderId": "1011970784530"
 }
-
 firebase = pyrebase.initialize_app(config)
 
-usersRef = firebase.database().child("Users")
 
 workbook = xlrd.open_workbook("./data/FILTERED PAYMENT FEE RECORDS 1km.xlsx")
 
@@ -34,7 +33,9 @@ for row in range(masterList.nrows):
             "timingSched": masterList.cell_value(row, 11),
             "remarks": masterList.cell_value(row, 12),
             "uniform": masterList.cell_value(row, 13),
-            "belt": masterList.cell_value(row, 14)
+            "belt": masterList.cell_value(row, 14),
+            "status": "ACTIVE"
+
         }
         if masterList.cell_value(row, 3) != "":
             data.update({"enrollmentDate": xlrd.xldate_as_datetime(
@@ -52,3 +53,6 @@ for row in range(masterList.nrows):
                 "dob": '',
             })
         firebase.database().child("Users").push(data)
+with open("./data/priceList.json") as f:
+    data = json.load(f)
+    firebase.database().child("priceList").set(data)

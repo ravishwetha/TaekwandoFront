@@ -2,6 +2,7 @@ import _ from "lodash"
 import { firebaseDB } from "@/common/api"
 import { usersRef } from "@/modules/studentStore"
 import Vue from "vue"
+import moment from "moment"
 export const lessonsRef = firebaseDB.database().ref("Lessons")
 
 const lessonsModule = {
@@ -18,8 +19,11 @@ const lessonsModule = {
     },
     addUsersToLesson(state, { addUsersToLesson, lessonId }) {
       addUsersToLesson.forEach(({ key, userId }) => {
-        Vue.set(state.lessons[lessonId], key, userId)
+        Vue.set(state.lessons[lessonId].users, key, userId)
       })
+    },
+    removeUserFromLesson(state, { lessonId, lessonUserIdKey }) {
+      Vue.delete(state.lessons[lessonId].users, lessonUserIdKey) //NEED TO FIX
     },
   },
   actions: {
@@ -38,6 +42,64 @@ const lessonsModule = {
       commit("createNewLesson", { ...formData, id: newLessonId })
     },
 
+    async swapLessonForUser(
+      { dispatch },
+      {
+        userLessonIdToBeSwappedKey,
+        oldlessonId,
+        newLessonId,
+        userId,
+        lessonUserIdKey,
+      }
+    ) {
+      await dispatch("removeUserFromLesson", {
+        userLessonIdToBeDeletedKey: userLessonIdToBeSwappedKey,
+        lessonId: oldlessonId,
+        userId,
+        lessonUserIdKey,
+      })
+
+      await dispatch("addUsersToLesson", {
+        lessonId: newLessonId,
+        userIds: [userId],
+      })
+      await usersRef
+        .child(userId)
+        .child("transfers")
+        .push({
+          timestamp: moment().toISOString(),
+          from: oldlessonId,
+          to: newLessonId,
+        })
+    },
+    async removeUserFromLesson(
+      { commit },
+      { userLessonIdToBeDeletedKey, lessonId, userId, lessonUserIdKey }
+    ) {
+      console.log(userLessonIdToBeDeletedKey)
+      console.log(lessonId)
+      console.log(userId)
+      console.log(lessonUserIdKey)
+
+      await lessonsRef
+        .child(lessonId)
+        .child("users")
+        .child(lessonUserIdKey)
+        .remove()
+      await usersRef
+        .child(userId)
+        .child("lessons")
+        .child(userLessonIdToBeDeletedKey)
+        .remove()
+      commit("removeUserFromLesson", {
+        lessonId,
+        lessonUserIdKey,
+      })
+      commit("removeLessonFromUser", {
+        userId,
+        userLessonIdToBeDeletedKey,
+      })
+    },
     async addUsersToLesson({ commit }, { userIds, lessonId }) {
       const lessonPromises = userIds.map((userId) => {
         const key = lessonsRef

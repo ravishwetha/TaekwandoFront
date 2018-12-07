@@ -10,7 +10,7 @@
         <hr>
         <el-col id="center">
           <el-row :gutter="10">
-            <el-col span="8">
+            <el-col span="6">
               <el-select
                 @change="updatePresentAbsent"
                 v-model="lessonValue"
@@ -24,18 +24,18 @@
                 ></el-option>
               </el-select>
             </el-col>
-            <!-- <el-col span="6">
+            <el-col span="6">
               <el-button
                 id="newStudentDiv"
                 type="primary"
                 @click="modalVisible = true"
                 :disabled="lessonValue === ``"
-              >Add a new student to class</el-button>
-            </el-col>-->
-            <el-col id="presentAbsent" span="8">
+              >Other students</el-button>
+            </el-col>
+            <el-col id="presentAbsent" span="6">
               <span>Present count : {{presentCount}} / {{tableData.length}}</span>
             </el-col>
-            <el-col id="presentAbsent" span="8">
+            <el-col id="presentAbsent" span="6">
               <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
             </el-col>
           </el-row>
@@ -72,17 +72,17 @@
         </div>
       </el-main>
     </el-container>
-    <el-dialog center width="70%" :visible.sync="modalVisible" title="Add users to lesson">
+    <el-dialog center width="70%" :visible.sync="modalVisible" title="Add attendance for users">
       <div id="addStudentTransferDiv">
         <el-transfer
           id="addStudentTransfer"
           v-model="studentsAddedToLesson"
           :data="studentData"
-          :titles="['Unassigned', 'To be added']"
+          :titles="['Unassigned', 'Present']"
         ></el-transfer>
       </div>
       <span slot="footer">
-        <el-button @click="addToLesson" type="primary">Add users to lesson</el-button>
+        <el-button @click="takeAttendanceUserNotInLesson" type="primary">Take attendance</el-button>
         <el-button @click="modalVisible = false">Cancel</el-button>
       </span>
     </el-dialog>
@@ -192,10 +192,15 @@ export default {
         query: { userId: "NEW" },
       })
     },
-    addToLesson() {
-      this.$store.dispatch("addUsersToLesson", {
-        userIds: this.studentsAddedToLesson,
+    takeAttendanceUserNotInLesson() {
+      const userIdAndPresence = _.map(this.studentsAddedToLesson, (userId) => ({
+        userId: userId,
+        presence: PRESENT,
+      }))
+      this.$store.dispatch("submitAttendance", {
+        userIdsAndPresence: userIdAndPresence,
         lessonId: this.lessonValue,
+        studentsToBeUpdated: this.toBeUpdated,
       })
       this.modalVisible = false
     },
@@ -240,7 +245,6 @@ export default {
 #center {
   padding-top: 50px;
   padding-bottom: 50px;
-  padding-left: 15%;
 }
 
 #presentAbsent {

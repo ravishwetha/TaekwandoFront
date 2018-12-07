@@ -61,7 +61,7 @@
             <el-row id="commentsRow">
               <el-row>
                 <lesson-selector v-model="selectedLessonId"></lesson-selector>
-                <date-selector style="margin-left: 20px;" v-model="attendanceDateRange"></date-selector>
+                <!-- <date-selector style="margin-left: 20px;" v-model="attendanceDateRange"></date-selector> -->
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
@@ -105,6 +105,7 @@
             <el-row id="commentsRow">
               <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
             </el-row>
+            <lesson-table :userId="userId"></lesson-table>
           </el-col>
         </el-container>
       </div>
@@ -158,12 +159,14 @@ import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"
 import { CARD, CASHNETS } from "@/common/data"
+import LessonTable from "@/components/lessons/LessonTable"
 
 export default {
   components: {
     LessonSelector,
     DateSelector,
     Card,
+    LessonTable,
   },
   mounted() {
     const { selectedLessonId, dateRange } = this.$route.query
@@ -298,6 +301,7 @@ export default {
       CARD,
       CASHNETS,
       stripeKey: process.env.VUE_APP_STRIPE_KEY,
+      userId: this.$route.query["userId"],
     }
   },
   methods: {

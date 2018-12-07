@@ -1,7 +1,4 @@
 <template>
-  <!-- <el-select :value="value" @input="(event) => $emit('input', event)">
-    <el-option v-for="item in lessonData" :key="item.id" :value="item.id" :label="item.name"></el-option>
-  </el-select>-->
   <el-cascader
     :clearable="true"
     expand-trigger="hover"
