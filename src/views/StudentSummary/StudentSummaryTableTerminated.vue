@@ -2,6 +2,7 @@
   <div>
     <el-table v-loading="isLoading" stripe max-height="730" :data="value" style="width: 100%">
       <el-table-column prop="name" label="Name"></el-table-column>
+      <el-table-column prop="terminatedTime" label="Terminated on"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
           <el-button @click="routeToUserDetails(scope.row)" type="text" size="small">Details</el-button>

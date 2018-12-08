@@ -64,3 +64,9 @@ export const tokenPaymentAPI = async (paymentInfo) => {
 
   return api.post("/payment/token", paymentInfo).then((r) => r.data)
 }
+
+export const cardRegistrationAPI = async ({ cardToken }) => {
+  const api = await axiosConfig()
+
+  return api.post("/payment/registration", { cardToken }).then((r) => r.data)
+}

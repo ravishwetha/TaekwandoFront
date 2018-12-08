@@ -37,6 +37,16 @@
             <span>{{contactDetails.address}}</span>
           </el-form-item>
         </el-form>
+        <div style="margin-bottom: 20px">
+          <span>Payment plan currently enrolled:</span>
+          <el-cascader
+            style="margin-right: 10px; margin-left: 10px"
+            :options="lessonsPaymentCascaderOptions"
+            v-model="userDetails.paymentPlan"
+          ></el-cascader>
+          <el-button @click="updatePaymentPlan">Select/Update payment plan</el-button>
+          <br>
+        </div>
         <div style="margin-left: 200px; margin-bottom: 50px">
           <el-button @click="editUser()" style="width: 80%" type="success">Edit User</el-button>
         </div>
@@ -77,7 +87,8 @@
               </el-row>
               <el-table max-height="500" :data="paymentData" style="width: 90%">
                 <el-table-column prop="mode" label="Payment mode"></el-table-column>
-                <el-table-column prop="type" label="Item paid for"></el-table-column>
+                <el-table-column width="500" prop="type" label="Item paid for"></el-table-column>
+                <el-table-column prop="created" label="Paid on"></el-table-column>
                 <el-table-column prop="description" label="Payment Description"></el-table-column>
                 <el-table-column prop="price" label="Amount"></el-table-column>
               </el-table>
@@ -99,11 +110,19 @@
               :width="60"
             ></el-switch>
             <el-row v-if="payment.paymentType === CASHNETS" id="commentsRow">
-              <el-button>Add Payment</el-button>
+              <el-button @click="payment.paymentDialogLessonVisible = true">Add Payment</el-button>
             </el-row>
             <el-row id="commentsRow">
               <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
             </el-row>
+            <span id="paymentAndAttendanceHeader">Register Credit/Debit Card</span>
+            <br>
+            <card-registration
+              style="margin-top: 20px"
+              :customerDetails="customerDetails"
+              :userId="userId"
+            ></card-registration>
+            <br>
             <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
             <lesson-table :userId="userId"></lesson-table>
           </el-col>
@@ -124,7 +143,10 @@
         <el-form-item label="Description">
           <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
         </el-form-item>
-        <el-form-item v-if="payment.paymentType === CARD" label="Card Information">
+        <el-form-item
+          v-if="payment.paymentType === CARD && customerDetails === undefined"
+          label="Card Information"
+        >
           <card :stripe="stripeKey"></card>
         </el-form-item>
       </el-form>
@@ -144,6 +166,33 @@
         <el-button v-if="!this.paymentLoading" @click="payment.paymentDialogVisible = false">Cancel</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      title="Lessons Payment"
+      :show-close="!this.paymentLoading"
+      :close-on-click-modal="!this.paymentLoading"
+      :close-on-press-escape="this.paymentLoading"
+      :visible.sync="payment.paymentDialogLessonVisible"
+    >
+      <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
+        <el-form-item label="Item paying for" prop="type">
+          <el-cascader :options="lessonsPaymentCascaderOptions" v-model="payment.paymentForm.type"></el-cascader>
+        </el-form-item>
+        <el-form-item label="Description">
+          <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer">
+        <el-button
+          :loading="this.paymentLoading"
+          type="primary"
+          @click="payCashLessons('paymentForm')"
+        >Pay</el-button>
+        <el-button
+          v-if="!this.paymentLoading"
+          @click="payment.paymentDialogLessonVisible = false"
+        >Cancel</el-button>
+      </span>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -153,9 +202,9 @@ import moment from "moment"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"
-import { CARD, CASHNETS } from "@/common/data"
+import { CARD, CASHNETS, MISCELLEANEOUS, LESSONS } from "@/common/data"
 import LessonTable from "@/components/lessons/LessonTable"
-import { MISCELLEANEOUS } from "../common/data"
+import CardRegistration from "@/components/common/CardRegistration"
 
 export default {
   components: {
@@ -163,6 +212,7 @@ export default {
     DateSelector,
     Card,
     LessonTable,
+    CardRegistration,
   },
   async mounted() {
     const { selectedLessonId, dateRange } = this.$route.query
@@ -177,6 +227,8 @@ export default {
       "nric",
       "enrollmentDate",
       "comments",
+      "paymentPlan",
+      "entitlement",
     ])
 
     userDetails = {
@@ -185,7 +237,7 @@ export default {
       dob: moment(userDetails.dob).format("DD-MM-YYYY"),
     }
     this.userDetails = userDetails
-
+    this.customerDetails = details.customer
     const contactDetails = _.pick(details, ["email", "contact", "address"])
     this.contactDetails = contactDetails
     this.selectedLessonId = selectedLessonId
@@ -215,7 +267,11 @@ export default {
         for (const type of paymentType) {
           parsedType = parsedType + `${type} / `
         }
-        return { ...data, type: parsedType }
+        return {
+          ...data,
+          type: parsedType,
+          created: moment(data.created).format("DD-MM-YYYY"),
+        }
       })
       return displayData
     },
@@ -275,6 +331,42 @@ export default {
       })
       return options
     },
+    lessonsPaymentCascaderOptions() {
+      const priceList = this.$store.getters.getPriceList[LESSONS]
+      const options = _.map(priceList, (value, category) => {
+        const subCategory = _.map(value, (value, subcategory) => {
+          if (typeof value !== "object") {
+            const label = `${subcategory} lessons, $${value}`
+            const subCategoryOptions = {
+              label,
+              value: subcategory,
+            }
+            return subCategoryOptions
+          } else {
+            const children = _.map(value, (price, session) => {
+              const label = `${session} lessons, $${price}`
+              const options = {
+                label,
+                value: session,
+              }
+              return options
+            })
+            const subCategoryOptions = {
+              label: subcategory,
+              value: subcategory,
+              children,
+            }
+            return subCategoryOptions
+          }
+        })
+        return {
+          label: category,
+          value: category,
+          children: subCategory,
+        }
+      })
+      return options
+    },
   },
   data() {
     return {
@@ -286,12 +378,15 @@ export default {
         nric: "",
         enrollmentDate: "",
         comments: "",
+        paymentPlan: "",
+        entitlement: "",
       },
       contactDetails: {
         email: "",
         contact: "",
         address: "",
       },
+      customerDetails: {},
       selectedLessonId: "",
       attendanceDateRange: [],
       paymentDateRange: [],
@@ -319,6 +414,7 @@ export default {
         },
 
         paymentDialogVisible: false,
+        paymentDialogLessonVisible: false,
       },
       CARD,
       CASHNETS,
@@ -330,31 +426,43 @@ export default {
     payCardMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const token = await createToken()
-          if (token.error) {
-            this.$notify.error({
-              title: "Card Error",
-              message: token.error.message,
-            })
+          let paymentToken
+          if (this.customerDetails === undefined) {
+            const token = await createToken()
+            if (token.error) {
+              this.$notify.error({
+                title: "Card Error",
+                message: token.error.message,
+              })
+            }
+            paymentToken = token.token.id
+          } else {
+            paymentToken = this.customerDetails.customerId
           }
           const priceList = this.$store.getters.getPriceList
           let price = priceList[MISCELLEANEOUS]
           for (const key of this.payment.paymentForm.type) {
             price = price[key]
           }
-          const paymentDataAndVm = {
+          let paymentDataAndVm = {
             type: CARD,
             paymentData: {
               paymentInfo: {
                 ...this.payment.paymentForm,
-                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type, price],
-
+                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type],
+                price,
                 userEmail: this.contactDetails.email,
               },
-              paymentToken: token.token.id,
+              paymentToken,
             },
             userId: this.$route.query["userId"],
             vm: this,
+          }
+          if (this.customerDetails !== undefined) {
+            paymentDataAndVm = {
+              ...paymentDataAndVm,
+              customer: true,
+            }
           }
           await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
           this.payment.paymentDialogVisible = false
@@ -374,7 +482,8 @@ export default {
             paymentData: {
               paymentInfo: {
                 ...this.payment.paymentForm,
-                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type, price],
+                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type],
+                price,
                 userEmail: this.contactDetails.email,
               },
             },
@@ -385,6 +494,52 @@ export default {
           await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
           this.payment.paymentDialogVisible = false
         }
+      })
+    },
+    payCashLessons(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const priceList = this.$store.getters.getPriceList
+          let price = priceList[LESSONS]
+          for (const key of this.payment.paymentForm.type) {
+            price = price[key]
+          }
+          const paymentDataAndVm = {
+            type: CASHNETS,
+            paymentData: {
+              paymentInfo: {
+                ...this.payment.paymentForm,
+                type: [LESSONS, ...this.payment.paymentForm.type],
+                price,
+                userEmail: this.contactDetails.email,
+              },
+            },
+            userId: this.$route.query["userId"],
+            vm: this,
+          }
+
+          await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
+          this.payment.paymentDialogLessonVisible = false
+        }
+      })
+    },
+    updatePaymentPlan() {
+      let entitlement = 0
+      if (this.userDetails.entitlement !== undefined) {
+        entitlement = this.userDetails.entitlement
+      }
+      this.$store.dispatch("updatePaymentPlan", {
+        userId: this.userId,
+        paymentPlan: this.userDetails.paymentPlan,
+        previouslyEntitled: entitlement,
+      })
+      this.$notify({
+        type: "success",
+        title: "Plan updated",
+        message: "Payment plan is updated for student",
+      })
+      this.$router.push({
+        name: "home",
       })
     },
     addUser() {

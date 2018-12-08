@@ -14,11 +14,13 @@ const lessonsModule = {
       state.lessons = lessonData
     },
     createNewLesson(state, lessonData) {
-      state.lessons[lessonData.id] = lessonData
       Vue.set(state.lessons, lessonData.id, lessonData)
     },
     addUsersToLesson(state, { addUsersToLesson, lessonId }) {
       addUsersToLesson.forEach(({ key, userId }) => {
+        if (state.lessons[lessonId].users === undefined) {
+          Vue.set(state.studentData[lessonId], "users", {})
+        }
         Vue.set(state.lessons[lessonId].users, key, userId)
       })
     },
@@ -58,7 +60,6 @@ const lessonsModule = {
         userId,
         lessonUserIdKey,
       })
-
       await dispatch("addUsersToLesson", {
         lessonId: newLessonId,
         userIds: [userId],
@@ -76,11 +77,6 @@ const lessonsModule = {
       { commit },
       { userLessonIdToBeDeletedKey, lessonId, userId, lessonUserIdKey }
     ) {
-      console.log(userLessonIdToBeDeletedKey)
-      console.log(lessonId)
-      console.log(userId)
-      console.log(lessonUserIdKey)
-
       await lessonsRef
         .child(lessonId)
         .child("users")

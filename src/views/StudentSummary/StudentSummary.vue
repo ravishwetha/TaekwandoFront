@@ -103,20 +103,20 @@ export default {
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
 
-      if (
-        this.dateRange.length > 0 &&
-        !moment(this.dateRange[0]).isSame(moment(0))
-      ) {
-        const startDate = this.dateRange[0]
-        const endDate = this.dateRange[1]
-        const selectionRange = moment.range(startDate, endDate)
-        filteredData = _.filter(filteredData, (user) => {
-          for (const attendance of _.values(user.attendance)) {
-            return selectionRange.contains(moment(attendance.timestamp))
-          }
-          return false
-        })
-      }
+      // if (
+      //   this.dateRange.length > 0 &&
+      //   !moment(this.dateRange[0]).isSame(moment(0))
+      // ) {
+      //   const startDate = this.dateRange[0]
+      //   const endDate = this.dateRange[1]
+      //   const selectionRange = moment.range(startDate, endDate)
+      //   filteredData = _.filter(filteredData, (user) => {
+      //     for (const attendance of _.values(user.attendance)) {
+      //       return selectionRange.contains(moment(attendance.timestamp))
+      //     }
+      //     return false
+      //   })
+      // }
       if (
         this.selectedLessonId.length !== 0 &&
         this.selectedLessonId !== undefined
@@ -128,13 +128,25 @@ export default {
           )
         })
       }
-      filteredData = _.map(filteredData, (data) => ({
-        ...data,
-        branch: "Haig Branch",
-      }))
+      filteredData = _.map(filteredData, (data) => {
+        let parsedData = {
+          ...data,
+          branch: "Haig Branch",
+        }
+        if (data.terminatedTime) {
+          parsedData = {
+            ...parsedData,
+            terminatedTime: moment(parsedData.terminatedTime).format(
+              "DD-MM-YYYY"
+            ),
+          }
+        }
+        return parsedData
+      })
+
       filteredData = _.filter(
         filteredData,
-        (user) => user.status === this.activeTab || user.status === undefined
+        (user) => user.status === this.activeTab
       )
 
       return filteredData

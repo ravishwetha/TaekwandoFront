@@ -53,19 +53,26 @@ export default {
       required: true,
     },
   },
+  computed: {
+    lessonData() {
+      const details = this.$store.getters.getStudentInfo(this.userId)
+      const lessonIdUserIsIn = _.values(details.lessons)
+      const allLessonData = this.$store.getters.getAllLessonData
+      const filteredLessonData = _.filter(allLessonData, (lesson) =>
+        _.includes(lessonIdUserIsIn, lesson.id)
+      )
+      return filteredLessonData
+    },
+  },
   data() {
     const details = this.$store.getters.getStudentInfo(this.userId)
     const lessonIdUserIsIn = _.values(details.lessons)
     const allLessonData = this.$store.getters.getAllLessonData
-    const filteredLessonData = _.filter(allLessonData, (lesson) =>
-      _.includes(lessonIdUserIsIn, lesson.id)
-    )
     const allLessonDataExceptUserIn = _.filter(
       allLessonData,
       (lesson) => !_.includes(lessonIdUserIsIn, lesson.id)
     )
     return {
-      lessonData: filteredLessonData,
       swapLessonData: allLessonDataExceptUserIn,
       lessonIdToBeSwapped: "",
       lessonSwappingTo: "",
@@ -79,7 +86,7 @@ export default {
       this.lessonIdToBeSwapped = lesson.id
       this.swapDialogVisible = true
     },
-    conductSwap() {
+    async conductSwap() {
       const details = this.$store.getters.getStudentInfo(this.userId)
       const userLessonIdToBeSwappedKey = _.findKey(
         details.lessons,
@@ -103,11 +110,11 @@ export default {
         userId: this.userId,
         lessonUserIdKey,
       }
-      this.$store.dispatch("swapLessonForUser", swapLessonPayload)
+      await this.$store.dispatch("swapLessonForUser", swapLessonPayload)
       this.swapDialogVisible = false
     },
-    addUserToLesson() {
-      this.$store.dispatch("addUsersToLesson", {
+    async addUserToLesson() {
+      await this.$store.dispatch("addUsersToLesson", {
         userIds: [this.userId],
         lessonId: this.lessonAddingTo,
       })

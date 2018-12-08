@@ -1,6 +1,6 @@
 import _ from "lodash"
 import moment from "moment"
-import { firebaseDB, tokenPaymentAPI } from "@/common/api"
+import { firebaseDB, tokenPaymentAPI, cardRegistrationAPI } from "@/common/api"
 import Vue from "vue"
 import { PRESENT } from "@/common/data"
 import { CARD, CASHNETS } from "@/common/data"
@@ -85,7 +85,10 @@ const studentModule = {
 
     addLessonToUsers(state, { addLessonToUsers, lessonId }) {
       addLessonToUsers.forEach(({ key, userId }) => {
-        Vue.set(state.studentData[userId], "lessons", { [key]: lessonId })
+        if (state.studentData[userId].lessons == undefined) {
+          Vue.set(state.studentData[userId], "lessons", {})
+        }
+        Vue.set(state.studentData[userId].lessons, key, lessonId)
       })
     },
     removeLessonFromUser(state, { userId, userLessonIdToBeDeletedKey }) {
@@ -97,25 +100,66 @@ const studentModule = {
       }
       Vue.set(state.studentData[userId].payments, paymentKey, paymentPayload)
     },
+    addCustomer(state, { userId, cardToken }) {
+      Vue.set(state.studentData[userId], "customer", cardToken)
+    },
   },
   actions: {
-    async deleteUser({ commit }, { userId }) {
+    async deleteUser({ commit, state }, { userId }) {
       try {
-        await usersRef.child(userId).update({ status: TERMINATED })
+        await usersRef.child(userId).update({
+          status: TERMINATED,
+          terminatedTime: moment().toISOString(),
+        })
         // TODO: DELETE THEM FROM LESSON
       } catch (e) {
-        console.log(e)
+        console.log(e.response.data)
       }
     },
-    async addSinglePayment({ commit }, { type, paymentData, userId, vm }) {
+
+    async registerCard({ commit }, { userId, cardToken, vm }) {
+      try {
+        const customerObject = await cardRegistrationAPI({ cardToken })
+        await usersRef
+          .child(userId)
+          .child("customer")
+          .set(customerObject)
+        commit("addCustomer", { userId, customerObject })
+        vm.$notify({
+          type: "success",
+          title: "Registration success",
+          message: "Card registered",
+        })
+      } catch (e) {
+        console.log(e.response.data)
+        vm.$notify({
+          title: "Registration error",
+          message: e.response.data,
+          type: "error",
+        })
+      }
+    },
+    async addSinglePayment(
+      { commit },
+      { type, paymentData, userId, vm, customer }
+    ) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
+        console.log(paymentData)
         if (type == CARD) {
-          const { paymentKey, paymentPayload } = await addCardPayment(
-            paymentData,
-            userId
-          )
-          commit("addPayment", { userId, paymentPayload, paymentKey })
+          if (customer) {
+            const { paymentKey, paymentPayload } = await addCardPaymentCustomer(
+              paymentData,
+              userId
+            )
+            commit("addPayment", { userId, paymentPayload, paymentKey })
+          } else {
+            const {
+              paymentKey,
+              paymentPayload,
+            } = await addCardPaymentNonCustomer(paymentData, userId)
+            commit("addPayment", { userId, paymentPayload, paymentKey })
+          }
         } else {
           const { paymentKey, paymentPayload } = await addCashNetsPayment(
             paymentData,
@@ -138,6 +182,20 @@ const studentModule = {
         })
       }
     },
+    async updatePaymentPlan(
+      { commit },
+      { paymentPlan, userId, previouslyEntitled }
+    ) {
+      const paymentPlanUpdate = usersRef
+        .child(userId)
+        .child("paymentPlan")
+        .set(paymentPlan)
+      const entitlementCountUpdate = usersRef
+        .child(userId)
+        .child("entitlement")
+        .set(parseInt(previouslyEntitled) + parseInt(_.last(paymentPlan)))
+      await Promise.all([paymentPlanUpdate, entitlementCountUpdate])
+    },
     async addUser({ commit, dispatch }, userData) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
@@ -151,7 +209,7 @@ const studentModule = {
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
         commit("modifyStudentDataLoadingStatus", { status: false })
-        console.log(e)
+        console.log(e.response.data)
       }
     },
     async updateUser({ commit }, { userData, userId }) {
@@ -162,7 +220,7 @@ const studentModule = {
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
         commit("modifyStudentDataLoadingStatus", { status: false })
-        console.log(e)
+        console.log(e.response.data)
       }
     },
     async loadStudentsData({ commit }) {
@@ -176,7 +234,7 @@ const studentModule = {
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
         commit("modifyStudentDataLoadingStatus", { status: false })
-        console.log(e)
+        console.log(e.response.data)
       }
     },
     async submitAttendance(
@@ -184,9 +242,28 @@ const studentModule = {
       { userIdsAndPresence, lessonId, studentsToBeUpdated }
     ) {
       await Promise.all(
-        userIdsAndPresence.map((userIdAndPresence) => {
+        userIdsAndPresence.map(async (userIdAndPresence) => {
           const attendanceToBeUpdated =
             studentsToBeUpdated[userIdAndPresence.userId]
+          const entitlementCount = await usersRef
+            .child(userIdAndPresence.userId)
+            .child("entitlement")
+            .once("value")
+            .then((r) => r.val())
+          //update entitlement
+          if (entitlementCount) {
+            if (userIdAndPresence.presence === PRESENT) {
+              usersRef
+                .child(userIdAndPresence.userId)
+                .child("entitlement")
+                .update(parseInt(entitlementCount) - 1)
+            } else {
+              usersRef
+                .child(userIdAndPresence.userId)
+                .child("entitlement")
+                .update(parseInt(entitlementCount) - 1)
+            }
+          }
           if (attendanceToBeUpdated) {
             usersRef
               .child(userIdAndPresence.userId)
@@ -213,14 +290,34 @@ const studentModule = {
   },
 }
 
-const addCardPayment = async (paymentData, userId) => {
+const addCardPaymentNonCustomer = async (paymentData, userId) => {
   const { chargeId, chargeCreated } = await tokenPaymentAPI(paymentData)
-  const paymentPayload = {
+  let paymentPayload = {
     mode: CARD,
     chargeId,
     created: moment.unix(chargeCreated).toISOString(),
-    price: _.last(paymentData.paymentInfo.type),
-    type: _.initial(paymentData.paymentInfo.type),
+    price: paymentData.paymentInfo.price,
+    type: paymentData.paymentInfo.type,
+    description: paymentData.paymentInfo.description,
+  }
+  const paymentKey = await usersRef
+    .child(userId)
+    .child("payments")
+    .push(paymentPayload).key
+  return { paymentKey, paymentPayload }
+}
+
+const addCardPaymentCustomer = async (paymentData, userId) => {
+  const { chargeId, chargeCreated } = await tokenPaymentAPI({
+    ...paymentData,
+    customer: true,
+  })
+  let paymentPayload = {
+    mode: CARD,
+    chargeId,
+    created: moment.unix(chargeCreated).toISOString(),
+    price: paymentData.paymentInfo.price,
+    type: paymentData.paymentInfo.type,
     description: paymentData.paymentInfo.description,
   }
   const paymentKey = await usersRef
@@ -234,8 +331,8 @@ const addCashNetsPayment = async (paymentData, userId) => {
   const paymentPayload = {
     mode: CASHNETS,
     created: moment().toISOString(),
-    price: _.last(paymentData.paymentInfo.type),
-    type: _.initial(paymentData.paymentInfo.type),
+    price: paymentData.paymentInfo.price,
+    type: paymentData.paymentInfo.type,
     description: paymentData.paymentInfo.description,
   }
   const paymentKey = await usersRef
