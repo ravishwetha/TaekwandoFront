@@ -29,7 +29,7 @@ export default {
           label: lesson.name,
         }))
         return {
-          value: day,
+          value: dayKey,
           label: day,
           children,
         }

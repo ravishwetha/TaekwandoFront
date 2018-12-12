@@ -104,20 +104,24 @@ export default {
       const data = _.omitBy(this.$store.getters.getAllLessonData, (lesson) => {
         for (const day of lesson.days) {
           if (moment().day() === DAYS[day]) {
-            return true
+            return false
           }
         }
+        return true
       })
       const parsedData = _.map(data, (lesson, id) => ({ ...lesson, id }))
       return parsedData
     },
     tableData() {
-      const filteredStudentInfo = _.filter(
+      let filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
         (student) => {
           return _.includes(_.keys(student.lessons), this.lessonValue)
         }
       )
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+        return DAYS[user.lessons[this.lessonValue].day] === moment().day()
+      })
       return filteredStudentInfo
     },
     studentData() {

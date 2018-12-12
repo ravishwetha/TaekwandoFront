@@ -90,10 +90,7 @@ export default {
   },
   computed: {
     lessonData() {
-      return [
-        { name: "All lessons", id: "" },
-        ...this.$store.getters.getAllLessonData,
-      ]
+      return this.$store.getters.getAllLessonData
     },
 
     tableData() {
@@ -123,6 +120,12 @@ export default {
       ) {
         filteredData = _.filter(filteredData, (user) => {
           return _.includes(_.keys(user.lessons), _.last(this.selectedLessonId))
+        })
+        filteredData = _.filter(filteredData, (user) => {
+          return (
+            user.lessons[_.last(this.selectedLessonId)].day ===
+            _.head(this.selectedLessonId)
+          )
         })
       }
       filteredData = _.map(filteredData, (data) => {
