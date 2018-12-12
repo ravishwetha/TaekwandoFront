@@ -5,6 +5,7 @@ import Vue from "vue"
 import { PRESENT } from "@/common/data"
 import { CARD, CASHNETS } from "@/common/data"
 import { TERMINATED } from "@/common/data"
+import store from "@/store"
 
 export const usersRef = firebaseDB.database().ref("Users")
 
@@ -139,6 +140,44 @@ const studentModule = {
         })
       }
     },
+    async addLessonCashPayment({ commit }, { paymentData, userId, vm }) {
+      try {
+        commit("modifyStudentDataLoadingStatus", { status: true })
+        const { paymentKey, paymentPayload } = await addCashNetsPayment(
+          paymentData,
+          userId
+        )
+        const lessonData = store.getters.getAllLessonData
+        const lessonId = _.findKey(lessonData, (lesson) => {
+          return _.includes(
+            lesson.name,
+            _.last(_.initial(paymentData.paymentInfo.type))
+          )
+        })
+        if (lessonId) {
+          await usersRef
+            .child(userId)
+            .child("lessons")
+            .child(lessonId)
+            .update({ lastPayment: moment().toISOString() })
+        }
+        commit("addPayment", { userId, paymentPayload, paymentKey })
+        vm.$notify({
+          type: "success",
+          title: "Payment success",
+          message: "Payment was a success",
+        })
+        commit("modifyStudentDataLoadingStatus", { status: false })
+      } catch (e) {
+        commit("modifyStudentDataLoadingStatus", { status: false })
+        console.log(e)
+        vm.$notify({
+          title: "Payment error",
+          message: e.response.data,
+          type: "error",
+        })
+      }
+    },
     async addSinglePayment(
       { commit },
       { type, paymentData, userId, vm, customer }
@@ -232,22 +271,24 @@ const studentModule = {
             studentsToBeUpdated[userIdAndPresence.userId]
           const entitlementCount = await usersRef
             .child(userIdAndPresence.userId)
+            .child("lessons")
+            .child(lessonId)
             .child("entitlement")
             .once("value")
             .then((r) => r.val())
           //update entitlement
-          if (entitlementCount) {
-            if (userIdAndPresence.presence === PRESENT) {
-              usersRef
-                .child(userIdAndPresence.userId)
-                .child("entitlement")
-                .update(parseInt(entitlementCount) - 1)
-            } else {
-              usersRef
-                .child(userIdAndPresence.userId)
-                .child("entitlement")
-                .update(parseInt(entitlementCount) - 1)
-            }
+          if (userIdAndPresence.presence === PRESENT) {
+            usersRef
+              .child(userIdAndPresence.userId)
+              .child("lessons")
+              .child(lessonId)
+              .update({ entitlement: parseInt(entitlementCount) - 1 })
+          } else {
+            usersRef
+              .child(userIdAndPresence.userId)
+              .child("lessons")
+              .child(lessonId)
+              .update({ entitlement: parseInt(entitlementCount) + 1 })
           }
           if (attendanceToBeUpdated) {
             usersRef

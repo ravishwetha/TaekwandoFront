@@ -101,18 +101,22 @@ export default {
   },
   computed: {
     lessonData() {
-      return _.filter(this.$store.getters.getAllLessonData, (lesson) => {
+      const data = _.omitBy(this.$store.getters.getAllLessonData, (lesson) => {
         for (const day of lesson.days) {
           if (moment().day() === DAYS[day]) {
             return true
           }
         }
       })
+      const parsedData = _.map(data, (lesson, id) => ({ ...lesson, id }))
+      return parsedData
     },
     tableData() {
       const filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
-        (student) => _.includes(student.lessons, this.lessonValue)
+        (student) => {
+          return _.includes(_.keys(student.lessons), this.lessonValue)
+        }
       )
       return filteredStudentInfo
     },

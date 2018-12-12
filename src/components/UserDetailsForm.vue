@@ -94,7 +94,7 @@
               :width="60"
             ></el-switch>
             <el-row v-if="payment.paymentType === CASHNETS" id="commentsRow">
-              <el-button @click="payment.paymentDialogLessonVisible = true">Add Payment</el-button>
+              <el-button @click="payment.paymentDialogLessonVisible = true">Lesson Payment</el-button>
             </el-row>
             <el-row id="commentsRow">
               <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
@@ -489,7 +489,6 @@ export default {
             price = price[key]
           }
           const paymentDataAndVm = {
-            type: CASHNETS,
             paymentData: {
               paymentInfo: {
                 ...this.payment.paymentForm,
@@ -501,8 +500,7 @@ export default {
             userId: this.$route.query["userId"],
             vm: this,
           }
-
-          await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
+          await this.$store.dispatch("addLessonCashPayment", paymentDataAndVm)
           this.payment.paymentDialogLessonVisible = false
         }
       })
