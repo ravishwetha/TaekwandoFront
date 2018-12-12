@@ -20,7 +20,7 @@ const lessonsModule = {
     addUsersToLesson(state, { addUsersToLesson, lessonId }) {
       addUsersToLesson.forEach(({ key, userId }) => {
         if (state.lessons[lessonId].users === undefined) {
-          Vue.set(state.studentData[lessonId], "Users", {})
+          Vue.set(state.lessons[lessonId], "Users", {})
         }
         Vue.set(state.lessons[lessonId]["Users"], key, userId)
       })
@@ -47,23 +47,16 @@ const lessonsModule = {
 
     async swapLessonForUser(
       { dispatch },
-      {
-        userLessonIdToBeSwappedKey,
-        oldlessonId,
-        newLessonId,
-        userId,
-        lessonUserIdKey,
-      }
+      { oldlessonId, newLessonId, userIdSessions }
     ) {
+      const userId = _.get(userIdSessions, "userId")
       await dispatch("removeUserFromLesson", {
-        userLessonIdToBeDeletedKey: userLessonIdToBeSwappedKey,
         lessonId: oldlessonId,
         userId,
-        lessonUserIdKey,
       })
       await dispatch("addUsersToLesson", {
         lessonId: newLessonId,
-        userIds: [userId],
+        userIdsSessions: [userIdSessions],
       })
       await usersRef
         .child(userId)
@@ -112,13 +105,15 @@ const lessonsModule = {
             paymentPlan: sessions,
             timeslot,
           }
-          return usersRef
+          usersRef
             .child(userId)
             .child("lessons")
-            .update(payload)
-            .then(() => {
-              userId, payload
-            })
+            .child(lessonId)
+            .set(payload)
+          return {
+            userId,
+            payload,
+          }
         }
       )
       const addUsersToLesson = await Promise.all(lessonPromises)

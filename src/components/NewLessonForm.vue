@@ -38,14 +38,6 @@
           :picker-options="endTimePickerOptions"
         ></el-time-select>
       </el-form-item>
-      <el-form-item label="Price:" class="formItem" prop="price">
-        <el-input
-          placeholder="Please input price"
-          type="number"
-          class="formInput"
-          v-model="form.price"
-        ></el-input>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="createNewLesson('form')">Submit</el-button>
       </el-form-item>
@@ -64,7 +56,6 @@ export default {
         days: [],
         from: "",
         to: "",
-        price: "",
       },
       startTimePickerOptions: {
         start: "09:00",
@@ -97,13 +88,6 @@ export default {
             trigger: "change",
           },
         ],
-        price: [
-          {
-            required: true,
-            message: "Please input a price",
-            trigger: "change",
-          },
-        ],
       },
     }
   },
@@ -111,13 +95,7 @@ export default {
     createNewLesson(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          let formData = _.pick(this.form, [
-            "name",
-            "days",
-            "from",
-            "to",
-            "price",
-          ])
+          let formData = _.pick(this.form, ["name", "days", "from", "to"])
           formData = {
             ...formData,
             to: moment(formData.to, "HH:mm").toISOString(),

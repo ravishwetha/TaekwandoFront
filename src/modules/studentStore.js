@@ -145,7 +145,6 @@ const studentModule = {
     ) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        console.log(paymentData)
         if (type == CARD) {
           if (customer) {
             const { paymentKey, paymentPayload } = await addCardPaymentCustomer(

@@ -157,13 +157,11 @@ export default {
       const swapLessonPayload = {
         oldlessonId: this.lessonIdToBeSwapped,
         newLessonId: this.lessonSwappingTo,
-        userIdSessions: [
-          {
-            userId: this.userId,
-            sessions: this.lessonSwappingToSessions,
-            timeslot: this.lessonSwappingToTimeslot,
-          },
-        ],
+        userIdSessions: {
+          userId: this.userId,
+          sessions: this.lessonSwappingToSessions,
+          timeslot: this.lessonSwappingToTimeslot,
+        },
       }
       await this.$store.dispatch("swapLessonForUser", swapLessonPayload)
       this.swapDialogVisible = false
@@ -171,6 +169,7 @@ export default {
     async addUserToLesson() {
       await this.$store.dispatch("addUsersToLesson", {
         userIdsSessions: [
+          //take note the S after userId
           {
             userId: this.userId,
             sessions: this.lessonAddingToSessions,

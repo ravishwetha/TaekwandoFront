@@ -122,10 +122,7 @@ export default {
         this.selectedLessonId !== undefined
       ) {
         filteredData = _.filter(filteredData, (user) => {
-          return _.includes(
-            _.values(user.lessons),
-            _.last(this.selectedLessonId)
-          )
+          return _.includes(_.keys(user.lessons), _.last(this.selectedLessonId))
         })
       }
       filteredData = _.map(filteredData, (data) => {

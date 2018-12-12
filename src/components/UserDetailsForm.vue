@@ -7,12 +7,6 @@
           <el-form-item id="detailsText" label="Name:">
             <span>{{userDetails.name}}</span>
           </el-form-item>
-          <el-form-item id="detailsText" label="Belt:">
-            <span>{{userDetails.belt}}</span>
-          </el-form-item>
-          <el-form-item id="detailsText" label="Class Type:">
-            <span>{{userDetails.classType}}</span>
-          </el-form-item>
           <el-form-item id="detailsText" label="Date Enrolled:">
             <span>{{userDetails.enrollmentDate}}</span>
           </el-form-item>
