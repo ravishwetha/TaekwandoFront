@@ -1,6 +1,7 @@
 import _ from "lodash"
 import { firebaseDB } from "@/common/api"
 import { usersRef } from "@/modules/studentStore"
+import store from "@/store"
 import Vue from "vue"
 import moment from "moment"
 export const lessonsRef = firebaseDB.database().ref("Lessons")
@@ -19,13 +20,13 @@ const lessonsModule = {
     addUsersToLesson(state, { addUsersToLesson, lessonId }) {
       addUsersToLesson.forEach(({ key, userId }) => {
         if (state.lessons[lessonId].users === undefined) {
-          Vue.set(state.studentData[lessonId], "users", {})
+          Vue.set(state.studentData[lessonId], "Users", {})
         }
-        Vue.set(state.lessons[lessonId].users, key, userId)
+        Vue.set(state.lessons[lessonId]["Users"], key, userId)
       })
     },
     removeUserFromLesson(state, { lessonId, lessonUserIdKey }) {
-      Vue.delete(state.lessons[lessonId].users, lessonUserIdKey) //NEED TO FIX
+      Vue.delete(state.lessons[lessonId]["Users"], lessonUserIdKey)
     },
   },
   actions: {
@@ -73,19 +74,19 @@ const lessonsModule = {
           to: newLessonId,
         })
     },
-    async removeUserFromLesson(
-      { commit },
-      { userLessonIdToBeDeletedKey, lessonId, userId, lessonUserIdKey }
-    ) {
+    async removeUserFromLesson({ commit }, { lessonId, userId }) {
+      const allLessonData = store.getters.getAllLessonData
+      const lesson = _.get(allLessonData, lessonId)
+      const lessonUserIdKey = _.findKey(_.get(lesson, "Users"))
       await lessonsRef
         .child(lessonId)
-        .child("users")
+        .child("Users")
         .child(lessonUserIdKey)
         .remove()
       await usersRef
         .child(userId)
         .child("lessons")
-        .child(userLessonIdToBeDeletedKey)
+        .child(lessonId)
         .remove()
       commit("removeUserFromLesson", {
         lessonId,
@@ -93,24 +94,33 @@ const lessonsModule = {
       })
       commit("removeLessonFromUser", {
         userId,
-        userLessonIdToBeDeletedKey,
+        lessonId,
       })
     },
-    async addUsersToLesson({ commit }, { userIds, lessonId }) {
-      const lessonPromises = userIds.map((userId) => {
+    async addUsersToLesson({ commit }, { userIdsSessions, lessonId }) {
+      const lessonPromises = userIdsSessions.map(({ userId }) => {
         const key = lessonsRef
           .child(lessonId)
-          .child("users")
+          .child("Users")
           .push(userId).key
         return { key, userId }
       })
-      const userPromises = userIds.map((userId) => {
-        const key = usersRef
-          .child(userId)
-          .child("lessons")
-          .push(lessonId).key
-        return { key, userId }
-      })
+      const userPromises = userIdsSessions.map(
+        ({ userId, sessions, timeslot }) => {
+          const payload = {
+            entitlement: sessions,
+            paymentPlan: sessions,
+            timeslot,
+          }
+          return usersRef
+            .child(userId)
+            .child("lessons")
+            .update(payload)
+            .then(() => {
+              userId, payload
+            })
+        }
+      )
       const addUsersToLesson = await Promise.all(lessonPromises)
       const addLessonToUsers = await Promise.all(userPromises)
       commit("addUsersToLesson", { addUsersToLesson, lessonId })
@@ -118,14 +128,7 @@ const lessonsModule = {
     },
   },
   getters: {
-    getAllLessonData: (state) => {
-      return _.map(state.lessons, (value, key) => {
-        return {
-          ...value,
-          id: key,
-        }
-      })
-    },
+    getAllLessonData: (state) => state.lessons,
     getLessonData: (state) => (id) => state.lessons[id],
   },
 }

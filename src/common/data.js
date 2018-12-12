@@ -1,21 +1,21 @@
 export const DAYS = {
-  Sunday: 0,
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
+  SUN: 0,
+  MON: 1,
+  TUE: 2,
+  WED: 3,
+  THUR: 4,
+  FRI: 5,
+  SAT: 6,
 }
 
 export const DAYS_ENGLISH = {
-  Sunday: "Sunday",
-  Monday: "Monday",
-  Tuesday: "Tuesday",
-  Wednesday: "Wednesday",
-  Thursday: "Thursday",
-  Friday: "Friday",
-  Saturday: "Saturday",
+  SUN: "Sunday",
+  MON: "Monday",
+  TUE: "Tuesday",
+  WED: "Wednesday",
+  THUR: "Thursday",
+  FRI: "Friday",
+  SAT: "Saturday",
 }
 
 export const PRESENT = "PRESENT"

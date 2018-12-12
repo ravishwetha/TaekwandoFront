@@ -37,16 +37,6 @@
             <span>{{contactDetails.address}}</span>
           </el-form-item>
         </el-form>
-        <div style="margin-bottom: 20px">
-          <span>Payment plan currently enrolled:</span>
-          <el-cascader
-            style="margin-right: 10px; margin-left: 10px"
-            :options="lessonsPaymentCascaderOptions"
-            v-model="userDetails.paymentPlan"
-          ></el-cascader>
-          <el-button @click="updatePaymentPlan">Select/Update payment plan</el-button>
-          <br>
-        </div>
         <div style="margin-left: 200px; margin-bottom: 50px">
           <el-button @click="editUser()" style="width: 80%" type="success">Edit User</el-button>
         </div>
@@ -64,7 +54,7 @@
         </div>
         <hr>
         <el-container>
-          <el-col :span="18">
+          <el-col :span="16">
             <div id="paymentAndAttendanceHeader">
               <span>Student Attendance</span>
             </div>
@@ -94,7 +84,7 @@
               </el-table>
             </el-row>
           </el-col>
-          <el-col :span="6">
+          <el-col :span="8">
             <div id="paymentAndAttendanceHeader">
               <span>Payment Type</span>
             </div>
@@ -521,25 +511,6 @@ export default {
           await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
           this.payment.paymentDialogLessonVisible = false
         }
-      })
-    },
-    updatePaymentPlan() {
-      let entitlement = 0
-      if (this.userDetails.entitlement !== undefined) {
-        entitlement = this.userDetails.entitlement
-      }
-      this.$store.dispatch("updatePaymentPlan", {
-        userId: this.userId,
-        paymentPlan: this.userDetails.paymentPlan,
-        previouslyEntitled: entitlement,
-      })
-      this.$notify({
-        type: "success",
-        title: "Plan updated",
-        message: "Payment plan is updated for student",
-      })
-      this.$router.push({
-        name: "home",
       })
     },
     addUser() {

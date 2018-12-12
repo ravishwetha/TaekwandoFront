@@ -2,6 +2,7 @@
   <div>
     <el-table :data="lessonData" style="width: 100%">
       <el-table-column prop="name" label="Lesson Name"></el-table-column>
+      <el-table-column prop="sessions" label="Payment Cycle"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
           <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
@@ -20,6 +21,23 @@
           :label="lesson.name"
         ></el-option>
       </el-select>
+      <br>
+      <span>Select the number of sessions for payment plan</span>
+      <br>
+      <el-select v-model="lessonAddingToSessions" placeholder="Select">
+        <el-option v-for="item in sessionOptions" :key="item" :label="item" :value="item"></el-option>
+      </el-select>
+      <br>
+      <span>Select the timeslot to add the student into</span>
+      <br>
+      <el-select v-model="lessonAddingToTimeslot" placeholder="Select">
+        <el-option
+          v-for="item in selectedLessonTimeslots"
+          :key="item.val"
+          :label="item.label"
+          :value="item.val"
+        ></el-option>
+      </el-select>
       <span slot="footer">
         <el-button type="primary" @click="addUserToLesson">Add</el-button>
         <el-button @click="addDialogVisible = false">Cancel</el-button>
@@ -36,6 +54,22 @@
           :label="lesson.name"
         ></el-option>
       </el-select>
+      <span>Select the number of sessions for payment plan</span>
+      <br>
+      <el-select v-model="lessonSwappingToSessions" placeholder="Select">
+        <el-option v-for="item in sessionOptions" :key="item" :label="item" :value="item"></el-option>
+      </el-select>
+      <br>
+      <span>Select the timeslot to swap the student into</span>
+      <br>
+      <el-select v-model="lessonSwappingToTimeslot" placeholder="Select">
+        <el-option
+          v-for="item in selectedLessonTimeslots"
+          :key="item.val"
+          :label="item.label"
+          :value="item.val"
+        ></el-option>
+      </el-select>
       <span slot="footer">
         <el-button type="primary" @click="conductSwap">Swap</el-button>
         <el-button @click="swapDialogVisible = false">Cancel</el-button>
@@ -46,6 +80,7 @@
 
 <script>
 import _ from "lodash"
+import moment from "moment"
 export default {
   props: {
     userId: {
@@ -56,29 +91,61 @@ export default {
   computed: {
     lessonData() {
       const details = this.$store.getters.getStudentInfo(this.userId)
-      const lessonIdUserIsIn = _.values(details.lessons)
       const allLessonData = this.$store.getters.getAllLessonData
-      const filteredLessonData = _.filter(allLessonData, (lesson) =>
-        _.includes(lessonIdUserIsIn, lesson.id)
+      const lessonNamePaymentCycleUserIsIn = _.map(
+        details.lessons,
+        (userLessonDetails, lessonId) => ({
+          name: _.get(allLessonData[lessonId], "name"),
+          sessions: userLessonDetails.paymentPlan,
+          id: lessonId,
+        })
       )
-      return filteredLessonData
+      return lessonNamePaymentCycleUserIsIn
+    },
+    selectedLessonTimeslots() {
+      const allLessonData = this.$store.getters.getAllLessonData
+      const selectedLessonPayload = this.addDialogVisible
+        ? _.get(allLessonData, this.lessonAddingTo)
+        : _.get(allLessonData, this.lessonSwappingTo)
+
+      const selectedLessonTimeslots = _.get(selectedLessonPayload, "timeslots")
+      const selectOptions = _.map(selectedLessonTimeslots, (timeslot) => {
+        const [from, to] = timeslot.split("/")
+        const parsedFrom = moment(from).format("ha")
+        const parsedTo = moment(to).format("ha")
+        return { label: parsedFrom + "-" + parsedTo, val: timeslot }
+      })
+      return selectOptions
     },
   },
   data() {
     const details = this.$store.getters.getStudentInfo(this.userId)
-    const lessonIdUserIsIn = _.values(details.lessons)
+    const lessonIdsUserIsIn = _.map(
+      details.lessons,
+      (userLessonDetails, lessonId) => lessonId
+    )
     const allLessonData = this.$store.getters.getAllLessonData
-    const allLessonDataExceptUserIn = _.filter(
+    const allLessonDataExceptUserIn = _.omitBy(
       allLessonData,
-      (lesson) => !_.includes(lessonIdUserIsIn, lesson.id)
+      (lessonData, lessonId) => _.includes(lessonIdsUserIsIn, lessonId)
+    )
+
+    const allLessonDataExceptUserInIds = _.map(
+      allLessonDataExceptUserIn,
+      (data, id) => ({ ...data, id })
     )
     return {
-      swapLessonData: allLessonDataExceptUserIn,
+      swapLessonData: allLessonDataExceptUserInIds,
       lessonIdToBeSwapped: "",
       lessonSwappingTo: "",
+      lessonSwappingToSessions: "",
+      lessonSwappingToTimeslot: "",
       swapDialogVisible: false,
       addDialogVisible: false,
       lessonAddingTo: "",
+      lessonAddingToSessions: "",
+      lessonAddingToTimeslot: "",
+      sessionOptions: [4, 12, 24],
     }
   },
   methods: {
@@ -87,35 +154,29 @@ export default {
       this.swapDialogVisible = true
     },
     async conductSwap() {
-      const details = this.$store.getters.getStudentInfo(this.userId)
-      const userLessonIdToBeSwappedKey = _.findKey(
-        details.lessons,
-        (val) => val === this.lessonIdToBeSwapped
-      )
-
-      const allLessonData = this.$store.getters.getAllLessonData
-      const lessonToBeSwapped = _.find(
-        allLessonData,
-        (lesson) => lesson.id === this.lessonIdToBeSwapped
-      )
-      const lessonUserIdKey = _.findKey(
-        lessonToBeSwapped.users,
-        (userId) => userId === this.userId
-      )
-
       const swapLessonPayload = {
-        userLessonIdToBeSwappedKey,
         oldlessonId: this.lessonIdToBeSwapped,
         newLessonId: this.lessonSwappingTo,
-        userId: this.userId,
-        lessonUserIdKey,
+        userIdSessions: [
+          {
+            userId: this.userId,
+            sessions: this.lessonSwappingToSessions,
+            timeslot: this.lessonSwappingToTimeslot,
+          },
+        ],
       }
       await this.$store.dispatch("swapLessonForUser", swapLessonPayload)
       this.swapDialogVisible = false
     },
     async addUserToLesson() {
       await this.$store.dispatch("addUsersToLesson", {
-        userIds: [this.userId],
+        userIdsSessions: [
+          {
+            userId: this.userId,
+            sessions: this.lessonAddingToSessions,
+            timeslot: this.lessonAddingToTimeslot,
+          },
+        ],
         lessonId: this.lessonAddingTo,
       })
       this.addDialogVisible = false

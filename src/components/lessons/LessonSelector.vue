@@ -14,18 +14,15 @@ import { DAYS_ENGLISH } from "@/common/data"
 export default {
   computed: {
     lessonData() {
-      if (this.allLesson === false) {
-        return [...this.$store.getters.getAllLessonData]
-      }
-      return [
-        { name: "All lessons", id: "" },
-        ...this.$store.getters.getAllLessonData,
-      ]
+      return _.map(this.$store.getters.getAllLessonData, (lessonData, id) => ({
+        ...lessonData,
+        id,
+      }))
     },
     options() {
-      const options = _.map(DAYS_ENGLISH, (day) => {
+      const options = _.map(DAYS_ENGLISH, (day, dayKey) => {
         const filteredLessonData = _.filter(this.lessonData, (lesson) =>
-          _.includes(lesson.days, day)
+          _.includes(lesson.days, dayKey)
         )
         const children = _.map(filteredLessonData, (lesson) => ({
           value: lesson.id,

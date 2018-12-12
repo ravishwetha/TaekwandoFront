@@ -84,15 +84,15 @@ const studentModule = {
     },
 
     addLessonToUsers(state, { addLessonToUsers, lessonId }) {
-      addLessonToUsers.forEach(({ key, userId }) => {
+      addLessonToUsers.forEach(({ userId, payload }) => {
         if (state.studentData[userId].lessons == undefined) {
           Vue.set(state.studentData[userId], "lessons", {})
         }
-        Vue.set(state.studentData[userId].lessons, key, lessonId)
+        Vue.set(state.studentData[userId].lessons, lessonId, payload)
       })
     },
-    removeLessonFromUser(state, { userId, userLessonIdToBeDeletedKey }) {
-      Vue.delete(state.studentData[userId].lessons, userLessonIdToBeDeletedKey)
+    removeLessonFromUser(state, { userId, lessonId }) {
+      Vue.delete(state.studentData[userId].lessons, lessonId)
     },
     addPayment(state, { userId, paymentPayload, paymentKey }) {
       if (state.studentData[userId].payments == undefined) {
@@ -181,20 +181,6 @@ const studentModule = {
           type: "error",
         })
       }
-    },
-    async updatePaymentPlan(
-      { commit },
-      { paymentPlan, userId, previouslyEntitled }
-    ) {
-      const paymentPlanUpdate = usersRef
-        .child(userId)
-        .child("paymentPlan")
-        .set(paymentPlan)
-      const entitlementCountUpdate = usersRef
-        .child(userId)
-        .child("entitlement")
-        .set(parseInt(previouslyEntitled) + parseInt(_.last(paymentPlan)))
-      await Promise.all([paymentPlanUpdate, entitlementCountUpdate])
     },
     async addUser({ commit, dispatch }, userData) {
       try {

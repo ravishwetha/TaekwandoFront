@@ -23,15 +23,20 @@
         </el-checkbox-group>
       </el-form-item>
       <el-form-item label="From:" class="formItem" prop="from">
-        <el-time-picker
+        <el-time-select
           class="formInput"
           v-model="form.from"
           placeholder="Select start time"
-          :picker-options="timePickerOptions"
-        ></el-time-picker>
+          :picker-options="startTimePickerOptions"
+        ></el-time-select>
       </el-form-item>
       <el-form-item label="To:" class="formItem" prop="to">
-        <el-time-picker class="formInput" v-model="form.to" placeholder="Select end time"></el-time-picker>
+        <el-time-select
+          class="formInput"
+          v-model="form.to"
+          placeholder="Select end time"
+          :picker-options="endTimePickerOptions"
+        ></el-time-select>
       </el-form-item>
       <el-form-item label="Price:" class="formItem" prop="price">
         <el-input
@@ -61,6 +66,16 @@ export default {
         to: "",
         price: "",
       },
+      startTimePickerOptions: {
+        start: "09:00",
+        end: "20:00",
+        step: "00:30",
+      },
+      endTimePickerOptions: {
+        start: "09:00",
+        end: "20:00",
+        step: "00:30",
+      },
       rules: {
         name: [
           {
@@ -79,22 +94,6 @@ export default {
             required: true,
             type: "array",
             message: "Please select the days for this class",
-            trigger: "change",
-          },
-        ],
-        from: [
-          {
-            type: "date",
-            required: true,
-            message: "Please pick a lesson start time",
-            trigger: "change",
-          },
-        ],
-        to: [
-          {
-            type: "date",
-            required: true,
-            message: "Please pick a lesson end time",
             trigger: "change",
           },
         ],
@@ -121,8 +120,8 @@ export default {
           ])
           formData = {
             ...formData,
-            to: moment(formData.to).toISOString(),
-            from: moment(formData.from).toISOString(),
+            to: moment(formData.to, "HH:mm").toISOString(),
+            from: moment(formData.from, "HH:mm").toISOString(),
           }
           this.$store.dispatch("createNewLesson", formData)
           this.$router.push({
