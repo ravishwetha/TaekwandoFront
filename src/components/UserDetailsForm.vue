@@ -183,6 +183,8 @@
 <script>
 import _ from "lodash"
 import moment from "moment"
+import print from "print-js"
+import RecieptGenerator from "@/assets/reciept"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"
@@ -475,7 +477,15 @@ export default {
             vm: this,
           }
 
-          await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
+          const dispatch = this.$store.dispatch(
+            "addSinglePayment",
+            paymentDataAndVm
+          )
+          const recp = RecieptGenerator(
+            _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            price
+          )
+          await Promise.all([dispatch, recp])
           this.payment.paymentDialogVisible = false
         }
       })
@@ -500,7 +510,15 @@ export default {
             userId: this.$route.query["userId"],
             vm: this,
           }
-          await this.$store.dispatch("addLessonCashPayment", paymentDataAndVm)
+          const dispatch = this.$store.dispatch(
+            "addLessonCashPayment",
+            paymentDataAndVm
+          )
+          const recp = RecieptGenerator(
+            _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            price
+          )
+          await Promise.all([dispatch, recp])
           this.payment.paymentDialogLessonVisible = false
         }
       })
