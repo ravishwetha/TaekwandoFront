@@ -7,9 +7,6 @@
           <el-form-item label="Name" prop="name">
             <el-input v-model="formData.name"></el-input>
           </el-form-item>
-          <el-form-item prop="belt" label="Belt">
-            <el-input v-model="formData.belt"></el-input>
-          </el-form-item>
           <el-form-item prop="enrollmentDate" label="Date Enrolled">
             <el-date-picker
               v-model="formData.enrollmentDate"
@@ -30,9 +27,6 @@
           </el-form-item>
           <el-form-item prop="nric" label="NRIC">
             <el-input v-model="formData.nric"></el-input>
-          </el-form-item>
-          <el-form-item v-if="!edit" prop="lessonId" label="Lesson">
-            <lesson-selector v-model="formData.lessonId" :allLesson="false"></lesson-selector>
           </el-form-item>
           <el-form-item prop="status" label="User Type">
             <el-switch
@@ -99,13 +93,6 @@ export default {
           trigger: "blur",
         },
       ],
-      belt: [
-        {
-          required: true,
-          message: "Please input Belt name",
-          trigger: "blur",
-        },
-      ],
       enrollmentDate: [
         {
           required: true,
@@ -167,8 +154,6 @@ export default {
       )
       let userDetails = _.pick(details, [
         "name",
-        "belt",
-        "classType",
         "dob",
         "nric",
         "enrollmentDate",
@@ -190,8 +175,6 @@ export default {
     return {
       formData: {
         name: "",
-        belt: "",
-        classType: "",
         dob: "",
         nric: "",
         enrollmentDate: "",
@@ -199,8 +182,8 @@ export default {
         email: "",
         contact: "",
         address: "",
-        lessonId: "",
         status: ACTIVE,
+        addDialogVisible: false,
       },
       rules,
       edit: false,
@@ -223,6 +206,9 @@ export default {
           }
         })
       })
+    },
+    closeAddDialog() {
+      this.addDialogVisible = false
     },
     async editUser(userForm, contactForm) {
       this.$refs[userForm].validate((userFormValid) => {

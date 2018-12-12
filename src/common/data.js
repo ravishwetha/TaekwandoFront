@@ -3,7 +3,7 @@ export const DAYS = {
   MON: 1,
   TUE: 2,
   WED: 3,
-  THUR: 4,
+  THU: 4,
   FRI: 5,
   SAT: 6,
 }
@@ -13,7 +13,7 @@ export const DAYS_ENGLISH = {
   MON: "Monday",
   TUE: "Tuesday",
   WED: "Wednesday",
-  THUR: "Thursday",
+  THU: "Thursday",
   FRI: "Friday",
   SAT: "Saturday",
 }

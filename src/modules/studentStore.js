@@ -155,11 +155,23 @@ const studentModule = {
           )
         })
         if (lessonId) {
+          const entitlement = await usersRef
+            .child(userId)
+            .child("lessons")
+            .child(lessonId)
+            .child("entitlement")
+            .once("value")
+            .then((r) => r.val())
           await usersRef
             .child(userId)
             .child("lessons")
             .child(lessonId)
-            .update({ lastPayment: moment().toISOString() })
+            .update({
+              lastPayment: moment().toISOString(),
+              entitlement:
+                parseInt(entitlement) +
+                parseInt(_.last(paymentData.paymentInfo.type)),
+            })
         }
         commit("addPayment", { userId, paymentPayload, paymentKey })
         vm.$notify({
