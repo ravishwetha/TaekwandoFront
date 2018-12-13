@@ -65,6 +65,9 @@ const studentModule = {
     getAllStudentsData(state, studentData) {
       state.studentData = studentData
     },
+    startPayment(state, { userId, lessonId, lastPayment }) {
+      Vue.set(state.studentData[userId]["lessons"][lessonId], { lastPayment })
+    },
     removeUser(state, { userId }) {
       state.studentData = _.filter(
         state.studentData,
@@ -189,6 +192,15 @@ const studentModule = {
           type: "error",
         })
       }
+    },
+    async startPayment({ commit }, { userId, lessonId }) {
+      const lastPayment = moment().toISOString()
+      await usersRef
+        .child(userId)
+        .child("lessons")
+        .child(lessonId)
+        .update({ lastPayment })
+      commit("startPayment", { userId, lessonId, lastPayment })
     },
     async addSinglePayment(
       { commit },

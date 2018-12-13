@@ -1,4 +1,4 @@
-<template>
+w<template>
   <div>
     <el-table :data="lessonData" style="width: 100%">
       <el-table-column prop="name" label="Lesson Name"></el-table-column>
@@ -6,6 +6,12 @@
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
           <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
+          <el-button
+            v-if="scope.row.lastPayment === undefined && scope.row.customer"
+            @click="startPayment(scope.row)"
+            type="text"
+            size="small"
+          >Start Payment</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -84,6 +90,8 @@ export default {
           name: _.get(allLessonData[lessonId], "name"),
           sessions: userLessonDetails.paymentPlan,
           id: lessonId,
+          lastPayment: userLessonDetails.lastPayment,
+          customer: details.customer,
         })
       )
       return lessonNamePaymentCycleUserIsIn
@@ -150,6 +158,12 @@ export default {
       }
       await this.$store.dispatch("swapLessonForUser", swapLessonPayload)
       this.swapDialogVisible = false
+    },
+    async startPayment(lesson) {
+      this.$store.dispatch("startPayment", {
+        userId: this.userId,
+        lessonId: lesson.id,
+      })
     },
   },
 }

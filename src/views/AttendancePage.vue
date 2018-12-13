@@ -11,11 +11,7 @@
         <el-col id="center">
           <el-row :gutter="10">
             <el-col span="6">
-              <el-select
-                @change="updatePresentAbsent"
-                v-model="lessonValue"
-                placeholder="Select lesson"
-              >
+              <el-select v-model="lessonValue" placeholder="Select lesson">
                 <el-option
                   v-for="lesson in lessonData"
                   :key="lesson.id"
@@ -122,6 +118,7 @@ export default {
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
         return DAYS[user.lessons[this.lessonValue].day] === moment().day()
       })
+      this.updatePresentAbsent()
       return filteredStudentInfo
     },
     studentData() {
@@ -236,10 +233,15 @@ export default {
           return null
         })
       )
-      const absenteeNumbers = _.map(absent, (absentee) => {
-        const details = this.$store.getters.getStudentInfo(absentee.userId)
-        return details.contact
-      })
+      const absenteeNumbers = _.compact(
+        _.map(absent, (absentee) => {
+          if (_.includes(_.keys(this.toBeUpdated), absentee.userId)) {
+            return null
+          }
+          const details = this.$store.getters.getStudentInfo(absentee.userId)
+          return _.get(details, "contact", null)
+        })
+      )
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: present.concat(absent),
         lessonId: this.lessonValue,

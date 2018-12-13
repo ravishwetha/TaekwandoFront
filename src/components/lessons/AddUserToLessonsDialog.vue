@@ -81,6 +81,7 @@ export default {
             userId: this.userId,
             sessions: this.lessonAddingToSessions,
             timeslot: this.lessonAddingToTimeslot,
+            day: this.lessonAddingToDay,
           },
         ],
         lessonId: this.lessonAddingTo,

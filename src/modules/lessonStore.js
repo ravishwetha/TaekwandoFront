@@ -99,11 +99,12 @@ const lessonsModule = {
         return { key, userId }
       })
       const userPromises = userIdsSessions.map(
-        ({ userId, sessions, timeslot }) => {
+        ({ userId, sessions, timeslot, day }) => {
           const payload = {
             entitlement: sessions,
             paymentPlan: sessions,
             timeslot,
+            day
           }
           usersRef
             .child(userId)
