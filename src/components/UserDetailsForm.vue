@@ -35,7 +35,7 @@
           <el-button @click="editUser()" style="width: 80%" type="success">Edit User</el-button>
         </div>
         <div style="margin-left: 200px;">
-          <el-button @click="deleteUser()" style="width: 80%" type="danger">Delete User</el-button>
+          <el-button @click="deleteUser()" style="width: 80%" type="danger">Terminate User</el-button>
         </div>
       </el-col>
     </el-main>
@@ -48,7 +48,7 @@
         </div>
         <hr>
         <el-container>
-          <el-col :span="16">
+          <el-col :span="14">
             <div id="paymentAndAttendanceHeader">
               <span>Student Attendance</span>
             </div>
@@ -73,12 +73,12 @@
                 <el-table-column prop="mode" label="Payment mode"></el-table-column>
                 <el-table-column width="500" prop="type" label="Item paid for"></el-table-column>
                 <el-table-column prop="created" label="Paid on"></el-table-column>
-                <el-table-column prop="description" label="Payment Description"></el-table-column>
+                <el-table-column width="200" prop="description" label="Payment Description"></el-table-column>
                 <el-table-column prop="price" label="Amount"></el-table-column>
               </el-table>
             </el-row>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="10">
             <div id="paymentAndAttendanceHeader">
               <span>Payment Type</span>
             </div>
@@ -355,6 +355,7 @@ export default {
   },
   data() {
     return {
+      active: true,
       userDetails: {
         name: "",
         belt: "",
@@ -476,15 +477,15 @@ export default {
             vm: this,
           }
 
-          // const dispatch = this.$store.dispatch(
-          //   "addSinglePayment",
-          //   paymentDataAndVm
-          // )
+          const dispatch = this.$store.dispatch(
+            "addSinglePayment",
+            paymentDataAndVm
+          )
           const recp = RecieptGenerator(
             _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
             price
           )
-          // await Promise.all([dispatch, recp])
+          await Promise.all([dispatch, recp])
           this.payment.paymentDialogVisible = false
         }
       })

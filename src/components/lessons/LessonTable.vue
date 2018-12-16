@@ -1,8 +1,10 @@
-w<template>
+<template>
   <div>
     <el-table :data="lessonData" style="width: 100%">
       <el-table-column prop="name" label="Lesson Name"></el-table-column>
       <el-table-column prop="sessions" label="Payment Cycle"></el-table-column>
+      <!-- <el-table-column prop="lastPayment" label="Last Payment Date"></el-table-column> -->
+      <el-table-column prop="timeslot" label="Time slot"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
           <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
@@ -70,6 +72,7 @@ import _ from "lodash"
 import moment from "moment"
 import { DAYS } from "@/common/data"
 import AddUserToLessonModal from "@/components/lessons/AddUserToLessonsDialog"
+import { readableTimeslotParser } from "@/common/dateUtils"
 export default {
   components: {
     AddUserToLessonModal,
@@ -92,6 +95,7 @@ export default {
           id: lessonId,
           lastPayment: userLessonDetails.lastPayment,
           customer: details.customer,
+          timeslot: readableTimeslotParser(userLessonDetails.timeslot),
         })
       )
       return lessonNamePaymentCycleUserIsIn

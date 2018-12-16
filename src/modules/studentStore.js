@@ -6,6 +6,7 @@ import { PRESENT } from "@/common/data"
 import { CARD, CASHNETS } from "@/common/data"
 import { TERMINATED } from "@/common/data"
 import store from "@/store"
+import { lessonsRef } from "./lessonStore"
 
 export const usersRef = firebaseDB.database().ref("Users")
 
@@ -111,11 +112,27 @@ const studentModule = {
   actions: {
     async deleteUser({ commit, state }, { userId }) {
       try {
-        await usersRef.child(userId).update({
+        usersRef.child(userId).update({
           status: TERMINATED,
           terminatedTime: moment().toISOString(),
         })
-        // TODO: DELETE THEM FROM LESSON
+        const userData = store.getters.getStudentInfo(userId)
+        const lessonIdUserIsIn = _.keys(_.get(userData, "lessons", []))
+        if (lessonIdUserIsIn.length > 0) {
+          const lessonData = store.getters.getAllLessonData
+          const deletionPromises = _.map(lessonIdUserIsIn, (lessonId) => {
+            const lessonDetails = lessonData[lessonId]["Users"]
+            const deletionKey = _.findKey(lessonDetails, (id) => {
+              return userId === id
+            })
+            return lessonsRef
+              .child(lessonId)
+              .child("Users")
+              .child(deletionKey)
+              .remove()
+          })
+          Promise.all(deletionPromises)
+        }
       } catch (e) {
         console.log(e.response.data)
       }

@@ -75,7 +75,7 @@ import { ACTIVE, TRIAL, TERMINATED } from "@/common/data"
 
 export default {
   name: "AttendancePage",
-  beforeCreate: async function() {
+  beforeMount: async function() {
     await this.$store.dispatch("loadStudentsData")
     await this.$store.dispatch("loadLessonsData")
     await this.$store.dispatch("loadPriceList")
