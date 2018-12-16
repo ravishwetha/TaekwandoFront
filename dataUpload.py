@@ -55,7 +55,7 @@ for row in range(1,masterList.nrows):
             lessonsData.update({
                 lessonName: {"days": set(), "timeslots": set()}
             })
-        lessonsData[lessonName]["days"].add(lesson[2])
+        lessonsData[lessonName]["days"].add(lesson[2][:3])
         timeslotArray = lesson[3].split("-")
         startingTime = timeslotArray[0][:2]
         if startingTime == "":
@@ -156,7 +156,7 @@ for row in range(1,masterList.nrows):
         startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
         endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
         timeslot = startTime+"/"+endTime
-        lessonPayload = {lessonToBeAdded: {"paymentPlan": paymentPlan, "entitlement": entitlement, "day": lesson[2][:2], "timeslot": timeslot}}
+        lessonPayload = {lessonToBeAdded: {"paymentPlan": paymentPlan, "entitlement": entitlement, "day": lesson[2][:3], "timeslot": timeslot}}
         parsedLessonPayload.update(lessonPayload)
     data.update({"lessons": parsedLessonPayload})
     userId = firebase.database().child("Users").push(data)["name"]

@@ -190,5 +190,6 @@ export default async (itemName, price) => {
 </html>`
   await html2pdf()
     .from(htmlText)
+    .set({ html2canvas: { useCORS: true } })
     .save("reciept.pdf")
 }

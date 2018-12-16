@@ -72,6 +72,8 @@
       <div id="addStudentTransferDiv">
         <el-transfer
           id="addStudentTransfer"
+          filterable
+          filter-placeholder="Student Name"
           v-model="studentsAddedToLesson"
           :data="studentData"
           :titles="['Unassigned', 'Present']"

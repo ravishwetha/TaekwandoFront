@@ -183,7 +183,6 @@
 <script>
 import _ from "lodash"
 import moment from "moment"
-import print from "print-js"
 import RecieptGenerator from "@/assets/reciept"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
@@ -477,15 +476,15 @@ export default {
             vm: this,
           }
 
-          const dispatch = this.$store.dispatch(
-            "addSinglePayment",
-            paymentDataAndVm
-          )
+          // const dispatch = this.$store.dispatch(
+          //   "addSinglePayment",
+          //   paymentDataAndVm
+          // )
           const recp = RecieptGenerator(
             _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
             price
           )
-          await Promise.all([dispatch, recp])
+          // await Promise.all([dispatch, recp])
           this.payment.paymentDialogVisible = false
         }
       })
