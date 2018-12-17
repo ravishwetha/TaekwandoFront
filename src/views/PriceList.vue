@@ -7,9 +7,9 @@
       :render-content="renderContent"
       accordion
     ></el-tree>
-    <el-dialog :visible.sync="updateNamePriceModalVisible">
+    <el-dialog title="Edit item and price" :visible.sync="updateNamePriceModalVisible">
       <el-form>
-        <el-form-item label="Name of priced Item">
+        <el-form-item label="Name of priced Item (Input number only if it is for sessions)">
           <el-input v-model="name"></el-input>
         </el-form-item>
         <el-form-item label="Price of Item">
@@ -23,9 +23,9 @@
         <el-button @click="updateNamePriceModalVisible = false">Cancel</el-button>
       </span>
     </el-dialog>
-    <el-dialog :visible.sync="addNamePriceModalVisible">
+    <el-dialog title="Add Item/Category and/or Price" :visible.sync="addNamePriceModalVisible">
       <el-form>
-        <el-form-item label="Name of priced Item">
+        <el-form-item label="Name of priced Item (Input number only if it is for sessions)">
           <el-input v-model="name"></el-input>
         </el-form-item>
         <el-form-item label="Price of Item (Leave it empty if only adding new category)">
@@ -219,7 +219,7 @@ export default {
               type="text"
               on-click={() => this.startAdd(node)}
             >
-              Add Pricing/Category
+              Add Item/Category
             </el-button>
             <el-button
               size="mini"

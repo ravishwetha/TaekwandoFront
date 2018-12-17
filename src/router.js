@@ -53,6 +53,11 @@ const router = new Router({
       name: "newLesson",
       component: NewLessonForm,
     },
+    {
+      path: "/editLesson",
+      name: "editLesson",
+      component: NewLessonForm,
+    },
   ],
 })
 

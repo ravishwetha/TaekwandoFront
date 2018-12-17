@@ -17,6 +17,9 @@ const lessonsModule = {
     createNewLesson(state, lessonData) {
       Vue.set(state.lessons, lessonData.id, lessonData)
     },
+    editLesson(state, lessonData) {
+      state.lessons[lessonData] = lessonData
+    },
     addUsersToLesson(state, { addUsersToLesson, lessonId }) {
       addUsersToLesson.forEach(({ key, userId }) => {
         if (state.lessons[lessonId].users === undefined) {
@@ -43,6 +46,11 @@ const lessonsModule = {
     async createNewLesson({ commit }, formData) {
       const newLessonId = await lessonsRef.push(formData).key
       commit("createNewLesson", { ...formData, id: newLessonId })
+    },
+
+    async editLesson({ commit }, { formData, lessonId }) {
+      await lessonsRef.child(lessonId).update(formData)
+      commit("editLesson", { ...formData, id: lessonId })
     },
 
     async swapLessonForUser(
@@ -104,7 +112,7 @@ const lessonsModule = {
             entitlement: sessions,
             paymentPlan: sessions,
             timeslot,
-            day
+            day,
           }
           usersRef
             .child(userId)

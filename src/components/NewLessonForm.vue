@@ -11,7 +11,7 @@
       <el-form-item label="Lesson Name" class="formItem" prop="name">
         <el-input placeholder="Please input lesson name" v-model="form.name" class="formInput"></el-input>
       </el-form-item>
-      <el-form-item label="Days:" class="formItem" prop="days">
+      <el-form-item label="Select ALL days that this lesson has:" class="formItem" prop="days">
         <el-checkbox-group v-model="form.days" class="formInput">
           <el-checkbox label="MON" name="type"></el-checkbox>
           <el-checkbox label="TUE" name="type"></el-checkbox>
@@ -24,7 +24,7 @@
       </el-form-item>
       <el-form-item
         v-for="(timeslot) in form.timeslots"
-        label="Select timeslot"
+        label="Select ALL timeslots this lesson has for ANY day:"
         :key="timeslot.key"
       >
         <el-time-select
@@ -42,7 +42,8 @@
         <el-button @click.prevent="removeTimeslot(timeslot)">Delete</el-button>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="createNewLesson('form')">Submit</el-button>
+        <el-button v-if="edit" @click="createNewLesson('form', edit)" type="primary">Edit lesson</el-button>
+        <el-button v-else type="primary" @click="createNewLesson('form')">Submit</el-button>
         <el-button @click="addTimeslot">New Timeslot</el-button>
       </el-form-item>
     </el-form>
@@ -53,8 +54,29 @@
 import _ from "lodash"
 import moment from "moment"
 export default {
+  beforeMount() {
+    const lessonId = this.$route.query["lessonId"]
+    if (lessonId) {
+      this.edit = true
+      const { name, days, timeslots } = this.$store.getters.getLessonData(
+        lessonId
+      )
+      this.form.name = name
+      this.form.days = days
+      const parsedTimeSlots = _.map(timeslots, (timeslot) => {
+        const [from, to] = timeslot.split("/")
+        return {
+          from: moment(from).format("HH:mm"),
+          to: moment(to).format("HH:mm"),
+          key: Math.random(),
+        }
+      })
+      this.form.timeslots = parsedTimeSlots
+    }
+  },
   data() {
     return {
+      edit: false,
       form: {
         name: "",
         days: [],
@@ -101,7 +123,7 @@ export default {
     }
   },
   methods: {
-    createNewLesson(formName) {
+    createNewLesson(formName, edit) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           let formData = _.pick(this.form, ["name", "days", "timeslots"])
@@ -113,7 +135,14 @@ export default {
               return parsedFrom + "/" + parsedTo
             }),
           }
-          this.$store.dispatch("createNewLesson", formData)
+          if (edit) {
+            this.$store.dispatch("editLesson", {
+              formData,
+              lessonId: this.$route.query["lessonId"],
+            })
+          } else {
+            this.$store.dispatch("createNewLesson", formData)
+          }
           this.$router.push({
             name: "home",
           })
