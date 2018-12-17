@@ -42,6 +42,7 @@
         <el-button @click.prevent="removeTimeslot(timeslot)">Delete</el-button>
       </el-form-item>
       <el-form-item>
+        <el-button v-if="edit" @click="deleteLesson()" type="primary">Delete lesson</el-button>
         <el-button v-if="edit" @click="createNewLesson('form', edit)" type="primary">Edit lesson</el-button>
         <el-button v-else type="primary" @click="createNewLesson('form')">Submit</el-button>
         <el-button @click="addTimeslot">New Timeslot</el-button>
@@ -123,6 +124,14 @@ export default {
     }
   },
   methods: {
+    deleteLesson() {
+      this.$store.dispatch("deleteLesson", {
+        lessonId: this.$route.query["lessonId"],
+      })
+      this.$router.push({
+        name: "home",
+      })
+    },
     createNewLesson(formName, edit) {
       this.$refs[formName].validate((valid) => {
         if (valid) {

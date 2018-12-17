@@ -47,6 +47,21 @@ const lessonsModule = {
       const newLessonId = await lessonsRef.push(formData).key
       commit("createNewLesson", { ...formData, id: newLessonId })
     },
+    async deleteLesson({ commit }, { lessonId }) {
+      const lessonInfo = store.getters.getLessonData(lessonId)
+      const studentIdsInLesson = _.values(lessonInfo["Users"])
+      const userLessonDeletionPromises = studentIdsInLesson.map((userId) =>
+        usersRef
+          .child(userId)
+          .child("lessons")
+          .child(lessonId)
+          .remove()
+      )
+      await Promise.all([
+        ...userLessonDeletionPromises,
+        lessonsRef.child(lessonId).remove(),
+      ])
+    },
 
     async editLesson({ commit }, { formData, lessonId }) {
       await lessonsRef.child(lessonId).update(formData)

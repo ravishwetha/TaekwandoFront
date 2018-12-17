@@ -8,6 +8,7 @@
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
           <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
+          <el-button @click="removeLesson(scope.row)" type="text" size="small">Remove</el-button>
           <el-button
             v-if="scope.row.lastPayment === undefined && scope.row.customer"
             @click="startPayment(scope.row)"
@@ -149,6 +150,12 @@ export default {
     },
     closeAddDialog() {
       this.addDialogVisible = false
+    },
+    removeLesson({ id }) {
+      this.$store.dispatch("removeUserFromLesson", {
+        lessonId: id,
+        userId: this.userId,
+      })
     },
     async conductSwap() {
       const swapLessonPayload = {
