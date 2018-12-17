@@ -24,7 +24,7 @@ config = {
 firebase = pyrebase.initialize_app(config)
 
 
-workbook = xlrd.open_workbook("./data/KATONG STUDENTS RECORDS.xlsx")
+workbook = xlrd.open_workbook("./data/KATONG STUDENTS RECORDS V3.xlsx")
 
 masterList = workbook.sheet_by_name("RECORDS")
 
@@ -35,10 +35,10 @@ lessonsData = {}
 
 for row in range(1,masterList.nrows):
     start = 0
-    lessonRows = masterList.row_values(row, 10)
+    lessonRows = masterList.row_values(row, 12)
     finished = False
     lessonsStudentIsIn = []
-    if lessonRows[0] == '-' or "UNLIMITIED" in lessonRows[0] or "UNLIMITED" in lessonRows[0] or "ADVANCE" in lessonRows[0]:
+    if lessonRows[0] == '-' or "ADVANCE" in lessonRows[0]:
         continue
     for j in range(4):
         for i in range(4):
@@ -51,6 +51,8 @@ for row in range(1,masterList.nrows):
     lessonsStudentIsIn = split(lessonsStudentIsIn, 4)[:-1]
     for lesson in lessonsStudentIsIn:
         lessonName = lesson[0]
+        if ("UNLIMITIED" in lessonName or "UNLIMITED" in lessonName):
+            lessonName = lesson[0].split()[0]
         if lessonsData.get(lessonName) == None:
             lessonsData.update({
                 lessonName: {"days": set(), "timeslots": set()}
@@ -96,31 +98,48 @@ for row in range(1,masterList.nrows):
         "status": "ACTIVE"
 
     }
-    if type(masterList.cell_value(row, 3)) == str:
-        data.update({"contact": masterList.cell_value(row, 3)})
+    if type(masterList.cell_value(row, 8)) == str:
+        data.update({"contact": masterList.cell_value(row, 8)})
     else:
-        data.update({"contact": str(int(masterList.cell_value(row, 3)))})
+        data.update({"contact": str(int(masterList.cell_value(row, 8)))})
 
-    if masterList.cell_value(row, 2) != "":
+    if masterList.cell_value(row, 3) != "":
         data.update({"dob": xlrd.xldate_as_datetime(
-            masterList.cell_value(row, 2), 0).isoformat()})
+            masterList.cell_value(row, 3), 0).isoformat()})
     else:
         data.update({
             "dob": ""
         })
-    if masterList.cell_value(row, 8) != '':
+    if masterList.cell_value(row, 2) != '': 
         data.update({
-            "enrollmentDate": xlrd.xldate_as_datetime(masterList.cell_value(row, 8), 0).isoformat(),
+            "enrollmentDate": xlrd.xldate_as_datetime(masterList.cell_value(row, 2), 0).isoformat(),
         })
     else:
         data.update({
             "enrollmentDate": '',
         })
     start = 0
-    lessonRows = masterList.row_values(row, 10)
+    if masterList.cell_value(row, 10) != "NIL":
+        if type(masterList.cell_value(row, 10)) == str:
+            lastPayment= str(arrow.get(masterList.cell_value(row, 10), "DD/MM/YYYY"))
+        else:
+            lastPayment = xlrd.xldate_as_datetime(masterList.cell_value(row, 10), 0).isoformat()
+    else:
+        lastPayment = {}
+
+
+
+    if masterList.cell_value(row, 11) != "NIL":
+        if type(masterList.cell_value(row, 11)) == str:
+            expectPayment= str(arrow.get(masterList.cell_value(row, 11), "DD/MM/YYYY"))
+        else:
+            expectPayment = xlrd.xldate_as_datetime(masterList.cell_value(row, 11), 0).isoformat()
+    else:
+        expectPayment = {}
+    lessonRows = masterList.row_values(row, 12)
     finished = False
     lessonsStudentIsIn = []
-    if lessonRows[0] == '-' or "UNLIMITIED" in lessonRows[0] or "UNLIMITED" in lessonRows[0] or "ADVANCE" in lessonRows[0]:
+    if lessonRows[0] == '-' or "ADVANCE" in lessonRows[0]:
         continue
     for j in range(4):
         for i in range(4):
@@ -156,7 +175,10 @@ for row in range(1,masterList.nrows):
         startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
         endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
         timeslot = startTime+"/"+endTime
-        lessonPayload = {lessonToBeAdded: {"paymentPlan": paymentPlan, "entitlement": entitlement, "day": lesson[2][:3], "timeslot": timeslot}}
+        if "UNLIMITIED" in lessonRows[0] or "UNLIMITED" in lessonRows[0]:
+            lessonPayload = {lessonToBeAdded: {"lastPayment": lastPayment, "expectPayment": expectPayment, "paymentPlan": paymentPlan, "entitlement": entitlement, "timeslot": "UNLIMITED"}}
+        else:
+            lessonPayload = {lessonToBeAdded: {"lastPayment": lastPayment, "expectPayment": expectPayment, "paymentPlan": paymentPlan, "entitlement": entitlement, "day": lesson[2][:3], "timeslot": timeslot}}
         parsedLessonPayload.update(lessonPayload)
     data.update({"lessons": parsedLessonPayload})
     userId = firebase.database().child("Users").push(data)["name"]

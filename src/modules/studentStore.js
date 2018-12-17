@@ -75,6 +75,20 @@ const studentModule = {
     refundPayment(state, { userId, paymentId }) {
       state.studentData[userId].payments[paymentId].mode = REFUNDED
     },
+    updateExpectPaymentDate(state, { userId, lessonId, expectPayment }) {
+      const existingExpectPayment =
+        state.studentData[userId]["lessons"][lessonId]["expectPayment"]
+      if (existingExpectPayment === undefined) {
+        Vue.set(
+          state.studentData[userId]["lessons"][lessonId],
+          "expectPayment",
+          {}
+        )
+      }
+      state.studentData[userId]["lessons"][lessonId][
+        "expectPayment"
+      ] = expectPayment
+    },
     removeUser(state, { userId }) {
       state.studentData = _.filter(
         state.studentData,
@@ -295,6 +309,15 @@ const studentModule = {
           type: "error",
         })
       }
+    },
+    async updateExpectPaymentDate({ commit }, updateExpectPaymentPayload) {
+      const { userId, lessonId, expectPayment } = updateExpectPaymentPayload
+      await usersRef
+        .child(userId)
+        .child("lessons")
+        .child(lessonId)
+        .update({ expectPayment })
+      commit("updateExpectPaymentDate", updateExpectPaymentPayload)
     },
     async addUser({ commit, dispatch }, userData) {
       try {

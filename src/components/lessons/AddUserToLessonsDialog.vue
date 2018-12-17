@@ -17,23 +17,27 @@
       <el-option v-for="item in sessionOptions" :key="item" :label="item" :value="item"></el-option>
     </el-select>
     <br>
-    <span>Select the timeslot to add the student into</span>
+    <div v-if="!lessonAddingToUnlimited">
+      <span>Select the timeslot to add the student into</span>
+      <br>
+      <el-select v-model="lessonAddingToTimeslot" placeholder="Select">
+        <el-option
+          v-for="item in selectedLessonTimeslots"
+          :key="item.val"
+          :label="item.label"
+          :value="item.val"
+        ></el-option>
+      </el-select>
+      <br>
+      <span>Select the day of lesson this student is in</span>
+      <br>
+      <el-select v-model="lessonAddingToDay" placeholder="Select">
+        <el-option v-for="item in DAYS" :key="item" :label="item" :value="item"></el-option>
+      </el-select>
+    </div>
     <br>
-    <el-select v-model="lessonAddingToTimeslot" placeholder="Select">
-      <el-option
-        v-for="item in selectedLessonTimeslots"
-        :key="item.val"
-        :label="item.label"
-        :value="item.val"
-      ></el-option>
-    </el-select>
-    <br>
-    <span>Select the day of lesson this student is in</span>
-    <br>
-
-    <el-select v-model="lessonAddingToDay" placeholder="Select">
-      <el-option v-for="item in DAYS" :key="item" :label="item" :value="item"></el-option>
-    </el-select>
+    <span>Unlimited?</span>
+    <el-checkbox v-model="lessonAddingToUnlimited"></el-checkbox>
     <span slot="footer">
       <el-button type="primary" @click="addUserToLesson">Add</el-button>
       <el-button @click="closeDialog">Cancel</el-button>
@@ -42,7 +46,7 @@
 </template>
 
 <script>
-import { DAYS } from "@/common/data"
+import { DAYS, UNLIMITED } from "@/common/data"
 import moment from "moment"
 import _ from "lodash"
 
@@ -53,6 +57,7 @@ export default {
       lessonAddingToDay: "",
       lessonAddingToSessions: "",
       lessonAddingToTimeslot: "",
+      lessonAddingToUnlimited: "",
       sessionOptions: [4, 12, 24],
       DAYS: _.keys(DAYS),
     }
@@ -74,18 +79,34 @@ export default {
   },
   methods: {
     async addUserToLesson() {
-      await this.$store.dispatch("addUsersToLesson", {
-        userIdsSessions: [
-          //take note the S after userId
-          {
-            userId: this.userId,
-            sessions: this.lessonAddingToSessions,
-            timeslot: this.lessonAddingToTimeslot,
-            day: this.lessonAddingToDay,
-          },
-        ],
-        lessonId: this.lessonAddingTo,
-      })
+      let payload
+      if (this.lessonAddingToUnlimited) {
+        payload = {
+          userIdsSessions: [
+            //take note the S after userId
+            {
+              userId: this.userId,
+              sessions: this.lessonAddingToSessions,
+              timeslot: UNLIMITED,
+            },
+          ],
+          lessonId: this.lessonAddingTo,
+        }
+      } else {
+        payload = {
+          userIdsSessions: [
+            //take note the S after userId
+            {
+              userId: this.userId,
+              sessions: this.lessonAddingToSessions,
+              timeslot: this.lessonAddingToTimeslot,
+              day: this.lessonAddingToDay,
+            },
+          ],
+          lessonId: this.lessonAddingTo,
+        }
+      }
+      await this.$store.dispatch("addUsersToLesson", payload)
       this.closeDialog()
     },
   },

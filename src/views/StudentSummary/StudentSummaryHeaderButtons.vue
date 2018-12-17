@@ -12,7 +12,7 @@
       width="200"
       trigger="click"
     >
-      <el-button type="primary" slot="reference" round>View/Edit Lesson</el-button>
+      <el-button type="primary" slot="reference" round>View/Edit Lessons</el-button>
       <el-select v-on:change="editSelectedLesson">
         <el-option
           v-for="lesson in lessonSelectData"

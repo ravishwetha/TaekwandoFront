@@ -1,5 +1,15 @@
 <template>
   <el-date-picker
+    v-if="single"
+    :value="value"
+    @input="(event) => $emit('input', event)"
+    type="date"
+    placeholder="Pick a day"
+    :picker-options="datePickerOptions"
+    format="dd-MM-yyyy"
+  ></el-date-picker>
+  <el-date-picker
+    v-else
     :value="value"
     @input="(event) => $emit('input', event)"
     type="daterange"
@@ -15,7 +25,14 @@
 <script>
 import moment from "moment"
 export default {
-  props: ["value"],
+  props: {
+    value: {
+      required: true,
+    },
+    single: {
+      type: Boolean,
+    },
+  },
   data() {
     return {
       datePickerOptions: {
