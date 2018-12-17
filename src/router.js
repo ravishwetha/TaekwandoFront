@@ -5,6 +5,8 @@ import Login from "@/components/Login"
 import NewLessonForm from "@/components/NewLessonForm"
 import UserDetailsForm from "@/components/UserDetailsForm"
 import AttendancePage from "@/views/AttendancePage"
+import PriceListPage from "@/views/PriceList"
+
 import SignupForm from "@/views/UserSignupForm"
 
 Vue.use(Router)
@@ -20,6 +22,11 @@ const router = new Router({
       path: "/",
       name: "home",
       component: StudentSummary,
+    },
+    {
+      path: "/priceList",
+      name: "priceList",
+      component: PriceListPage,
     },
     {
       path: "/edit",

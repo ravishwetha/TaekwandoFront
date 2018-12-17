@@ -299,6 +299,7 @@ export default {
     },
     miscPaymentCascaderOptions() {
       const priceList = this.$store.getters.getPriceList[MISCELLEANEOUS]
+      console.log(priceList)
       const options = _.map(priceList, (value, category) => {
         const subCategory = _.map(value, (price, subcategory) => {
           const label = `${subcategory}, $${price}`
@@ -477,12 +478,13 @@ export default {
             vm: this,
           }
 
-          const dispatch = this.$store.dispatch(
-            "addSinglePayment",
-            paymentDataAndVm
-          )
+          // const dispatch = this.$store.dispatch(
+          //   "addSinglePayment",
+          //   paymentDataAndVm
+          // )
           const recp = RecieptGenerator(
             _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            this.payment.paymentForm.description,
             price
           )
           await Promise.all([dispatch, recp])
@@ -516,6 +518,7 @@ export default {
           )
           const recp = RecieptGenerator(
             _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            this.payment.paymentForm.description,
             price
           )
           await Promise.all([dispatch, recp])

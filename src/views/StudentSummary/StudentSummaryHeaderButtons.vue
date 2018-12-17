@@ -4,6 +4,7 @@
     <el-button @click="routeToAddUser()" type="primary" round>Add student</el-button>
     <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
     <el-button @click="openSendMessageModal" type="primary" round>Send a message</el-button>
+    <el-button @click="routeToPriceList()" type="primary" round>View/Edit Price List</el-button>
   </div>
 </template>
 
@@ -21,6 +22,11 @@ export default {
     routeToAddUser() {
       this.$router.push({
         name: "signup",
+      })
+    },
+    routeToPriceList() {
+      this.$router.push({
+        name: "priceList",
       })
     },
   },

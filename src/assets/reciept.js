@@ -1,6 +1,6 @@
 import moment from "moment"
 import html2pdf from "html2pdf.js"
-export default async (itemName, price) => {
+export default async (itemName, desc, price) => {
   const htmlText = `<!doctype html>
 <html>
 <head>
@@ -160,7 +160,7 @@ export default async (itemName, price) => {
                 <td>
                     Item
                 </td>
-                
+
                 <td>
                     Price
                 </td>

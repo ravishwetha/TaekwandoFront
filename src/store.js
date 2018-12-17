@@ -3,7 +3,7 @@ import Vuex from "vuex"
 import createPersistedState from "vuex-persistedstate"
 import lessonStore from "@/modules/lessonStore"
 import studentStore from "@/modules/studentStore"
-import { priceListAPI } from "@/common/api"
+import priceStore from "@/modules/priceStore"
 
 Vue.use(Vuex)
 
@@ -17,25 +17,18 @@ export default new Vuex.Store({
     isLoggedIn(state, { loggedIn }) {
       state.loggedIn = loggedIn
     },
-    loadPriceList(state, payload) {
-      state.priceList = { ...payload }
-    },
   },
   modules: {
     lessonsModule: lessonStore,
     studentsModule: studentStore,
+    priceModule: priceStore,
   },
   actions: {
     login({ commit }) {
       commit("isLoggedIn", { loggedIn: true })
     },
-    async loadPriceList({ commit }) {
-      const data = await priceListAPI()
-      commit("loadPriceList", data)
-    },
   },
   getters: {
     getLoggedInStatus: (state) => state.loggedIn,
-    getPriceList: (state) => state.priceList,
   },
 })
