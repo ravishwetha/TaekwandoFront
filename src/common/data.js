@@ -31,6 +31,7 @@ export const firebaseConfig = {
 
 export const CARD = "CARD"
 export const CASHNETS = "CASHNETS"
+export const REFUNDED = "REFUNDED"
 
 export const ACTIVE = "ACTIVE"
 export const TRIAL = "TRIAL"

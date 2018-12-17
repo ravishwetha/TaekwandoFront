@@ -82,7 +82,12 @@
                       type="text"
                       size="small"
                     >Download Receipt</el-button>
-                    <el-button @click="refund(scope.row)" type="text" size="small">Refund</el-button>
+                    <el-button
+                      v-if="scope.row.mode !== REFUNDED"
+                      @click="refund(scope.row)"
+                      type="text"
+                      size="small"
+                    >Refund</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -197,7 +202,13 @@ import RecieptGenerator from "@/assets/reciept"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"
-import { CARD, CASHNETS, MISCELLEANEOUS, LESSONS } from "@/common/data"
+import {
+  CARD,
+  CASHNETS,
+  MISCELLEANEOUS,
+  LESSONS,
+  REFUNDED,
+} from "@/common/data"
 import LessonTable from "@/components/lessons/LessonTable"
 import CardRegistration from "@/components/common/CardRegistration"
 
@@ -243,7 +254,10 @@ export default {
       const details = this.$store.getters.getStudentInfo(
         this.$route.query["userId"]
       )
-      let filteredData = _.values(details.payments)
+      let filteredData = _.map(details.payments, (values, id) => ({
+        ...values,
+        id,
+      }))
 
       if (
         this.paymentDateRange.length > 0 &&
@@ -414,12 +428,19 @@ export default {
       },
       CARD,
       CASHNETS,
+      REFUNDED,
       stripeKey: process.env.VUE_APP_STRIPE_KEY,
       userId: this.$route.query["userId"],
     }
   },
   methods: {
-    refund(row) {},
+    refund(rowData) {
+      this.$store.dispatch("refundPayment", {
+        ...rowData,
+        userId: this.$route.query["userId"],
+        vm: this,
+      })
+    },
     generateReceipt({ type, description, price }) {
       const paymentType = _.initial(type.split(" / ")).join(" / ")
       RecieptGenerator(paymentType, description, price)

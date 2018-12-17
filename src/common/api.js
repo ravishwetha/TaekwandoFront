@@ -61,12 +61,15 @@ export const absentSmsAPI = async ({ absenteeNumbers }) => {
 
 export const tokenPaymentAPI = async (paymentInfo) => {
   const api = await axiosConfig()
-
   return api.post("/payment/token", paymentInfo).then((r) => r.data)
+}
+
+export const refundAPI = async (chargeId) => {
+  const api = await axiosConfig()
+  return api.post("/payment/refund", { chargeId }).then((r) => r.data)
 }
 
 export const cardRegistrationAPI = async ({ cardToken }) => {
   const api = await axiosConfig()
-
   return api.post("/payment/registration", { cardToken }).then((r) => r.data)
 }

@@ -1,11 +1,14 @@
 import _ from "lodash"
 import moment from "moment"
-import { firebaseDB, tokenPaymentAPI, cardRegistrationAPI } from "@/common/api"
 import Vue from "vue"
-import { PRESENT } from "@/common/data"
-import { CARD, CASHNETS } from "@/common/data"
-import { TERMINATED } from "@/common/data"
 import store from "@/store"
+import {
+  firebaseDB,
+  tokenPaymentAPI,
+  cardRegistrationAPI,
+  refundAPI,
+} from "@/common/api"
+import { CARD, CASHNETS, REFUNDED, TERMINATED, PRESENT } from "@/common/data"
 import { lessonsRef } from "./lessonStore"
 
 export const usersRef = firebaseDB.database().ref("Users")
@@ -68,6 +71,9 @@ const studentModule = {
     },
     startPayment(state, { userId, lessonId, lastPayment }) {
       Vue.set(state.studentData[userId]["lessons"][lessonId], { lastPayment })
+    },
+    refundPayment(state, { userId, paymentId }) {
+      state.studentData[userId].payments[paymentId].mode = REFUNDED
     },
     removeUser(state, { userId }) {
       state.studentData = _.filter(
@@ -218,6 +224,35 @@ const studentModule = {
         .child(lessonId)
         .update({ lastPayment })
       commit("startPayment", { userId, lessonId, lastPayment })
+    },
+    async refundPayment({ commit }, paymentData) {
+      const { mode, id, userId, vm } = paymentData
+      vm.$message({ type: "warning", message: "Refunding, please wait!" })
+      try {
+        if (mode === CASHNETS) {
+          await usersRef
+            .child(userId)
+            .child("payments")
+            .child(id)
+            .update({ mode: REFUNDED })
+        } else if (mode === CARD) {
+          const { chargeId } = paymentData
+          await refundAPI(chargeId)
+        }
+        commit("refundPayment", { userId, paymentId: id })
+        vm.$notify({
+          type: "success",
+          title: "Refund success",
+          message: "Refund was a success",
+        })
+      } catch (e) {
+        console.log(e)
+        vm.$notify({
+          title: "Payment error",
+          message: e.response.data,
+          type: "error",
+        })
+      }
     },
     async addSinglePayment(
       { commit },
