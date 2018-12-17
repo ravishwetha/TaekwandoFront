@@ -71,10 +71,20 @@
               </el-row>
               <el-table max-height="500" :data="paymentData" style="width: 90%">
                 <el-table-column prop="mode" label="Payment mode"></el-table-column>
-                <el-table-column width="500" prop="type" label="Item paid for"></el-table-column>
+                <el-table-column prop="type" label="Item paid for"></el-table-column>
                 <el-table-column prop="created" label="Paid on"></el-table-column>
-                <el-table-column width="200" prop="description" label="Payment Description"></el-table-column>
+                <el-table-column prop="description" label="Payment Description"></el-table-column>
                 <el-table-column prop="price" label="Amount"></el-table-column>
+                <el-table-column label="Operations" fixed="right">
+                  <template slot-scope="scope">
+                    <el-button
+                      @click="generateReceipt(scope.row)"
+                      type="text"
+                      size="small"
+                    >Download Receipt</el-button>
+                    <el-button @click="refund(scope.row)" type="text" size="small">Refund</el-button>
+                  </template>
+                </el-table-column>
               </el-table>
             </el-row>
           </el-col>
@@ -299,7 +309,6 @@ export default {
     },
     miscPaymentCascaderOptions() {
       const priceList = this.$store.getters.getPriceList[MISCELLEANEOUS]
-      console.log(priceList)
       const options = _.map(priceList, (value, category) => {
         const subCategory = _.map(value, (price, subcategory) => {
           const label = `${subcategory}, $${price}`
@@ -410,6 +419,11 @@ export default {
     }
   },
   methods: {
+    refund(row) {},
+    generateReceipt({ type, description, price }) {
+      const paymentType = _.initial(type.split(" / ")).join(" / ")
+      RecieptGenerator(paymentType, description, price)
+    },
     payCardMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
@@ -478,10 +492,10 @@ export default {
             vm: this,
           }
 
-          // const dispatch = this.$store.dispatch(
-          //   "addSinglePayment",
-          //   paymentDataAndVm
-          // )
+          const dispatch = this.$store.dispatch(
+            "addSinglePayment",
+            paymentDataAndVm
+          )
           const recp = RecieptGenerator(
             _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
             this.payment.paymentForm.description,
