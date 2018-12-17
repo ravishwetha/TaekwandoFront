@@ -47,6 +47,16 @@
         <el-checkbox v-model="message.sendSMS">Send SMS</el-checkbox>
       </div>
       <el-input type="textarea" v-model="message.messageText"></el-input>
+      <div style="display: flex; justify-content: center; margin-top: 20px">
+        <el-transfer
+          id="addStudentTransfer"
+          filterable
+          filter-placeholder="Student Name"
+          v-model="studentsToSendMessageTo"
+          :data="studentData"
+          :titles="['Unassigned', 'To Send']"
+        ></el-transfer>
+      </div>
       <span slot="footer" class="dialog-footer">
         <el-button v-if="!this.sending" @click="message.messageModalVisible = false">Cancel</el-button>
         <el-button :loading="this.sending" type="primary" @click="sendAMessage()">
@@ -92,7 +102,14 @@ export default {
     lessonData() {
       return this.$store.getters.getAllLessonData
     },
-
+    studentData() {
+      return _.map(this.$store.getters.getAllStudentsInfo, (studentInfo) => {
+        return {
+          key: studentInfo.userId,
+          label: studentInfo.name,
+        }
+      })
+    },
     tableData() {
       let filteredData = _.filter(
         this.$store.getters.getAllStudentsInfo,
@@ -164,10 +181,10 @@ export default {
       })
     },
     async sendAMessage() {
-      const studentData = this.tableData.map((student) => ({
-        email: student.email,
-        contact: student.contact,
-      }))
+      const studentData = this.studentsToSendMessageTo.map((student) => {
+        const { email, contact } = this.$store.getters.getStudentInfo(student)
+        return { email, contact }
+      })
       this.sending = true
       if (this.message.sendEmail) {
         try {
@@ -229,6 +246,7 @@ export default {
       ACTIVE,
       TRIAL,
       TERMINATED,
+      studentsToSendMessageTo: [],
     }
   },
 }
