@@ -187,6 +187,7 @@ const studentModule = {
     async unregisterCard({ commit }, { userId }) {
       const userCustomerId = store.getters.getStudentInfo(userId)["customer"]
         .customerId
+      await usersRef[userId].child("customer").remove()
       await deleteCustomerAPI(userCustomerId)
       commit("removeCustomer", { userId })
     },
