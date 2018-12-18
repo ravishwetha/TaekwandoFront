@@ -187,7 +187,6 @@ export default {
 
     renderContent(h, { node, data, store }) {
       if (data.price) {
-        console.log(data)
         return (
           <span id="custom-tree-node">
             <span>{node.label}</span>

@@ -100,26 +100,7 @@ export default {
           trigger: "blur",
         },
       ],
-      dob: [
-        {
-          required: true,
-          message: "Please input Date of Birth",
-          trigger: "blur",
-        },
-      ],
-      nric: [
-        {
-          required: true,
-          message: "Please input NRIC",
-          trigger: "blur",
-        },
-      ],
       email: [
-        {
-          required: true,
-          message: "Please input email of student",
-          trigger: "blur",
-        },
         {
           type: "email",
           message: "Email format is wrong.",
@@ -128,21 +109,9 @@ export default {
       ],
       contact: [
         {
-          required: true,
-          message: "Please input contact number of student",
-          trigger: "blur",
-        },
-        {
-          min: 8,
+          min: 0,
           max: 8,
           message: "Singapore phone numbers have only 8 digits.",
-          trigger: "blur",
-        },
-      ],
-      address: [
-        {
-          required: true,
-          message: "Please input address of student",
           trigger: "blur",
         },
       ],

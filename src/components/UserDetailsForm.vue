@@ -108,7 +108,7 @@
               style="padding-top: 10px;"
               :width="60"
             ></el-switch>
-            <el-row v-if="payment.paymentType === CASHNETS" id="commentsRow">
+            <el-row id="commentsRow">
               <el-button @click="payment.paymentDialogLessonVisible = true">Lesson Payment</el-button>
             </el-row>
             <el-row id="commentsRow">
@@ -179,9 +179,22 @@
         <el-form-item label="Description">
           <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
         </el-form-item>
+        <el-form-item
+          v-if="payment.paymentType === CARD && customerDetails === undefined"
+          label="Card Information"
+        >
+          <card :stripe="stripeKey"></card>
+        </el-form-item>
       </el-form>
       <span slot="footer">
         <el-button
+          v-if="payment.paymentType === CARD"
+          :loading="this.paymentLoading"
+          type="primary"
+          @click="payCardLessons('paymentForm')"
+        >Pay</el-button>
+        <el-button
+          v-else
           :loading="this.paymentLoading"
           type="primary"
           @click="payCashLessons('paymentForm')"
@@ -549,6 +562,57 @@ export default {
           }
           const dispatch = this.$store.dispatch(
             "addLessonCashPayment",
+            paymentDataAndVm
+          )
+          const recp = RecieptGenerator(
+            _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            this.payment.paymentForm.description,
+            price
+          )
+          await Promise.all([dispatch, recp])
+          this.payment.paymentDialogLessonVisible = false
+        }
+      })
+    },
+    payCardLessons(formName) {
+      console.log("cardLesons called")
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          let paymentToken
+          if (this.customerDetails === undefined) {
+            const token = await createToken()
+            console.log(token)
+            if (token.error) {
+              this.$notify.error({
+                title: "Card Error",
+                message: token.error.message,
+              })
+            }
+            paymentToken = token.token.id
+          } else {
+            paymentToken = this.customerDetails.customerId
+          }
+
+          const priceList = this.$store.getters.getPriceList
+          let price = priceList[LESSONS]
+          for (const key of this.payment.paymentForm.type) {
+            price = price[key]
+          }
+          const paymentDataAndVm = {
+            paymentData: {
+              paymentInfo: {
+                ...this.payment.paymentForm,
+                type: [LESSONS, ...this.payment.paymentForm.type],
+                price,
+                userEmail: this.contactDetails.email,
+              },
+              paymentToken,
+            },
+            userId: this.$route.query["userId"],
+            vm: this,
+          }
+          const dispatch = this.$store.dispatch(
+            "addLessonCardPayment",
             paymentDataAndVm
           )
           const recp = RecieptGenerator(

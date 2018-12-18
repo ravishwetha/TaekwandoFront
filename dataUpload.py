@@ -91,9 +91,9 @@ for row in range(1,masterList.nrows):
         postalCode =  " " + str(int(masterList.cell_value(row, 6)))
     data = {
         "name": masterList.cell_value(row, 1),
-        "email": masterList.cell_value(row, 4),
+        "email": masterList.cell_value(row, 7),
         "address": masterList.cell_value(row, 5) + postalCode,
-        "nric": masterList.cell_value(row, 7),
+        "nric": masterList.cell_value(row, 4),
         "nationality": masterList.cell_value(row, 9),
         "status": "ACTIVE"
 

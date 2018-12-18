@@ -198,6 +198,7 @@ const studentModule = {
           userId
         )
         const lessonData = store.getters.getAllLessonData
+        console.log(paymentData)
         const lessonId = _.findKey(lessonData, (lesson) => {
           return _.includes(
             lesson.name,
@@ -218,6 +219,60 @@ const studentModule = {
             .child(lessonId)
             .update({
               lastPayment: moment().toISOString(),
+              entitlement:
+                parseInt(entitlement) +
+                parseInt(_.last(paymentData.paymentInfo.type)),
+            })
+        }
+        commit("addPayment", { userId, paymentPayload, paymentKey })
+        vm.$notify({
+          type: "success",
+          title: "Payment success",
+          message: "Payment was a success",
+        })
+        commit("modifyStudentDataLoadingStatus", { status: false })
+      } catch (e) {
+        commit("modifyStudentDataLoadingStatus", { status: false })
+        console.log(e)
+        vm.$notify({
+          title: "Payment error",
+          message: e.response.data,
+          type: "error",
+        })
+      }
+    },
+    async addLessonCardPayment({ commit }, { paymentData, userId, vm }) {
+      try {
+        commit("modifyStudentDataLoadingStatus", { status: true })
+        const { paymentKey, paymentPayload } = await addCardPaymentNonCustomer(
+          paymentData,
+          userId
+        )
+        commit("addPayment", { userId, paymentPayload, paymentKey })
+        const lessonData = store.getters.getAllLessonData
+        const lessonId = _.findKey(lessonData, (lesson) => {
+          return _.includes(
+            lesson.name,
+            _.last(_.initial(paymentData.paymentInfo.type))
+          )
+        })
+        if (lessonId) {
+          const entitlement = await usersRef
+            .child(userId)
+            .child("lessons")
+            .child(lessonId)
+            .child("entitlement")
+            .once("value")
+            .then((r) => r.val())
+          await usersRef
+            .child(userId)
+            .child("lessons")
+            .child(lessonId)
+            .update({
+              lastPayment: moment().toISOString(),
+              nextPayment: moment()
+                .add(paymentData.paymentInfo.type, "weeks")
+                .toISOString(),
               entitlement:
                 parseInt(entitlement) +
                 parseInt(_.last(paymentData.paymentInfo.type)),
