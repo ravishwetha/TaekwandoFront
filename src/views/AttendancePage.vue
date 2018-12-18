@@ -11,12 +11,24 @@
         <el-col id="center">
           <el-row :gutter="10">
             <el-col span="6">
-              <el-select v-model="lessonValue" placeholder="Select lesson">
+              <el-select
+                style="padding-bottom: 10px"
+                v-model="lessonValue"
+                placeholder="Select lesson"
+              >
                 <el-option
                   v-for="lesson in lessonData"
                   :key="lesson.id"
                   :label="lesson.name"
                   :value="lesson.id"
+                ></el-option>
+              </el-select>
+              <el-select v-model="selectedTimeslot" placeholder="Select timeslot">
+                <el-option
+                  v-for="item in timeslotSelectData"
+                  :key="item.val"
+                  :label="item.label"
+                  :value="item.val"
                 ></el-option>
               </el-select>
             </el-col>
@@ -90,9 +102,10 @@
 <script>
 import moment from "moment"
 import _ from "lodash"
-import { DAYS, PRESENT, ABSENT } from "@/common/data"
+import { DAYS, PRESENT, ABSENT, UNLIMITED } from "@/common/data"
 import { absentSmsAPI } from "@/common/api"
 import Vue from "vue"
+
 export default {
   beforeMount() {
     this.updatePresentAbsent()
@@ -108,6 +121,7 @@ export default {
         return true
       })
       const parsedData = _.map(data, (lesson, id) => ({ ...lesson, id }))
+
       return parsedData
     },
     tableData() {
@@ -118,10 +132,31 @@ export default {
         }
       )
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-        return DAYS[user.lessons[this.lessonValue].day] === moment().day()
+        return (
+          DAYS[user.lessons[this.lessonValue].day] === moment().day() ||
+          user.lessons[this.lessonValue].timeslot === UNLIMITED
+        )
+      })
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+        return (
+          user.lessons[this.lessonValue].timeslot === this.selectedTimeslot ||
+          user.lessons[this.lessonValue].timeslot === UNLIMITED
+        )
       })
       this.updatePresentAbsent()
       return filteredStudentInfo
+    },
+    timeslotSelectData() {
+      const selectOptions = _.map(
+        this.getStudentUniqueTimeslots(),
+        (timeslot) => {
+          const [from, to] = timeslot.split("/")
+          const parsedFrom = moment(from).format("ha")
+          const parsedTo = moment(to).format("ha")
+          return { label: parsedFrom + "-" + parsedTo, val: timeslot }
+        }
+      )
+      return selectOptions
     },
     studentData() {
       const filteredStudentInfo = _.filter(
@@ -154,6 +189,7 @@ export default {
 
     return {
       selectedDate: moment().format("DD MMM YYYY"),
+      selectedTimeslot: "",
       lessonValue: "",
       total: 0,
       modalVisible: false,
@@ -184,6 +220,26 @@ export default {
           }
         })
       })
+    },
+    getStudentUniqueTimeslots() {
+      let filteredStudentInfo = _.filter(
+        this.$store.getters.getAllStudentsInfo,
+        (student) => {
+          return _.includes(_.keys(student.lessons), this.lessonValue)
+        }
+      )
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+        return (
+          DAYS[user.lessons[this.lessonValue].day] === moment().day() ||
+          user.lessons[this.lessonValue].timeslot === UNLIMITED
+        )
+      })
+      const timeslots = new Set()
+      filteredStudentInfo.forEach((user) => {
+        timeslots.add(user.lessons[this.lessonValue].timeslot)
+      })
+      console.log(Array.from(timeslots))
+      return Array.from(timeslots)
     },
     untickAbsent(id) {
       this.absent[id] = false

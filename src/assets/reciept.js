@@ -32,7 +32,7 @@ export default async (itemName, desc, price) => {
     }
     
     .invoice-box table tr td:nth-child(2) {
-        text-align: right;
+        text-align: left;
     }
     
     .invoice-box table tr.top table td {
@@ -142,7 +142,8 @@ export default async (itemName, desc, price) => {
                 <td>
                     Payment Method
                 </td>
-                
+                <td>
+                </td>
                 <td>
                 </td>
             </tr>
@@ -151,7 +152,8 @@ export default async (itemName, desc, price) => {
                 <td>
                     Cash/Nets
                 </td>
-                
+                <td>
+                </td>
                 <td>
                 </td>
             </tr>
@@ -160,7 +162,9 @@ export default async (itemName, desc, price) => {
                 <td>
                     Item
                 </td>
-
+                <td>
+                    Description
+                </td>
                 <td>
                     Price
                 </td>
@@ -169,6 +173,9 @@ export default async (itemName, desc, price) => {
             <tr class="item">
                 <td>
                     ${itemName}
+                </td>
+                <td>
+                    ${desc}
                 </td>
                 
                 <td>
@@ -179,7 +186,7 @@ export default async (itemName, desc, price) => {
             
             <tr class="total">
                 <td></td>
-                
+                <td></td>
                 <td>
                    Total: $${price}
                 </td>
