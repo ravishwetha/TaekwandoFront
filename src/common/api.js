@@ -69,6 +69,11 @@ export const refundAPI = async (chargeId) => {
   return api.post("/payment/refund", { chargeId }).then((r) => r.data)
 }
 
+export const deleteCustomerAPI = async (customerId) => {
+  const api = await axiosConfig()
+  return api.post("/payment/refund", { customerId }).then((r) => r.data)
+}
+
 export const cardRegistrationAPI = async ({ cardToken }) => {
   const api = await axiosConfig()
   return api.post("/payment/registration", { cardToken }).then((r) => r.data)

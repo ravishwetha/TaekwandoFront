@@ -7,6 +7,7 @@ import {
   tokenPaymentAPI,
   cardRegistrationAPI,
   refundAPI,
+  deleteCustomerAPI,
 } from "@/common/api"
 import { CARD, CASHNETS, REFUNDED, TERMINATED, PRESENT } from "@/common/data"
 import { lessonsRef } from "./lessonStore"
@@ -128,9 +129,12 @@ const studentModule = {
     addCustomer(state, { userId, cardToken }) {
       Vue.set(state.studentData[userId], "customer", cardToken)
     },
+    removeCustomer(state, { userId }) {
+      Vue.delete(state.studentData[userId], "customer")
+    },
   },
   actions: {
-    async deleteUser({ commit, state }, { userId }) {
+    async deleteUser({ commit }, { userId }) {
       try {
         usersRef.child(userId).update({
           status: TERMINATED,
@@ -179,6 +183,12 @@ const studentModule = {
           type: "error",
         })
       }
+    },
+    async unregisterCard({ commit }, { userId }) {
+      const userCustomerId = store.getters.getStudentInfo(userId)["customer"]
+        .customerId
+      await deleteCustomerAPI(userCustomerId)
+      commit("removeCustomer", { userId })
     },
     async addLessonCashPayment({ commit }, { paymentData, userId, vm }) {
       try {
