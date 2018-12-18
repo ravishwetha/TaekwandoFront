@@ -23,6 +23,7 @@
                   :value="lesson.id"
                 ></el-option>
               </el-select>
+              <br>
               <el-select v-model="selectedTimeslot" placeholder="Select timeslot">
                 <el-option
                   v-for="item in timeslotSelectData"
@@ -36,9 +37,15 @@
               <el-button
                 id="newStudentDiv"
                 type="primary"
-                @click="modalVisible = true"
+                @click="makeupModalVisible = true"
                 :disabled="lessonValue === ``"
               >Make up</el-button>
+              <el-button
+                id="newStudentDiv"
+                type="primary"
+                @click="viewMakeUpModalVisible = true"
+                :disabled="lessonValue === ``"
+              >View make up students</el-button>
             </el-col>
             <el-col id="presentAbsent" span="6">
               <span>Present count : {{presentCount}} / {{tableData.length}}</span>
@@ -80,7 +87,21 @@
         </div>
       </el-main>
     </el-container>
-    <el-dialog center width="70%" :visible.sync="modalVisible" title="Add attendance for users">
+    <el-dialog
+      title="Users who attended this lesson's makeup"
+      center
+      :visible.sync="viewMakeUpModalVisible"
+    >
+      <el-table :data="makeupLessonUserData" style="width: 100%">
+        <el-table-column prop="name" label="Name"></el-table-column>
+      </el-table>
+    </el-dialog>
+    <el-dialog
+      center
+      width="70%"
+      :visible.sync="makeupModalVisible"
+      title="Add attendance for users"
+    >
       <div id="addStudentTransferDiv">
         <el-transfer
           id="addStudentTransfer"
@@ -93,7 +114,7 @@
       </div>
       <span slot="footer">
         <el-button @click="takeAttendanceUserNotInLesson" type="primary">Take attendance</el-button>
-        <el-button @click="modalVisible = false">Cancel</el-button>
+        <el-button @click="makeupModalVisible = false">Cancel</el-button>
       </span>
     </el-dialog>
   </div>
@@ -123,6 +144,36 @@ export default {
       const parsedData = _.map(data, (lesson, id) => ({ ...lesson, id }))
 
       return parsedData
+    },
+    makeupLessonUserData() {
+      const users = this.$store.getters.getAllStudentsInfo
+      const usersWhoHaveAttendance = _.compact(
+        _.map(
+          users,
+          (userData, userId) =>
+            userData.attendance
+              ? { userId, name: userData.name, attendance: userData.attendance }
+              : null
+        )
+      )
+      const usersWhoHaveMakeupTodayInThisLesson = _.filter(
+        usersWhoHaveAttendance,
+        (idNameAttendance) => {
+          const todayMakeup = _.find(
+            idNameAttendance.attendance,
+            (attendanceObject) => {
+              const sameId = attendanceObject.lessonId === this.lessonValue
+              const sameDay = moment(attendanceObject.timestamp)
+                .startOf("day")
+                .isSame(moment().startOf("day"))
+              const isMakeup = attendanceObject.presence === "MAKEUP"
+              return sameId && sameDay && isMakeup
+            }
+          )
+          return todayMakeup !== undefined
+        }
+      )
+      return usersWhoHaveMakeupTodayInThisLesson
     },
     tableData() {
       let filteredStudentInfo = _.filter(
@@ -192,11 +243,12 @@ export default {
       selectedTimeslot: "",
       lessonValue: "",
       total: 0,
-      modalVisible: false,
+      makeupModalVisible: false,
       studentsAddedToLesson: [],
       present,
       absent,
       toBeUpdated: {},
+      viewMakeUpModalVisible: false,
     }
   },
   methods: {
@@ -238,7 +290,6 @@ export default {
       filteredStudentInfo.forEach((user) => {
         timeslots.add(user.lessons[this.lessonValue].timeslot)
       })
-      console.log(Array.from(timeslots))
       return Array.from(timeslots)
     },
     untickAbsent(id) {
@@ -266,7 +317,7 @@ export default {
         lessonId: this.lessonValue,
         studentsToBeUpdated: this.toBeUpdated,
       })
-      this.modalVisible = false
+      this.makeupModalVisible = false
     },
     submitAttendance() {
       const present = _.compact(

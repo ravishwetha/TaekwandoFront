@@ -426,7 +426,7 @@ const studentModule = {
       }
     },
     async submitAttendance(
-      { commit },
+      { dispatch },
       { userIdsAndPresence, lessonId, studentsToBeUpdated }
     ) {
       await Promise.all(
@@ -476,6 +476,7 @@ const studentModule = {
           }
         })
       )
+      dispatch("loadStudentsData")
     },
   },
 }
