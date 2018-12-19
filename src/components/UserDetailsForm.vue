@@ -58,7 +58,7 @@
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
-                <el-table-column prop="timestamp" label="Date of attendance taken"></el-table-column>
+                <el-table-column prop="timestamp" label="Date and Time of attendance taken"></el-table-column>
                 <el-table-column prop="presence" label="Presence"></el-table-column>
               </el-table>
             </el-row>
@@ -326,7 +326,7 @@ export default {
       }
       return _.map(filteredData, (attendanceData) => ({
         ...attendanceData,
-        timestamp: moment(attendanceData.timestamp).format("DD-MM-YY"),
+        timestamp: moment(attendanceData.timestamp).format("DD-MM-YY, h:mma"),
         lessonType: this.$store.getters.getLessonData(attendanceData.lessonId)
           .name,
       }))
