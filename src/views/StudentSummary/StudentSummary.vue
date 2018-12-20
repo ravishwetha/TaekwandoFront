@@ -3,11 +3,20 @@
     <el-main>
       <div id="lessonAndDate">
         <div>
+          <span>Select lesson type</span>
+          <br>
           <lesson-selector style="padding-right: 20px;" v-model="selectedLessonId"></lesson-selector>
-          <!-- <date-selector v-model="dateRange"></date-selector> -->
         </div>
-        <student-summary-header-buttons :openSendMessageModal="openSendMessageModal"></student-summary-header-buttons>
+        <div>
+          <span>Select dates here to filter the students</span>
+          <br>
+          <date-selector v-model="dateRange"></date-selector>
+        </div>
       </div>
+      <student-summary-header-buttons
+        style="margin-bottom: 10px"
+        :openSendMessageModal="openSendMessageModal"
+      ></student-summary-header-buttons>
       <el-input id="searchBar" v-model="searchString" placeholder="Search by name"></el-input>
 
       <el-tabs v-model="activeTab">
@@ -117,20 +126,29 @@ export default {
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
 
-      // if (
-      //   this.dateRange.length > 0 &&
-      //   !moment(this.dateRange[0]).isSame(moment(0))
-      // ) {
-      //   const startDate = this.dateRange[0]
-      //   const endDate = this.dateRange[1]
-      //   const selectionRange = moment.range(startDate, endDate)
-      //   filteredData = _.filter(filteredData, (user) => {
-      //     for (const attendance of _.values(user.attendance)) {
-      //       return selectionRange.contains(moment(attendance.timestamp))
-      //     }
-      //     return false
-      //   })
-      // }
+      if (
+        this.dateRange !== null &&
+        !moment(this.dateRange[0]).isSame(moment(0))
+      ) {
+        const startDate = this.dateRange[0]
+        const endDate = this.dateRange[1]
+        const selectionRange = moment.range(startDate, endDate)
+        filteredData = _.filter(filteredData, (user) => {
+          for (const attendance of _.values(user.attendance)) {
+            return selectionRange.contains(moment(attendance.timestamp))
+          }
+          return false
+        })
+        filteredData = _.map(filteredData, (user) => {
+          let presentCount = 0
+          _.values(user.attendance).forEach((attendance) => {
+            if (selectionRange.contains(moment(attendance.timestamp))) {
+              presentCount++
+            }
+          })
+          return { ...user, presentCount }
+        })
+      }
       if (
         this.selectedLessonId.length !== 0 &&
         this.selectedLessonId !== undefined
@@ -235,7 +253,7 @@ export default {
       searchString: "",
       activeTab: ACTIVE,
       selectedLessonId: [],
-      dateRange: [],
+      dateRange: null,
       message: {
         messageModalVisible: false,
         sendEmail: false,

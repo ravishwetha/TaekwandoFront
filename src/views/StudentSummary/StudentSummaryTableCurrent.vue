@@ -40,7 +40,7 @@ export default {
   },
   props: {
     dateRange: {
-      type: Array,
+      type: Array || null,
       required: true,
     },
     value: {

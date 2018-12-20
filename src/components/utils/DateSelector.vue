@@ -7,6 +7,7 @@
     placeholder="Pick a day"
     :picker-options="datePickerOptions"
     format="dd-MM-yyyy"
+    clearable
   ></el-date-picker>
   <el-date-picker
     v-else
@@ -19,6 +20,7 @@
     end-placeholder="End Date"
     :picker-options="datePickerOptions"
     format="dd-MM-yyyy"
+    clearable
   ></el-date-picker>
 </template>
 
