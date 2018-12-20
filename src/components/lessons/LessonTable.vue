@@ -225,6 +225,7 @@ export default {
             userId: this.userId,
             sessions: this.lessonSwappingToSessions,
             timeslot: this.lessonSwappingToTimeslot,
+            day: this.lessonSwappingToDay,
           },
         }
       }
