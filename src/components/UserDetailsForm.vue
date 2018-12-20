@@ -455,7 +455,7 @@ export default {
       })
     },
     generateReceipt({ type, description, price }) {
-      const paymentType = _.initial(type.split(" / ")).join(" / ")
+      const paymentType = type.split(" / ")
       RecieptGenerator(paymentType, description, price)
     },
     payCardMisc(formName) {
@@ -531,7 +531,7 @@ export default {
             paymentDataAndVm
           )
           const recp = RecieptGenerator(
-            _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            [LESSONS, ...this.payment.paymentForm.type].join(" / "),
             this.payment.paymentForm.description,
             price
           )
@@ -565,7 +565,7 @@ export default {
             paymentDataAndVm
           )
           const recp = RecieptGenerator(
-            _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            [LESSONS, ...this.payment.paymentForm.type].join(" / "),
             this.payment.paymentForm.description,
             price
           )
@@ -616,7 +616,7 @@ export default {
             paymentDataAndVm
           )
           const recp = RecieptGenerator(
-            _.initial([LESSONS, ...this.payment.paymentForm.type]).join(" / "),
+            [LESSONS, ...this.payment.paymentForm.type].join(" / "),
             this.payment.paymentForm.description,
             price
           )
