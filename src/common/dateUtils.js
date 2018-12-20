@@ -8,3 +8,5 @@ export const readableTimeslotParser = (timeslot) => {
   const timingTo = moment(to).format("h:mma")
   return timingFrom + " - " + timingTo
 }
+
+export const DATEANDTIME = "DD-MM-YY, h:mma"

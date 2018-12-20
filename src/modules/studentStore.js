@@ -139,6 +139,9 @@ const studentModule = {
     removeCustomer(state, { userId }) {
       Vue.delete(state.studentData[userId], "customer")
     },
+    deleteMakeupAttendance(state, { userId, attendanceId }) {
+      Vue.delete(state.studentData[userId].attendance, attendanceId)
+    },
   },
   actions: {
     async deleteUser({ commit }, { userId }) {
@@ -432,6 +435,14 @@ const studentModule = {
         commit("modifyStudentDataLoadingStatus", { status: false })
         console.log(e.response.data)
       }
+    },
+    async deleteMakeupAttendance({ commit }, { userId, attendanceId }) {
+      usersRef
+        .child(userId)
+        .child("attendance")
+        .child(attendanceId)
+        .remove()
+      commit("deleteMakeupAttendance", { userId, attendanceId })
     },
     async submitAttendance(
       { dispatch },

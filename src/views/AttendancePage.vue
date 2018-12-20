@@ -94,6 +94,12 @@
     >
       <el-table :data="makeupLessonUserData" style="width: 100%">
         <el-table-column prop="name" label="Name"></el-table-column>
+        <el-table-column prop="timestamp" label="Date and Time"></el-table-column>
+        <el-table-column label="Operations" fixed="right">
+          <template slot-scope="scope">
+            <el-button type="text" size="small" @click="deleteMakeup(scope.row)">Delete</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-dialog>
     <el-dialog
@@ -126,6 +132,7 @@ import _ from "lodash"
 import { DAYS, PRESENT, ABSENT, UNLIMITED, MAKEUP } from "@/common/data"
 import { absentSmsAPI } from "@/common/api"
 import Vue from "vue"
+import { DATEANDTIME } from "@/common/dateUtils"
 
 export default {
   beforeMount() {
@@ -147,12 +154,17 @@ export default {
     },
     makeupLessonUserData() {
       const users = this.$store.getters.getAllStudentsInfo
+      console.log(users)
       const usersWhoHaveAttendance = _.compact(
         _.map(
           users,
-          (userData, userId) =>
+          (userData) =>
             userData.attendance
-              ? { userId, name: userData.name, attendance: userData.attendance }
+              ? {
+                  userId: userData.userId,
+                  name: userData.name,
+                  attendance: userData.attendance,
+                }
               : null
         )
       )
@@ -195,6 +207,9 @@ export default {
           return {
             ...userAttendance,
             attendanceToDelete: todayMakeupAttendance,
+            timestamp: moment(todayMakeupAttendance.timestamp).format(
+              DATEANDTIME
+            ),
           }
         }
       )
@@ -342,6 +357,15 @@ export default {
       })
       return Array.from(timeslots)
     },
+    deleteMakeup(row) {
+      const { userId, attendanceToDelete } = row
+      console.log(row)
+      this.$store.dispatch("deleteMakeupAttendance", {
+        userId,
+        attendanceId: attendanceToDelete.id,
+      })
+    },
+
     untickAbsent(id) {
       this.absent[id] = false
     },
