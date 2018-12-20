@@ -9,7 +9,14 @@ import {
   refundAPI,
   deleteCustomerAPI,
 } from "@/common/api"
-import { CARD, CASHNETS, REFUNDED, TERMINATED, PRESENT } from "@/common/data"
+import {
+  MAKEUP,
+  CARD,
+  CASHNETS,
+  REFUNDED,
+  TERMINATED,
+  PRESENT,
+} from "@/common/data"
 import { lessonsRef } from "./lessonStore"
 
 export const usersRef = firebaseDB.database().ref("Users")
@@ -442,7 +449,10 @@ const studentModule = {
             .once("value")
             .then((r) => r.val())
           //update entitlement
-          if (userIdAndPresence.presence === PRESENT) {
+          if (
+            userIdAndPresence.presence === PRESENT ||
+            userIdAndPresence.presence === MAKEUP
+          ) {
             usersRef
               .child(userIdAndPresence.userId)
               .child("lessons")

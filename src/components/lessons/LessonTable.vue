@@ -140,7 +140,10 @@ export default {
     },
     selectedLessonTimeslots() {
       const allLessonData = this.$store.getters.getAllLessonData
-      const selectedLessonPayload = _.get(allLessonData, this.lessonAddingTo)
+      let selectedLessonPayload = _.get(allLessonData, this.lessonAddingTo)
+      if (this.swapDialogVisible) {
+        selectedLessonPayload = _.get(allLessonData, this.lessonSwappingTo)
+      }
       const selectedLessonTimeslots = _.get(selectedLessonPayload, "timeslots")
       const selectOptions = _.map(selectedLessonTimeslots, (timeslot) => {
         const [from, to] = timeslot.split("/")
@@ -152,21 +155,12 @@ export default {
     },
   },
   data() {
-    const details = this.$store.getters.getStudentInfo(this.userId)
-    const lessonIdsUserIsIn = _.map(
-      details.lessons,
-      (userLessonDetails, lessonId) => lessonId
-    )
     const allLessonData = this.$store.getters.getAllLessonData
-    const allLessonDataExceptUserIn = _.omitBy(
-      allLessonData,
-      (lessonData, lessonId) => _.includes(lessonIdsUserIsIn, lessonId)
-    )
 
-    const allLessonDataExceptUserInIds = _.map(
-      allLessonDataExceptUserIn,
-      (data, id) => ({ ...data, id })
-    )
+    const allLessonDataExceptUserInIds = _.map(allLessonData, (data, id) => ({
+      ...data,
+      id,
+    }))
     return {
       swapLessonData: allLessonDataExceptUserInIds,
       lessonIdToBeSwapped: "",
@@ -181,7 +175,7 @@ export default {
       expectPaymentEditDialogVisible: false,
       updatedExpectPaymentDate: "",
       updatedExpectPaymentDateLessonId: "",
-      DAYS,
+      DAYS: _.keys(DAYS),
     }
   },
   methods: {

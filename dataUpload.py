@@ -3,6 +3,7 @@ import xlrd
 import json
 import arrow
 import dateutil
+import datetime
 
 def split(arr, size):
      arrs = []
@@ -59,6 +60,7 @@ for row in range(1,masterList.nrows):
             })
         lessonsData[lessonName]["days"].add(lesson[2][:3])
         timeslotArray = lesson[3].split("-")
+
         startingTime = timeslotArray[0][:2]
         if startingTime == "":
             continue
@@ -70,8 +72,9 @@ for row in range(1,masterList.nrows):
                 startingAmPm = "AM"
             else:
                 endingAmPm = "PM"
-        startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
-        endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
+        
+        startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(year=2018).shift(hours=-8))[:-6]+".000Z"
+        endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(year=2018).shift(hours=-8))[:-6]+".000Z"
         lessonsData[lessonName]["timeslots"].add(startTime+"/"+endTime)
 
 for key, val in lessonsData.items():
@@ -172,8 +175,13 @@ for row in range(1,masterList.nrows):
                 startingAmPm = "AM"
             else:
                 endingAmPm = "PM"
-        startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
-        endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(tzinfo=dateutil.tz.gettz("GMT+8")))
+        if len(startingTime) == 1:
+            startingTime = "0"+startingTime
+        if len(endingTime) == 1:
+            endingTime = "0"+endingTime
+        startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(year=2018).shift(hours=-8))[:-6]+".000Z"
+        endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(year=2018).shift(hours=-8))[:-6]+".000Z"
+
         timeslot = startTime+"/"+endTime
         if "UNLIMITIED" in lessonRows[0] or "UNLIMITED" in lessonRows[0]:
             lessonPayload = {lessonToBeAdded: {"lastPayment": lastPayment, "expectPayment": expectPayment, "paymentPlan": paymentPlan, "entitlement": entitlement, "timeslot": "UNLIMITED"}}

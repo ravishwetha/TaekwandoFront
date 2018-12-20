@@ -27,9 +27,9 @@
               <el-select v-model="selectedTimeslot" placeholder="Select timeslot">
                 <el-option
                   v-for="item in timeslotSelectData"
-                  :key="item.val"
+                  :key="item.key"
                   :label="item.label"
-                  :value="item.val"
+                  :value="item.value"
                 ></el-option>
               </el-select>
             </el-col>
@@ -123,7 +123,7 @@
 <script>
 import moment from "moment"
 import _ from "lodash"
-import { DAYS, PRESENT, ABSENT, UNLIMITED } from "@/common/data"
+import { DAYS, PRESENT, ABSENT, UNLIMITED, MAKEUP } from "@/common/data"
 import { absentSmsAPI } from "@/common/api"
 import Vue from "vue"
 
@@ -166,14 +166,39 @@ export default {
               const sameDay = moment(attendanceObject.timestamp)
                 .startOf("day")
                 .isSame(moment().startOf("day"))
-              const isMakeup = attendanceObject.presence === "MAKEUP"
+              const isMakeup = attendanceObject.presence === MAKEUP
               return sameId && sameDay && isMakeup
             }
           )
           return todayMakeup !== undefined
         }
       )
-      return usersWhoHaveMakeupTodayInThisLesson
+      const mostRecentMakeupMap = _.map(
+        usersWhoHaveMakeupTodayInThisLesson,
+        (userAttendance) => {
+          const { attendance } = userAttendance
+          const attendanceWithId = _.map(attendance, (attendance, id) => ({
+            ...attendance,
+            id,
+          }))
+          const todayMakeupAttendance = _.find(
+            attendanceWithId,
+            (attendanceObject) => {
+              const sameId = attendanceObject.lessonId === this.lessonValue
+              const sameDay = moment(attendanceObject.timestamp)
+                .startOf("day")
+                .isSame(moment().startOf("day"))
+              const isMakeup = attendanceObject.presence === MAKEUP
+              return sameId && sameDay && isMakeup
+            }
+          )
+          return {
+            ...userAttendance,
+            attendanceToDelete: todayMakeupAttendance,
+          }
+        }
+      )
+      return mostRecentMakeupMap
     },
     tableData() {
       let filteredStudentInfo = _.filter(
@@ -190,36 +215,61 @@ export default {
       })
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
         return (
-          user.lessons[this.lessonValue].timeslot === this.selectedTimeslot ||
-          user.lessons[this.lessonValue].timeslot === UNLIMITED
+          _.includes(
+            this.selectedTimeslot,
+            user.lessons[this.lessonValue].timeslot
+          ) || user.lessons[this.lessonValue].timeslot === UNLIMITED
         )
       })
       this.updatePresentAbsent()
       return filteredStudentInfo
     },
     timeslotSelectData() {
-      const selectOptions = _.map(
-        this.getStudentUniqueTimeslots(),
-        (timeslot) => {
-          const [from, to] = timeslot.split("/")
-          const parsedFrom = moment(from).format("ha")
-          const parsedTo = moment(to).format("ha")
-          return { label: parsedFrom + "-" + parsedTo, val: timeslot }
+      let selectOptionsObject = {}
+      _.forEach(this.getStudentUniqueTimeslots(), (timeslot) => {
+        const [from, to] = timeslot.split("/")
+        const parsedFrom = moment(from).format("ha")
+        const parsedTo = moment(to).format("ha")
+        const englishTime = parsedFrom + "-" + parsedTo
+        const labelAlreadyIn = _.find(
+          _.keys(selectOptionsObject),
+          (option) => option === englishTime
+        )
+        if (labelAlreadyIn === undefined) {
+          selectOptionsObject[englishTime] = []
         }
-      )
+        selectOptionsObject[englishTime].push(timeslot)
+      })
+      const selectOptions = _.map(selectOptionsObject, (timeslots, label) => ({
+        label,
+        value: timeslots,
+        key: Math.random(),
+      }))
       return selectOptions
     },
     studentData() {
       const filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
-        (student) => !_.includes(student.lessons, this.lessonValue)
+        (student) => _.includes(_.keys(student.lessons), this.lessonValue)
       )
-      return _.map(filteredStudentInfo, (studentInfo) => {
-        return {
-          key: studentInfo.userId,
-          label: studentInfo.name,
-        }
-      })
+      return _.compact(
+        _.map(filteredStudentInfo, (studentInfo) => {
+          const alreadyMadeUpToday = _.find(
+            _.values(studentInfo.attendance),
+            (attendance) =>
+              moment(attendance.timestamp)
+                .startOf("day")
+                .isSame(moment().startOf("day"))
+          )
+          if (alreadyMadeUpToday) {
+            return null
+          }
+          return {
+            key: studentInfo.userId,
+            label: studentInfo.name,
+          }
+        })
+      )
     },
     emptyTableText() {
       if (this.lessonValue === "") {
@@ -240,7 +290,7 @@ export default {
 
     return {
       selectedDate: moment().format("DD MMM YYYY"),
-      selectedTimeslot: "",
+      selectedTimeslot: [],
       lessonValue: "",
       total: 0,
       makeupModalVisible: false,
@@ -310,7 +360,7 @@ export default {
     takeAttendanceUserNotInLesson() {
       const userIdAndPresence = _.map(this.studentsAddedToLesson, (userId) => ({
         userId: userId,
-        presence: "MAKEUP",
+        presence: MAKEUP,
       }))
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: userIdAndPresence,

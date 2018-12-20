@@ -36,9 +36,6 @@ export default {
   data() {
     return {
       datePickerOptions: {
-        disabledDate(time) {
-          return time.getTime() > Date.now()
-        },
         shortcuts: [
           {
             text: "Today",

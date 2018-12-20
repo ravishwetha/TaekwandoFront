@@ -20,6 +20,7 @@ export const DAYS_ENGLISH = {
 
 export const PRESENT = "PRESENT"
 export const ABSENT = "ABSENT"
+export const MAKEUP = "MAKEUP"
 export const firebaseConfig = {
   apiKey: process.env.VUE_APP_FIREBASE,
   authDomain: "taekwandobackend-d1edf.firebaseapp.com",
