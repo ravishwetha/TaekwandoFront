@@ -188,16 +188,6 @@ export default {
     },
   },
   methods: {
-    routeToUserDetails(val) {
-      this.$router.push({
-        name: "userDetails",
-        query: {
-          userId: val.userId,
-          dateRange: this.dateRange.map((date) => moment(date).toISOString()),
-          selectedLessonId: this.selectedLessonId,
-        },
-      })
-    },
     async sendAMessage() {
       const studentData = this.studentsToSendMessageTo.map((student) => {
         const { email, contact } = this.$store.getters.getStudentInfo(student)

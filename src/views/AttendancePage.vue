@@ -24,7 +24,11 @@
                 ></el-option>
               </el-select>
               <br>
-              <el-select v-model="selectedTimeslot" placeholder="Select timeslot">
+              <el-select
+                v-model="selectedTimeslot"
+                no-data-text="No students in this lesson today"
+                placeholder="Select timeslot"
+              >
                 <el-option
                   v-for="item in timeslotSelectData"
                   :key="item.key"
@@ -154,7 +158,6 @@ export default {
     },
     makeupLessonUserData() {
       const users = this.$store.getters.getAllStudentsInfo
-      console.log(users)
       const usersWhoHaveAttendance = _.compact(
         _.map(
           users,
@@ -347,19 +350,25 @@ export default {
       )
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
         return (
-          DAYS[user.lessons[this.lessonValue].day] === moment().day() ||
-          user.lessons[this.lessonValue].timeslot === UNLIMITED
+          user.lessons[this.lessonValue].timeslot === UNLIMITED ||
+          DAYS[user.lessons[this.lessonValue].day] === moment().day()
         )
       })
       const timeslots = new Set()
       filteredStudentInfo.forEach((user) => {
-        timeslots.add(user.lessons[this.lessonValue].timeslot)
+        if (user.lessons[this.lessonValue].timeslot === UNLIMITED) {
+          const lessonTimeslots = this.$store.getters.getLessonData(
+            this.lessonValue
+          ).timeslots
+          lessonTimeslots.forEach((timeslot) => timeslots.add(timeslot))
+        } else {
+          timeslots.add(user.lessons[this.lessonValue].timeslot)
+        }
       })
       return Array.from(timeslots)
     },
     deleteMakeup(row) {
       const { userId, attendanceToDelete } = row
-      console.log(row)
       this.$store.dispatch("deleteMakeupAttendance", {
         userId,
         attendanceId: attendanceToDelete.id,

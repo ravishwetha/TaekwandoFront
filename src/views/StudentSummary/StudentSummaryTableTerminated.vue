@@ -26,11 +26,12 @@ export default {
   },
   methods: {
     routeToUserDetails(val) {
+      const dateRange = this.dateRange !== null ? this.dateRange : []
       this.$router.push({
         name: "userDetails",
         query: {
           userId: val.userId,
-          dateRange: this.dateRange.map((date) => moment(date).toISOString()),
+          dateRange: dateRange.map((date) => moment(date).toISOString()),
           selectedLessonId: this.selectedLessonId,
         },
       })
@@ -38,7 +39,7 @@ export default {
   },
   props: {
     dateRange: {
-      type: Array,
+      type: Array || null,
       required: true,
     },
     value: {

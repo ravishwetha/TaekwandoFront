@@ -30,7 +30,7 @@ export const firebaseConfig = {
   messagingSenderId: "1011970784530",
 }
 
-export const UNLIMITED = "UNLIMITED["
+export const UNLIMITED = "UNLIMITED"
 
 export const CARD = "CARD"
 export const CASHNETS = "CASHNETS"
