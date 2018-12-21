@@ -24,36 +24,7 @@
                 <el-table-column prop="presence" label="Presence"></el-table-column>
               </el-table>
             </el-row>
-            <div id="paymentAndAttendanceHeader">
-              <span>Payment History</span>
-            </div>
-            <el-row id="commentsRow">
-              <el-row>
-                <date-selector style="margin-left: 20px;" v-model="paymentDateRange"></date-selector>
-              </el-row>
-              <el-table max-height="500" :data="paymentData" style="width: 90%">
-                <el-table-column prop="mode" label="Payment mode"></el-table-column>
-                <el-table-column prop="type" label="Item paid for"></el-table-column>
-                <el-table-column prop="created" label="Paid on"></el-table-column>
-                <el-table-column prop="description" label="Payment Description"></el-table-column>
-                <el-table-column prop="price" label="Amount"></el-table-column>
-                <el-table-column label="Operations" fixed="right">
-                  <template slot-scope="scope">
-                    <el-button
-                      @click="generateReceipt(scope.row)"
-                      type="text"
-                      size="small"
-                    >Download Receipt</el-button>
-                    <el-button
-                      v-if="scope.row.mode !== REFUNDED"
-                      @click="refund(scope.row)"
-                      type="text"
-                      size="small"
-                    >Refund</el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </el-row>
+            <payment-history :userId="userId"></payment-history>
           </el-col>
           <el-col :span="10">
             <div id="paymentAndAttendanceHeader">
@@ -187,6 +158,7 @@ import {
 import LessonTable from "@/components/lessons/LessonTable"
 import CardRegistration from "@/components/common/CardRegistration"
 import StudentDetails from "@/components/studentDetails/StudentDetails"
+import PaymentHistory from "@/components/studentDetails/PaymentHistory"
 
 export default {
   components: {
@@ -196,6 +168,7 @@ export default {
     LessonTable,
     CardRegistration,
     StudentDetails,
+    PaymentHistory,
   },
   async mounted() {
     const { selectedLessonId, dateRange } = this.$route.query
@@ -210,40 +183,6 @@ export default {
     this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
   },
   computed: {
-    paymentData() {
-      const details = this.$store.getters.getStudentInfo(
-        this.$route.query["userId"]
-      )
-      let filteredData = _.map(details.payments, (values, id) => ({
-        ...values,
-        id,
-      }))
-
-      if (
-        this.paymentDateRange.length > 0 &&
-        !moment(this.paymentDateRange[0]).isSame(moment(0))
-      ) {
-        const startDate = this.paymentDateRange[0]
-        const endDate = this.paymentDateRange[1]
-        const selectionRange = moment.range(startDate, endDate)
-        filteredData = _.filter(filteredData, (data) => {
-          return selectionRange.contains(moment(data.created))
-        })
-      }
-      const displayData = _.map(filteredData, (data) => {
-        const paymentType = data.type
-        let parsedType = ""
-        for (const type of paymentType) {
-          parsedType = parsedType + `${type} / `
-        }
-        return {
-          ...data,
-          type: parsedType,
-          created: moment(data.created).format("DD-MM-YYYY"),
-        }
-      })
-      return displayData
-    },
     attendanceData() {
       const details = this.$store.getters.getStudentInfo(
         this.$route.query["userId"]
@@ -348,7 +287,6 @@ export default {
       customerDetails: {},
       selectedLessonId: "",
       attendanceDateRange: [],
-      paymentDateRange: [],
       payment: {
         paymentType: "",
         paymentForm: {

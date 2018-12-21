@@ -113,7 +113,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .userDetailsCol {
   margin-left: 5%;
 }
