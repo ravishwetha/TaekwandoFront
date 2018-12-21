@@ -1,8 +1,17 @@
 <template>
   <div>
-    <el-table v-loading="isLoading" stripe max-height="730" :data="value" style="width: 100%">
+    <el-table
+      show-summary
+      sum-text="Total present and absent count for selected date range"
+      v-loading="isLoading"
+      stripe
+      max-height="730"
+      :data="value"
+      style="width: 100%"
+    >
       <el-table-column prop="name" label="Name"></el-table-column>
       <el-table-column prop="presentCount" label="Total Present Count"></el-table-column>
+      <el-table-column prop="absentCount" label="Total Absent Count"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">

@@ -90,7 +90,7 @@ import StudentSummaryTableTerminated from "./StudentSummaryTableTerminated"
 import StudentSummaryTableTrial from "./StudentSummaryTableTrial"
 
 import { emailAPI, smsAPI } from "@/common/api"
-import { ACTIVE, TRIAL, TERMINATED } from "@/common/data"
+import { ACTIVE, TRIAL, TERMINATED, PRESENT, MAKEUP } from "@/common/data"
 
 export default {
   name: "AttendancePage",
@@ -125,30 +125,31 @@ export default {
         (user) =>
           _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
       )
-
-      if (
-        this.dateRange !== null &&
-        !moment(this.dateRange[0]).isSame(moment(0))
-      ) {
-        const startDate = this.dateRange[0]
-        const endDate = this.dateRange[1]
+      if (this.dateRange !== null) {
+        const startDate = moment(this.dateRange[0]).startOf("day")
+        const endDate = moment(this.dateRange[1]).endOf("day")
         const selectionRange = moment.range(startDate, endDate)
         filteredData = _.filter(filteredData, (user) => {
           for (const attendance of _.values(user.attendance)) {
-            return selectionRange.contains(moment(attendance.timestamp))
+            if (selectionRange.contains(moment(attendance.timestamp))) {
+              return true
+            }
           }
           return false
         })
-        filteredData = _.map(filteredData, (user) => {
-          let presentCount = 0
-          _.values(user.attendance).forEach((attendance) => {
-            if (selectionRange.contains(moment(attendance.timestamp))) {
-              presentCount++
-            }
-          })
-          return { ...user, presentCount }
-        })
       }
+      filteredData = _.map(filteredData, (user) => {
+        let presentCount = 0
+        let absentCount = 0
+        _.values(user.attendance).forEach((attendance) => {
+          if (attendance.type === PRESENT || attendance.type === MAKEUP) {
+            presentCount++
+          } else {
+            absentCount++
+          }
+        })
+        return { ...user, presentCount, absentCount }
+      })
       if (
         this.selectedLessonId.length !== 0 &&
         this.selectedLessonId !== undefined

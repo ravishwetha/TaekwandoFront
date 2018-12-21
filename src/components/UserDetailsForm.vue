@@ -310,20 +310,20 @@ export default {
         }
         return true
       })
-      if (
-        this.attendanceDateRange.length > 0 &&
-        !moment(this.attendanceDateRange[0]).isSame(moment(0))
-      ) {
-        const startDate = this.attendanceDateRange[0]
-        const endDate = this.attendanceDateRange[1]
-        const selectionRange = moment.range(startDate, endDate)
-        filteredData = _.filter(filteredData, (user) => {
-          for (const attendance of _.values(user.attendance)) {
-            return selectionRange.contains(moment(attendance.timestamp))
-          }
-          return false
-        })
-      }
+      // if (
+      //   this.attendanceDateRange.length > 0 &&
+      //   !moment(this.attendanceDateRange[0]).isSame(moment(0))
+      // ) {
+      //   const startDate = this.attendanceDateRange[0]
+      //   const endDate = this.attendanceDateRange[1]
+      //   const selectionRange = moment.range(startDate, endDate)
+      //   filteredData = _.filter(filteredData, (user) => {
+      //     for (const attendance of _.values(user.attendance)) {
+      //       return selectionRange.contains(moment(attendance.timestamp))
+      //     }
+      //     return false
+      //   })
+      // }
       return _.map(filteredData, (attendanceData) => ({
         ...attendanceData,
         timestamp: moment(attendanceData.timestamp).format("DD-MM-YY, h:mma"),
@@ -575,13 +575,11 @@ export default {
       })
     },
     payCardLessons(formName) {
-      console.log("cardLesons called")
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           let paymentToken
           if (this.customerDetails === undefined) {
             const token = await createToken()
-            console.log(token)
             if (token.error) {
               this.$notify.error({
                 title: "Card Error",
