@@ -199,10 +199,12 @@ export default {
   },
   async mounted() {
     const { selectedLessonId, dateRange } = this.$route.query
-    this.userId = this.$route.query["userId"]
     const details = this.$store.getters.getStudentInfo(
       this.$route.query["userId"]
     )
+    const userDetails = _.pick(details, ["comments"])
+
+    this.userDetails = userDetails
     this.customerDetails = details.customer
     this.selectedLessonId = selectedLessonId
     this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
@@ -338,7 +340,11 @@ export default {
   data() {
     return {
       active: true,
-      userId: "",
+      userDetails: {
+        comments: "",
+        paymentPlan: "",
+        entitlement: "",
+      },
       customerDetails: {},
       selectedLessonId: "",
       attendanceDateRange: [],
