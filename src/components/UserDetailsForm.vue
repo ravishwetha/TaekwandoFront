@@ -281,8 +281,6 @@ export default {
       active: true,
       userDetails: {
         comments: "",
-        paymentPlan: "",
-        entitlement: "",
       },
       customerDetails: {},
       selectedLessonId: "",
@@ -321,17 +319,6 @@ export default {
     }
   },
   methods: {
-    refund(rowData) {
-      this.$store.dispatch("refundPayment", {
-        ...rowData,
-        userId: this.$route.query["userId"],
-        vm: this,
-      })
-    },
-    generateReceipt({ type, description, price }) {
-      const paymentType = type.split(" / ")
-      RecieptGenerator(paymentType, description, price)
-    },
     payCardMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
@@ -495,36 +482,6 @@ export default {
           await Promise.all([dispatch, recp])
           this.payment.paymentDialogLessonVisible = false
         }
-      })
-    },
-    addUser() {
-      const payload = {
-        ...this.userDetails,
-        ...this.contactDetails,
-      }
-      this.$store.dispatch("addUser", payload)
-      this.$router.push({
-        name: "home",
-      })
-    },
-    deleteUser() {
-      this.$store.dispatch("deleteUser", {
-        userId: this.$route.query["userId"],
-      })
-      this.$notify({
-        title: "Student Terminated",
-        message: "Student has been terminated.",
-      })
-      this.$router.push({
-        name: "home",
-      })
-    },
-    editUser() {
-      this.$router.push({
-        name: "edit",
-        query: {
-          userId: this.$route.query["userId"],
-        },
       })
     },
   },
