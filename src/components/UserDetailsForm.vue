@@ -49,11 +49,7 @@
             </el-row>
             <span id="paymentAndAttendanceHeader">Register Credit/Debit Card</span>
             <br>
-            <card-registration
-              style="margin-top: 20px"
-              :customerDetails="customerDetails"
-              :userId="userId"
-            ></card-registration>
+            <card-registration style="margin-top: 20px" :userId="userId"></card-registration>
             <br>
             <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
             <lesson-table :userId="userId"></lesson-table>
@@ -179,8 +175,12 @@ export default {
 
     this.userDetails = userDetails
     this.customerDetails = details.customer
+    const contactDetails = _.pick(details, ["email"])
+    this.contactDetails = contactDetails
     this.selectedLessonId = selectedLessonId
-    this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
+    if (this.dateRange !== null) {
+      this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
+    }
   },
   computed: {
     attendanceData() {
@@ -281,6 +281,9 @@ export default {
       active: true,
       userDetails: {
         comments: "",
+      },
+      contactDetails: {
+        email: "",
       },
       customerDetails: {},
       selectedLessonId: "",

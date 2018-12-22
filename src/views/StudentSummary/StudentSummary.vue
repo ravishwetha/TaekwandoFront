@@ -142,7 +142,10 @@ export default {
         let presentCount = 0
         let absentCount = 0
         _.values(user.attendance).forEach((attendance) => {
-          if (attendance.type === PRESENT || attendance.type === MAKEUP) {
+          if (
+            attendance.presence === PRESENT ||
+            attendance.presence === MAKEUP
+          ) {
             presentCount++
           } else {
             absentCount++

@@ -35,11 +35,16 @@ export default {
   components: {
     Card,
   },
+  mounted() {
+    const details = this.$store.getters.getStudentInfo(this.userId)
+    this.customerDetails = details.customer
+  },
   data() {
     return {
       registrationDialogVisible: false,
       registrationLoading: false,
       stripeKey: process.env.VUE_APP_STRIPE_KEY,
+      customerDetails: {},
     }
   },
   methods: {

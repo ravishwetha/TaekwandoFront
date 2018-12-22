@@ -274,10 +274,15 @@ export default {
         _.map(filteredStudentInfo, (studentInfo) => {
           const alreadyMadeUpToday = _.find(
             _.values(studentInfo.attendance),
-            (attendance) =>
-              moment(attendance.timestamp)
-                .startOf("day")
-                .isSame(moment().startOf("day"))
+            (attendance) => {
+              return (
+                moment(attendance.timestamp)
+                  .startOf("day")
+                  .isSame(moment().startOf("day")) &&
+                attendance.presence == MAKEUP &&
+                attendance.lessonId == this.lessonValue
+              )
+            }
           )
           if (alreadyMadeUpToday) {
             return null
