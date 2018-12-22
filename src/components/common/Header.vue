@@ -3,8 +3,8 @@
     <el-row style="width: 98%;">
       <el-col :span="8" style="padding-top: 7%;">
         <span v-if="loggedIn" id="header">
-          <el-select disabled>
-            <el-option label="Haig Branch"></el-option>
+          <el-select v-model="branchId" disabled>
+            <el-option value="1" label="Haig Branch"></el-option>
           </el-select>
         </span>
       </el-col>
@@ -20,6 +20,9 @@
 
 <script>
 export default {
+  data() {
+    return { branchId: "" }
+  },
   props: {
     loggedIn: {
       type: Boolean,

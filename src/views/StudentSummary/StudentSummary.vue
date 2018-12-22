@@ -90,7 +90,14 @@ import StudentSummaryTableTerminated from "./StudentSummaryTableTerminated"
 import StudentSummaryTableTrial from "./StudentSummaryTableTrial"
 
 import { emailAPI, smsAPI } from "@/common/api"
-import { ACTIVE, TRIAL, TERMINATED, PRESENT, MAKEUP } from "@/common/data"
+import {
+  ACTIVE,
+  TRIAL,
+  TERMINATED,
+  PRESENT,
+  MAKEUP,
+  UNLIMITED,
+} from "@/common/data"
 
 export default {
   name: "AttendancePage",
@@ -154,8 +161,8 @@ export default {
         return { ...user, presentCount, absentCount }
       })
       if (
-        this.selectedLessonId.length !== 0 &&
-        this.selectedLessonId !== undefined
+        this.selectedLessonId !== undefined &&
+        this.selectedLessonId.length !== 0
       ) {
         filteredData = _.filter(filteredData, (user) => {
           return _.includes(_.keys(user.lessons), _.last(this.selectedLessonId))
@@ -163,7 +170,8 @@ export default {
         filteredData = _.filter(filteredData, (user) => {
           return (
             user.lessons[_.last(this.selectedLessonId)].day ===
-            _.head(this.selectedLessonId)
+              _.head(this.selectedLessonId) ||
+            user.lessons[_.last(this.selectedLessonId)].timeslot == UNLIMITED
           )
         })
       }

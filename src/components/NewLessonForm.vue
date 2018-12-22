@@ -1,59 +1,76 @@
 <template>
   <div class="formDiv">
-    <el-form
-      :model="form"
-      :rules="rules"
-      class="form"
-      label-position="top"
-      size="medium"
-      ref="form"
-    >
-      <el-form-item label="Lesson Name" class="formItem" prop="name">
-        <el-input placeholder="Please input lesson name" v-model="form.name" class="formInput"></el-input>
-      </el-form-item>
-      <el-form-item label="Select ALL days that this lesson has:" class="formItem" prop="days">
-        <el-checkbox-group v-model="form.days" class="formInput">
-          <el-checkbox label="MON" name="type"></el-checkbox>
-          <el-checkbox label="TUE" name="type"></el-checkbox>
-          <el-checkbox label="WED" name="type"></el-checkbox>
-          <el-checkbox label="THU" name="type"></el-checkbox>
-          <el-checkbox label="FRI" name="type"></el-checkbox>
-          <el-checkbox label="SAT" name="type"></el-checkbox>
-          <el-checkbox label="SUN" name="type"></el-checkbox>
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item
-        v-for="(timeslot) in form.timeslots"
-        label="Select ALL timeslots this lesson has for ANY day:"
-        :key="timeslot.key"
-      >
-        <el-time-select
-          class="formInput"
-          v-model="timeslot.from"
-          placeholder="Select start time"
-          :picker-options="startTimePickerOptions"
-        ></el-time-select>
-        <el-time-select
-          class="formInput"
-          v-model="timeslot.to"
-          placeholder="Select end time"
-          :picker-options="endTimePickerOptions"
-        ></el-time-select>
-        <el-button @click.prevent="removeTimeslot(timeslot)">Delete</el-button>
-      </el-form-item>
-      <el-form-item>
-        <el-button v-if="edit" @click="deleteLesson()" type="primary">Delete lesson</el-button>
-        <el-button v-if="edit" @click="createNewLesson('form', edit)" type="primary">Edit lesson</el-button>
-        <el-button v-else type="primary" @click="createNewLesson('form')">Submit</el-button>
-        <el-button @click="addTimeslot">New Timeslot</el-button>
-      </el-form-item>
-    </el-form>
+    <el-row :gutter="2">
+      <el-col :span="12">
+        <el-form
+          :model="form"
+          :rules="rules"
+          class="form"
+          label-position="top"
+          size="medium"
+          ref="form"
+        >
+          <el-form-item label="Lesson Name" class="formItem" prop="name">
+            <el-input
+              style="width: 70%"
+              placeholder="Please input lesson name"
+              v-model="form.name"
+              class="formInput"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="Select ALL days that this lesson has:" class="formItem" prop="days">
+            <el-checkbox-group v-model="form.days" class="formInput">
+              <el-checkbox label="MON" name="type"></el-checkbox>
+              <el-checkbox label="TUE" name="type"></el-checkbox>
+              <el-checkbox label="WED" name="type"></el-checkbox>
+              <el-checkbox label="THU" name="type"></el-checkbox>
+              <el-checkbox label="FRI" name="type"></el-checkbox>
+              <el-checkbox label="SAT" name="type"></el-checkbox>
+              <el-checkbox label="SUN" name="type"></el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+          <el-form-item
+            v-for="(timeslot) in form.timeslots"
+            label="Select ALL timeslots this lesson has for ANY day:"
+            :key="timeslot.key"
+          >
+            <el-time-select
+              class="formInput"
+              v-model="timeslot.from"
+              placeholder="Select start time"
+              :picker-options="startTimePickerOptions"
+            ></el-time-select>
+            <el-time-select
+              class="formInput"
+              v-model="timeslot.to"
+              placeholder="Select end time"
+              :picker-options="endTimePickerOptions"
+            ></el-time-select>
+            <el-button @click.prevent="removeTimeslot(timeslot)">Delete</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button v-if="edit" @click="deleteLesson()" type="primary">Delete lesson</el-button>
+            <el-button v-if="edit" @click="createNewLesson('form', edit)" type="primary">Edit lesson</el-button>
+            <el-button v-else type="primary" @click="createNewLesson('form')">Submit</el-button>
+            <el-button @click="addTimeslot">New Timeslot</el-button>
+          </el-form-item>
+        </el-form>
+      </el-col>
+      <el-col v-if="edit" :span="12">
+        <el-table :data="studentInLessonTableData" style="width: 100%">
+          <el-table-column prop="name" label="Name"></el-table-column>
+          <el-table-column prop="day" label="Day"></el-table-column>
+          <el-table-column prop="timeslot" label="Timeslot"></el-table-column>
+        </el-table>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
 import _ from "lodash"
 import moment from "moment"
+import { readableTimeslotParser } from "../common/dateUtils"
 export default {
   beforeMount() {
     const lessonId = this.$route.query["lessonId"]
@@ -74,6 +91,27 @@ export default {
       })
       this.form.timeslots = parsedTimeSlots
     }
+  },
+  computed: {
+    studentInLessonTableData() {
+      const lessonId = this.$route.query["lessonId"]
+      const lessonData = this.$store.getters.getLessonData(lessonId)
+      const studentIdsInLesson = _.values(lessonData.Users)
+      const studentsInLesson = _.map(studentIdsInLesson, (studentId) => {
+        const studentInfo = this.$store.getters.getStudentInfo(studentId)
+        let studentCol = {
+          name: studentInfo.name,
+        }
+        const { day, timeslot } = studentInfo.lessons[lessonId]
+        studentCol = {
+          ...studentCol,
+          day,
+          timeslot: readableTimeslotParser(timeslot),
+        }
+        return studentCol
+      })
+      return studentsInLesson
+    },
   },
   data() {
     return {

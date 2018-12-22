@@ -73,7 +73,7 @@
         </el-form-item>
         <el-form-item
           v-if="payment.paymentType === CARD && customerDetails === undefined"
-          label="Card Information"
+          label="Card Information (If card input does not appear, reload the page.)"
         >
           <card :stripe="stripeKey"></card>
         </el-form-item>
@@ -110,7 +110,7 @@
         </el-form-item>
         <el-form-item
           v-if="payment.paymentType === CARD && customerDetails === undefined"
-          label="Card Information"
+          label="Card Information (If card input does not appear, reload the page.)"
         >
           <card :stripe="stripeKey"></card>
         </el-form-item>
@@ -178,7 +178,7 @@ export default {
     const contactDetails = _.pick(details, ["email"])
     this.contactDetails = contactDetails
     this.selectedLessonId = selectedLessonId
-    if (this.dateRange !== null) {
+    if (dateRange !== undefined) {
       this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
     }
   },
@@ -187,15 +187,18 @@ export default {
       const details = this.$store.getters.getStudentInfo(
         this.$route.query["userId"]
       )
-      let filteredData = _.filter(details.attendance, (attendance) => {
-        if (
-          this.selectedLessonId.length !== 0 &&
-          this.selectedLessonId !== undefined
-        ) {
-          return attendance.lessonId === this.selectedLessonId
+      let filteredData = _.filter(
+        _.get(details, "attendance", {}),
+        (attendance) => {
+          if (
+            this.selectedLessonId !== undefined &&
+            this.selectedLessonId.length !== 0
+          ) {
+            return attendance.lessonId === this.selectedLessonId
+          }
+          return true
         }
-        return true
-      })
+      )
       // if (
       //   this.attendanceDateRange.length > 0 &&
       //   !moment(this.attendanceDateRange[0]).isSame(moment(0))
@@ -286,7 +289,7 @@ export default {
         email: "",
       },
       customerDetails: {},
-      selectedLessonId: "",
+      selectedLessonId: [],
       attendanceDateRange: [],
       payment: {
         paymentType: "",

@@ -16,6 +16,7 @@
       :close-on-press-escape="this.registrationLoading"
       :visible.sync="registrationDialogVisible"
     >
+      <span>If card input does not appear, reload the page.</span>
       <card :stripe="stripeKey"></card>
       <span slot="footer">
         <el-button :loading="this.registrationLoading" type="primary" @click="registerCard">Register</el-button>
@@ -85,9 +86,6 @@ export default {
     userId: {
       type: String,
       required: true,
-    },
-    customerDetails: {
-      type: Object,
     },
   },
 }
