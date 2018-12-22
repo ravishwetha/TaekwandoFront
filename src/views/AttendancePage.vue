@@ -53,9 +53,13 @@
             </el-col>
             <el-col id="presentAbsent" :span="6">
               <span>Present count : {{presentCount}} / {{tableData.length}}</span>
+              <br>
+              <el-button @click="() => allPresent(tableData)">All present</el-button>
             </el-col>
             <el-col id="presentAbsent" :span="6">
               <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
+              <br>
+              <el-button @click="() => allAbsent(tableData)">All absent</el-button>
             </el-col>
           </el-row>
         </el-col>
@@ -68,11 +72,6 @@
         >
           <el-table-column prop="name" label="Name"></el-table-column>
           <el-table-column label="Present">
-            <!-- Change to tickbox -->
-            <template slot="header" slot-scope="slot">
-              <el-input></el-input>
-            </template>
-
             <template slot-scope="scope">
               <el-checkbox
                 v-model="present[scope.row.userId]"
@@ -314,24 +313,22 @@ export default {
       return _.filter(this.present, (present) => present === true).length
     },
     absentCount() {
-      return _.filter(this.absent, (absent) => absent === true).length
+      return (
+        this.tableData.length -
+        _.filter(this.present, (absent) => absent === true).length
+      )
     },
   },
   data() {
-    let present = {}
-    let absent = {}
-    let description = {}
-
     return {
       selectedDate: moment().format("DD MMM YYYY"),
       selectedTimeslot: [],
       lessonValue: "",
-      total: 0,
       makeupModalVisible: false,
       studentsAddedToLesson: [],
-      present,
-      absent,
-      description,
+      present: {},
+      absent: {},
+      description: {},
       toBeUpdated: {},
       viewMakeUpModalVisible: false,
     }
@@ -401,6 +398,18 @@ export default {
     untickPresent(id) {
       this.present[id] = false
     },
+    allPresent(tableData) {
+      tableData.forEach((data) => {
+        this.untickAbsent(data.userId)
+        this.$set(this.present, data.userId, true)
+      })
+    },
+    allAbsent(tableData) {
+      tableData.forEach((data) => {
+        this.untickPresent(data.userId)
+        this.$set(this.absent, data.userId, true)
+      })
+    },
     routeToAddLesson() {
       this.$router.push("newLesson")
     },
@@ -456,15 +465,16 @@ export default {
           return _.get(details, "contact", null)
         })
       )
-      this.$store.dispatch("submitAttendance", {
-        userIdsAndPresence: present.concat(absent),
-        lessonId: this.lessonValue,
-        studentsToBeUpdated: this.toBeUpdated,
-      })
-      absentSmsAPI({ absenteeNumbers })
-      this.$router.push({
-        name: "home",
-      })
+      console.log(present.concat(absent))
+      //   this.$store.dispatch("submitAttendance", {
+      //     userIdsAndPresence: present.concat(absent),
+      //     lessonId: this.lessonValue,
+      //     studentsToBeUpdated: this.toBeUpdated,
+      //   })
+      //   absentSmsAPI({ absenteeNumbers })
+      //   this.$router.push({
+      //     name: "home",
+      //   })
     },
   },
 }
