@@ -10,7 +10,7 @@
         <hr>
         <el-col id="center">
           <el-row :gutter="10">
-            <el-col span="6">
+            <el-col :span="6">
               <el-select
                 style="padding-bottom: 10px"
                 v-model="lessonValue"
@@ -37,7 +37,7 @@
                 ></el-option>
               </el-select>
             </el-col>
-            <el-col span="6">
+            <el-col :span="6">
               <el-button
                 id="newStudentDiv"
                 type="primary"
@@ -51,10 +51,10 @@
                 :disabled="lessonValue === ``"
               >View make up students</el-button>
             </el-col>
-            <el-col id="presentAbsent" span="6">
+            <el-col id="presentAbsent" :span="6">
               <span>Present count : {{presentCount}} / {{tableData.length}}</span>
             </el-col>
-            <el-col id="presentAbsent" span="6">
+            <el-col id="presentAbsent" :span="6">
               <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
             </el-col>
           </el-row>
@@ -68,6 +68,11 @@
         >
           <el-table-column prop="name" label="Name"></el-table-column>
           <el-table-column label="Present">
+            <!-- Change to tickbox -->
+            <template slot="header" slot-scope="slot">
+              <el-input></el-input>
+            </template>
+
             <template slot-scope="scope">
               <el-checkbox
                 v-model="present[scope.row.userId]"
@@ -83,6 +88,11 @@
                 @change="(change) => change ? untickPresent(scope.row.userId) : null"
                 label="Absent"
               ></el-checkbox>
+            </template>
+          </el-table-column>
+          <el-table-column label="Description">
+            <template slot-scope="scope">
+              <el-input v-model="description[scope.row.userId]"></el-input>
             </template>
           </el-table-column>
         </el-table>
@@ -310,6 +320,7 @@ export default {
   data() {
     let present = {}
     let absent = {}
+    let description = {}
 
     return {
       selectedDate: moment().format("DD MMM YYYY"),
@@ -320,6 +331,7 @@ export default {
       studentsAddedToLesson: [],
       present,
       absent,
+      description,
       toBeUpdated: {},
       viewMakeUpModalVisible: false,
     }
@@ -341,6 +353,9 @@ export default {
             if (lessonsAttended.presence === ABSENT) {
               Vue.set(this.absent, student.userId, true)
               this.toBeUpdated[student.userId] = key
+            }
+            if (lessonsAttended.description) {
+              this.description[student.userId] = lessonsAttended.description
             }
           }
         })
@@ -414,6 +429,7 @@ export default {
             return {
               userId: key,
               presence: PRESENT,
+              description: this.description[key],
             }
           }
           return null
@@ -425,6 +441,7 @@ export default {
             return {
               userId: key,
               presence: ABSENT,
+              description: this.description[key],
             }
           }
           return null

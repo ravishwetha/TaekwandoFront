@@ -21,7 +21,7 @@
 <script>
 export default {
   data() {
-    return { branchId: "" }
+    return { branchId: "1" }
   },
   props: {
     loggedIn: {

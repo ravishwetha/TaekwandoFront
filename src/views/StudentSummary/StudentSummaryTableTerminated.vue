@@ -39,7 +39,7 @@ export default {
   },
   props: {
     dateRange: {
-      type: Array || null,
+      type: Array,
       required: true,
     },
     value: {
