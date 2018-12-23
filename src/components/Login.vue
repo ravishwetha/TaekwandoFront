@@ -4,7 +4,7 @@
       <el-input v-model="loginDetails.username"></el-input>
     </el-form-item>
     <el-form-item label="Password" prop="password">
-      <el-input v-model="loginDetails.password"></el-input>
+      <el-input type="password" v-model="loginDetails.password"></el-input>
     </el-form-item>
     <el-form-item>
       <el-button :loading="loggingIn" type="primary" @click="submitForm('loginDetails')">Login</el-button>
@@ -61,7 +61,6 @@ export default {
             name: "home",
           })
         } catch (e) {
-          console.log(e)
           this.$notify({
             title: "Login failed",
             message: "Username does not match password",
