@@ -45,6 +45,7 @@
 <script>
 import _ from "lodash"
 import { MISCELLEANEOUS, LESSONS } from "@/common/data"
+import { dfsKeysArray } from "@/common/findUtils"
 export default {
   computed: {
     treeData() {
@@ -145,10 +146,16 @@ export default {
       this.updating = false
     },
     remove(node, data) {
-      const parent = node.parent
+      const { parent } = node
       const children = parent.data.children || parent.data
       const index = children.findIndex((d) => d.id === data.id)
       children.splice(index, 1)
+      const keyToDelete = data.value
+      const keysArray = dfsKeysArray(
+        this.$store.getters.getPriceList,
+        keyToDelete
+      )
+      this.dispatch("removeFromPriceList", { keysArray })
     },
     startEdit(node) {
       const reversedPriceListKeys = []

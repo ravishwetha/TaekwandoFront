@@ -465,16 +465,15 @@ export default {
           return _.get(details, "contact", null)
         })
       )
-      console.log(present.concat(absent))
-      //   this.$store.dispatch("submitAttendance", {
-      //     userIdsAndPresence: present.concat(absent),
-      //     lessonId: this.lessonValue,
-      //     studentsToBeUpdated: this.toBeUpdated,
-      //   })
-      //   absentSmsAPI({ absenteeNumbers })
-      //   this.$router.push({
-      //     name: "home",
-      //   })
+      this.$store.dispatch("submitAttendance", {
+        userIdsAndPresence: present.concat(absent),
+        lessonId: this.lessonValue,
+        studentsToBeUpdated: this.toBeUpdated,
+      })
+      absentSmsAPI({ absenteeNumbers })
+      this.$router.push({
+        name: "home",
+      })
     },
   },
 }

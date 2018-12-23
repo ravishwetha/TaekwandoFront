@@ -20,7 +20,6 @@ const priceModule = {
       Vue.set(priceListObject, newName, payloadPrice)
     },
     updatePriceList(state, { current, newName, newPrice }) {
-      //TODO:
       let priceRefToBeUpdated = state.priceList
       _.initial(current).forEach((ref) => {
         priceRefToBeUpdated = priceRefToBeUpdated[ref]
@@ -41,7 +40,7 @@ const priceModule = {
       })
       const priceRefToBeRemoved = priceRefToBeUpdated.child(_.last(current))
       await priceRefToBeRemoved.remove()
-      await priceRefToBeUpdated.update({ [newName]: newPrice })
+      await priceRefToBeUpdated.update({ [newName]: parseFloat(newPrice) })
       commit("updatePriceList", { current, newName, newPrice })
     },
     addPriceList({ commit }, { current, newName, newPrice }) {
@@ -51,14 +50,20 @@ const priceModule = {
       })
       let payloadPrice
       if (newPrice === "") {
-        // priceRefToBeUpdated.update({ [newName]: -1 })
         payloadPrice = {}
       } else {
-        priceRefToBeUpdated.update({ [newName]: newPrice })
+        priceRefToBeUpdated.update({ [newName]: parseFloat(newPrice) })
         payloadPrice = newPrice
       }
       // priceRefToBeUpdated.update(payloadPrice)
       commit("addPriceList", { current, newName, payloadPrice })
+    },
+    removeFromPriceList({ commit }, { keysArray }) {
+      let priceRefToBeDeleted = priceRef
+      keysArray.forEach(
+        (key) => (priceRefToBeDeleted = priceRefToBeDeleted.child(key))
+      )
+      priceRefToBeDeleted.remove()
     },
   },
   getters: {
