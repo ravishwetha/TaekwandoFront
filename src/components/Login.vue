@@ -13,7 +13,6 @@
 </template>
 
 <script>
-import { loginAPI } from "@/common/api"
 export default {
   name: "login",
   data() {
@@ -54,20 +53,18 @@ export default {
       ) {
         this.loggingIn = true
         try {
-          const token = await loginAPI({
+          await this.$store.dispatch("login", {
             username: this.loginDetails.username,
             password: this.loginDetails.password,
           })
-          sessionStorage.setItem("token", token)
-          this.$store.dispatch("login")
           this.$router.push({
             name: "home",
           })
         } catch (e) {
+          console.log(e)
           this.$notify({
             title: "Login failed",
             message: "Username does not match password",
-            duration: 0,
           })
           this.loggingIn = false
         }

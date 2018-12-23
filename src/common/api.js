@@ -10,13 +10,12 @@ export const axiosConfig = () => {
   })
 }
 
-export const loginAPI = async ({ username, password }) => {
+export const loginAPI = async (encryptedUsernamePassword) => {
   const api = await axiosConfig()
   return api
     .get("/login", {
       params: {
-        username,
-        password,
+        encryptedUsernamePassword,
       },
     })
     .then((r) => r.data)
