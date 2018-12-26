@@ -11,11 +11,8 @@
         <el-col id="center">
           <el-row :gutter="10">
             <el-col :span="6">
-              <el-select
-                style="padding-bottom: 10px"
-                v-model="lessonValue"
-                placeholder="Select lesson"
-              >
+              <el-select style="padding-bottom: 10px" v-model="lessonValue">
+                <el-option :key="1" label="Select a lesson" :value="null"></el-option>
                 <el-option
                   v-for="lesson in lessonData"
                   :key="lesson.id"
@@ -24,11 +21,8 @@
                 ></el-option>
               </el-select>
               <br>
-              <el-select
-                v-model="selectedTimeslot"
-                no-data-text="No students in this lesson today"
-                placeholder="Select timeslot"
-              >
+              <el-select v-model="selectedTimeslot" no-data-text="No students in this lesson today">
+                <el-option :key="1" label="Select a timeslot" :value="null"></el-option>
                 <el-option
                   v-for="item in timeslotSelectData"
                   :key="item.key"
@@ -42,13 +36,13 @@
                 id="newStudentDiv"
                 type="primary"
                 @click="makeupModalVisible = true"
-                :disabled="lessonValue === ``"
+                :disabled="lessonValue === null"
               >Make up</el-button>
               <el-button
                 id="newStudentDiv"
                 type="primary"
                 @click="viewMakeUpModalVisible = true"
-                :disabled="lessonValue === ``"
+                :disabled="lessonValue === null"
               >View make up students</el-button>
             </el-col>
             <el-col id="presentAbsent" :span="6">
@@ -304,7 +298,7 @@ export default {
       )
     },
     emptyTableText() {
-      if (this.lessonValue === "") {
+      if (this.lessonValue === null) {
         return "Please select a lesson"
       }
       return "There are no users in this lesson. Add one?"
@@ -322,8 +316,8 @@ export default {
   data() {
     return {
       selectedDate: moment().format("DD MMM YYYY"),
-      selectedTimeslot: [],
-      lessonValue: "",
+      selectedTimeslot: null,
+      lessonValue: null,
       makeupModalVisible: false,
       studentsAddedToLesson: [],
       present: {},

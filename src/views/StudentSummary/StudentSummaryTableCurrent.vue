@@ -9,7 +9,7 @@
       :data="value"
       style="width: 100%"
     >
-      <el-table-column prop="name" label="Name"></el-table-column>
+      <el-table-column min-width="250" prop="name" label="Name"></el-table-column>
       <el-table-column prop="presentCount" label="Total Present Count"></el-table-column>
       <el-table-column prop="absentCount" label="Total Absent Count"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>

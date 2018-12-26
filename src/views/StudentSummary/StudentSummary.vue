@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-main>
-      <div id="lessonAndDate">
+      <!-- <div id="lessonAndDate">
         <div>
           <span>Select lesson type</span>
           <br>
@@ -12,7 +12,7 @@
           <br>
           <date-selector v-model="dateRange"></date-selector>
         </div>
-      </div>
+      </div>-->
       <student-summary-header-buttons
         style="margin-bottom: 10px"
         :openSendMessageModal="openSendMessageModal"
