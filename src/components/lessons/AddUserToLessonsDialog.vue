@@ -31,9 +31,7 @@
       <br>
       <span>Select the day of lesson this student is in</span>
       <br>
-      <el-select v-model="lessonAddingToDay" placeholder="Select">
-        <el-option v-for="item in DAYS" :key="item" :label="item" :value="item"></el-option>
-      </el-select>
+      <day-selector v-model="lessonAddingToDay"></day-selector>
     </div>
     <br>
     <span>Unlimited?</span>
@@ -46,11 +44,15 @@
 </template>
 
 <script>
-import { DAYS, UNLIMITED } from "@/common/data"
 import moment from "moment"
 import _ from "lodash"
+import { DAYS, UNLIMITED } from "@/common/data"
+import DaySelector from "@/components/utils/DaySelector"
 
 export default {
+  components: {
+    DaySelector,
+  },
   data() {
     return {
       lessonAddingTo: "",
@@ -59,7 +61,6 @@ export default {
       lessonAddingToTimeslot: "",
       lessonAddingToUnlimited: "",
       sessionOptions: [4, 12, 24],
-      DAYS: _.keys(DAYS),
     }
   },
   computed: {
@@ -106,6 +107,7 @@ export default {
           lessonId: this.lessonAddingTo,
         }
       }
+
       await this.$store.dispatch("addUsersToLesson", payload)
       this.closeDialog()
     },
