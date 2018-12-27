@@ -39,5 +39,17 @@ export const getDayTimeslotToObject = (dayTimeslots) => {
   })
   return dayTimeslotsObject
 }
+export const getDayTimeslotToArray = (dayTimeslots) =>
+  dayTimeslots.map((dayTimeslot) => {
+    const [day, timeslot] = dayTimeslot.split("|")
+    return { day, timeslot }
+  })
+
+export const getDayTimeslotFromDayAndTimeslot = (day, timeslot) =>
+  `${day}|${timeslot}`
+
+export const armyTimeToISO = (time) => moment(time, "HH:mm").toISOString()
+
+export const getTimeslotFromISO = (start, end) => start + "/" + end
 
 export const DATEANDTIME = "DD-MM-YY, h:mma"

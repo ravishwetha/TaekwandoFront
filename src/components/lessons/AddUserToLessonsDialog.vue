@@ -46,7 +46,7 @@
 <script>
 import moment from "moment"
 import _ from "lodash"
-import { DAYS, UNLIMITED } from "@/common/data"
+import { UNLIMITED } from "@/common/data"
 import DaySelector from "@/components/utils/DaySelector"
 
 export default {

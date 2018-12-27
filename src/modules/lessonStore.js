@@ -4,7 +4,10 @@ import { usersRef } from "@/modules/studentStore"
 import store from "@/store"
 import Vue from "vue"
 import moment from "moment"
-import { getDayTimeslotToObject } from "@/common/dateUtils"
+import {
+  getDayTimeslotToObject,
+  getDayTimeslotToArray,
+} from "@/common/dateUtils"
 export const lessonsRef = firebaseDB.database().ref("Lessons")
 
 const lessonsModule = {
@@ -155,9 +158,13 @@ const lessonsModule = {
   getters: {
     getAllLessonData: (state) => state.lessons,
     getLessonData: (state) => (id) => state.lessons[id],
-    getLessonDayTimeslots: (state) => (id) => {
+    getLessonDayTimeslotsKeyedByDay: (state) => (id) => {
       const lessonDayTimeslot = state.lessons[id].dayTimeslots
       return getDayTimeslotToObject(lessonDayTimeslot)
+    },
+    getLessonDayTimeslots: (state) => (id) => {
+      const lessonDayTimeslot = state.lessons[id].dayTimeslots
+      return getDayTimeslotToArray(lessonDayTimeslot)
     },
   },
 }

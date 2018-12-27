@@ -18,31 +18,21 @@
               class="formInput"
             ></el-input>
           </el-form-item>
-          <el-form-item label="Select ALL days that this lesson has:" class="formItem" prop="days">
-            <el-checkbox-group v-model="form.days" class="formInput">
-              <el-checkbox label="MON" name="type"></el-checkbox>
-              <el-checkbox label="TUE" name="type"></el-checkbox>
-              <el-checkbox label="WED" name="type"></el-checkbox>
-              <el-checkbox label="THU" name="type"></el-checkbox>
-              <el-checkbox label="FRI" name="type"></el-checkbox>
-              <el-checkbox label="SAT" name="type"></el-checkbox>
-              <el-checkbox label="SUN" name="type"></el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
           <el-form-item
-            v-for="(timeslot) in form.timeslots"
-            label="Select ALL timeslots this lesson has for ANY day:"
-            :key="timeslot.key"
+            v-for="(dayTimeslot) in form.dayTimeslots"
+            label="Select day and timeslot"
+            :key="dayTimeslot.key"
           >
+            <day-selector v-model="dayTimeslot.day"></day-selector>
             <el-time-select
               class="formInput"
-              v-model="timeslot.from"
+              v-model="dayTimeslot.from"
               placeholder="Select start time"
               :picker-options="startTimePickerOptions"
             ></el-time-select>
             <el-time-select
               class="formInput"
-              v-model="timeslot.to"
+              v-model="dayTimeslot.to"
               placeholder="Select end time"
               :picker-options="endTimePickerOptions"
             ></el-time-select>
@@ -70,33 +60,41 @@
 <script>
 import _ from "lodash"
 import moment from "moment"
-import { readableTimeslotParser } from "../common/dateUtils"
+import {
+  readableTimeslotParser,
+  armyTimeToISO,
+  getTimeslotFromISO,
+  getDayTimeslotFromDayAndTimeslot,
+} from "@/common/dateUtils"
+import DaySelector from "@/components/utils/DaySelector"
+
 export default {
   beforeMount() {
     const lessonId = this.$route.query["lessonId"]
     if (lessonId) {
       this.edit = true
-      const { name, days, timeslots } = this.$store.getters.getLessonData(
-        lessonId
-      )
+      const { name } = this.$store.getters.getLessonData(lessonId)
       this.form.name = name
-      this.form.days = days
-      const parsedTimeSlots = _.map(timeslots, (timeslot) => {
+      const dayTimeslots = this.$store.getters.getLessonDayTimeslots(lessonId)
+      const parsedTimeSlots = _.map(dayTimeslots, ({ day, timeslot }) => {
         const [from, to] = timeslot.split("/")
         return {
+          day,
           from: moment(from).format("HH:mm"),
           to: moment(to).format("HH:mm"),
           key: Math.random(),
         }
       })
-      this.form.timeslots = parsedTimeSlots
+
+      this.form.dayTimeslots = parsedTimeSlots
     }
+  },
+  components: {
+    DaySelector,
   },
   computed: {
     studentInLessonTableData() {
       const lessonId = this.$route.query["lessonId"]
-
-      // console.log(this.$store.getters.getLessonDayTimeslots(lessonId))
 
       const lessonData = this.$store.getters.getLessonData(lessonId)
       const studentIdsInLesson = _.values(lessonData.Users)
@@ -122,11 +120,11 @@ export default {
       edit: false,
       form: {
         name: "",
-        days: [],
-        timeslots: [
+        dayTimeslots: [
           {
             from: "",
             to: "",
+            day: "",
             key: 1,
           },
         ],
@@ -154,14 +152,6 @@ export default {
             trigger: "blur",
           },
         ],
-        days: [
-          {
-            required: true,
-            type: "array",
-            message: "Please select the days for this class",
-            trigger: "change",
-          },
-        ],
       },
     }
   },
@@ -177,13 +167,16 @@ export default {
     createNewLesson(formName, edit) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          let formData = _.pick(this.form, ["name", "days", "timeslots"])
+          let formData = _.pick(this.form, ["name", "dayTimeslots"])
           formData = {
             ...formData,
-            timeslots: _.map(formData.timeslots, (timeslot) => {
-              const parsedFrom = moment(timeslot.from, "HH:mm").toISOString()
-              const parsedTo = moment(timeslot.to, "HH:mm").toISOString()
-              return parsedFrom + "/" + parsedTo
+            dayTimeslots: _.map(formData.dayTimeslots, ({ day, from, to }) => {
+              const parsedFrom = armyTimeToISO(from)
+              const parsedTo = armyTimeToISO(to)
+              return getDayTimeslotFromDayAndTimeslot(
+                day,
+                getTimeslotFromISO(parsedFrom, parsedTo)
+              )
             }),
           }
           if (edit) {
@@ -207,7 +200,7 @@ export default {
       }
     },
     addTimeslot() {
-      this.form.timeslots.push({
+      this.form.dayTimeslots.push({
         key: Date.now(),
         value: "",
       })
