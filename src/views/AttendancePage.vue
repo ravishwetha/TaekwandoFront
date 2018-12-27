@@ -13,22 +13,18 @@
             <el-col :span="6">
               <el-select style="padding-bottom: 10px" v-model="lessonValue">
                 <el-option :key="1" label="Select a lesson" :value="null"></el-option>
-                <el-option
-                  v-for="lesson in lessonData"
-                  :key="lesson.id"
-                  :label="lesson.name"
-                  :value="lesson.id"
-                ></el-option>
-              </el-select>
-              <br>
-              <el-select v-model="selectedTimeslot" no-data-text="No students in this lesson today">
-                <el-option :key="1" label="Select a timeslot" :value="null"></el-option>
-                <el-option
-                  v-for="item in timeslotSelectData"
-                  :key="item.key"
-                  :label="item.label"
-                  :value="item.value"
-                ></el-option>
+                <el-option-group
+                  v-for="group in lessonData"
+                  :key="group.timeslot"
+                  :label="group.label"
+                >
+                  <el-option
+                    v-for="item in group.options"
+                    :key="item.key"
+                    :label="item.label"
+                    :value="item.value"
+                  ></el-option>
+                </el-option-group>
               </el-select>
             </el-col>
             <el-col :span="6">
@@ -139,7 +135,12 @@ import _ from "lodash"
 import { DAYS, PRESENT, ABSENT, UNLIMITED, MAKEUP } from "@/common/data"
 import { absentSmsAPI } from "@/common/api"
 import Vue from "vue"
-import { DATEANDTIME } from "@/common/dateUtils"
+import {
+  DATEANDTIME,
+  readableTimeslotParser,
+  timeslotToMoment,
+  timeslotInArray,
+} from "@/common/dateUtils"
 
 export default {
   beforeMount() {
@@ -147,17 +148,53 @@ export default {
   },
   computed: {
     lessonData() {
-      const data = _.omitBy(this.$store.getters.getAllLessonData, (lesson) => {
-        for (const day of lesson.days) {
-          if (moment().day() === DAYS[day]) {
-            return false
+      const todayLessons = _.omitBy(
+        this.$store.getters.getAllLessonData,
+        (lesson) => {
+          for (const day of lesson.days) {
+            if (moment().day() === DAYS[day]) {
+              return false
+            }
           }
+          return true
         }
-        return true
+      )
+      const todayLessonWithId = _.map(todayLessons, (lesson, id) => ({
+        ...lesson,
+        id,
+      }))
+      const timeslotToStudents = this.getTimeslotsToStudents()
+      // console.log(timeslotToStudents)(
+      //) console.log(todayLessonWithId)
+      const timeSlotOptions = _.map(_.keys(timeslotToStudents), (timeslot) => {
+        const englishTime = readableTimeslotParser(timeslot)
+        const todayLessonsWhichHasThisTimeslot = _.filter(
+          todayLessonWithId,
+          (lesson) => {
+            if (timeslotInArray(lesson.timeslots, timeslot) === undefined) {
+              console.log(timeslotToStudents[timeslot])
+              console.log(lesson)
+              console.log(readableTimeslotParser(timeslot))
+            }
+            return timeslotInArray(lesson.timeslots, timeslot)
+          }
+        )
+        return {
+          label: englishTime,
+          timeslot,
+          options: _.map(todayLessonsWhichHasThisTimeslot, (lesson) => ({
+            label: lesson.name,
+            value: JSON.stringify({ lessonId: lesson.id, timeslot }),
+            key: Math.random(),
+          })),
+        }
       })
-      const parsedData = _.map(data, (lesson, id) => ({ ...lesson, id }))
+      const sortedTimeslotOptions = _.sortBy(timeSlotOptions, (option) => {
+        const { from } = timeslotToMoment(option.timeslot)
+        return from.unix()
+      })
 
-      return parsedData
+      return sortedTimeslotOptions
     },
     makeupLessonUserData() {
       const users = this.$store.getters.getAllStudentsInfo
@@ -222,51 +259,29 @@ export default {
       return mostRecentMakeupMap
     },
     tableData() {
-      let filteredStudentInfo = _.filter(
-        this.$store.getters.getAllStudentsInfo,
-        (student) => {
-          return _.includes(_.keys(student.lessons), this.lessonValue)
-        }
-      )
-      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-        return (
-          DAYS[user.lessons[this.lessonValue].day] === moment().day() ||
-          user.lessons[this.lessonValue].timeslot === UNLIMITED
-        )
-      })
-      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-        return (
-          _.includes(
-            this.selectedTimeslot,
-            user.lessons[this.lessonValue].timeslot
-          ) || user.lessons[this.lessonValue].timeslot === UNLIMITED
-        )
-      })
-      this.updatePresentAbsent()
-      return filteredStudentInfo
-    },
-    timeslotSelectData() {
-      let selectOptionsObject = {}
-      _.forEach(this.getStudentUniqueTimeslots(), (timeslot) => {
-        const [from, to] = timeslot.split("/")
-        const parsedFrom = moment(from).format("ha")
-        const parsedTo = moment(to).format("ha")
-        const englishTime = parsedFrom + "-" + parsedTo
-        const labelAlreadyIn = _.find(
-          _.keys(selectOptionsObject),
-          (option) => option === englishTime
-        )
-        if (labelAlreadyIn === undefined) {
-          selectOptionsObject[englishTime] = []
-        }
-        selectOptionsObject[englishTime].push(timeslot)
-      })
-      const selectOptions = _.map(selectOptionsObject, (timeslots, label) => ({
-        label,
-        value: timeslots,
-        key: Math.random(),
-      }))
-      return selectOptions
+      // let filteredStudentInfo = _.filter(
+      //   this.$store.getters.getAllStudentsInfo,
+      //   (student) => {
+      //     return _.includes(_.keys(student.lessons), this.lessonValue)
+      //   }
+      // )
+      // filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+      //   return (
+      //     DAYS[user.lessons[this.lessonValue].day] === moment().day() ||
+      //     user.lessons[this.lessonValue].timeslot === UNLIMITED
+      //   )
+      // })
+      // filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+      //   return (
+      //     _.includes(
+      //       this.selectedTimeslot,
+      //       user.lessons[this.lessonValue].timeslot
+      //     ) || user.lessons[this.lessonValue].timeslot === UNLIMITED
+      //   )
+      // })
+      // this.updatePresentAbsent()
+      // return filteredStudentInfo
+      return []
     },
     studentData() {
       const filteredStudentInfo = _.filter(
@@ -352,31 +367,38 @@ export default {
         })
       })
     },
-    getStudentUniqueTimeslots() {
+    getTimeslotsToStudents() {
+      // Gets all students with lessons today or unlimited timeslots
+      const allLessonData = this.$store.getters.getAllLessonData
       let filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
         (student) => {
-          return _.includes(_.keys(student.lessons), this.lessonValue)
+          return _.find(_.values(student.lessons), (lesson) => {
+            moment().day() === DAYS[lesson.day] || lesson.timeslot === UNLIMITED
+          })
         }
       )
-      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-        return (
-          user.lessons[this.lessonValue].timeslot === UNLIMITED ||
-          DAYS[user.lessons[this.lessonValue].day] === moment().day()
-        )
-      })
-      const timeslots = new Set()
+      const timeslots = {}
       filteredStudentInfo.forEach((user) => {
-        if (user.lessons[this.lessonValue].timeslot === UNLIMITED) {
-          const lessonTimeslots = this.$store.getters.getLessonData(
-            this.lessonValue
-          ).timeslots
-          lessonTimeslots.forEach((timeslot) => timeslots.add(timeslot))
-        } else {
-          timeslots.add(user.lessons[this.lessonValue].timeslot)
-        }
+        _.forEach(_.keys(user.lessons), (lessonId) => {
+          if (user.lessons[lessonId].timeslot === UNLIMITED) {
+            const lessonTimeslots = this.$store.getters.getLessonData(lessonId)
+              .timeslots
+            lessonTimeslots.forEach((timeslot) => {
+              if (timeslots[timeslot] === undefined) {
+                timeslots[timeslot] = []
+              }
+              timeslots[timeslot].push(user)
+            })
+          } else {
+            if (timeslots[user.lessons[lessonId].timeslot] === undefined) {
+              timeslots[user.lessons[lessonId].timeslot] = []
+            }
+            timeslots[user.lessons[lessonId].timeslot].push(user)
+          }
+        })
       })
-      return Array.from(timeslots)
+      return timeslots
     },
     deleteMakeup(row) {
       const { userId, attendanceToDelete } = row

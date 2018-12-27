@@ -95,6 +95,9 @@ export default {
   computed: {
     studentInLessonTableData() {
       const lessonId = this.$route.query["lessonId"]
+
+      console.log(this.$store.getters.getLessonDayTimeslots(lessonId))
+
       const lessonData = this.$store.getters.getLessonData(lessonId)
       const studentIdsInLesson = _.values(lessonData.Users)
       const studentsInLesson = _.map(studentIdsInLesson, (studentId) => {
@@ -103,6 +106,7 @@ export default {
           name: studentInfo.name,
         }
         const { day, timeslot } = studentInfo.lessons[lessonId]
+
         studentCol = {
           ...studentCol,
           day,
