@@ -94,7 +94,12 @@ const lessonsModule = {
     async removeUserFromLesson({ commit }, { lessonId, userId }) {
       const allLessonData = store.getters.getAllLessonData
       const lesson = _.get(allLessonData, lessonId)
-      const lessonUserIdKey = _.findKey(_.get(lesson, "Users"))
+      let lessonUserIdKey
+      _.forEach(_.get(lesson, "Users"), (id, key) => {
+        if (userId === id) {
+          lessonUserIdKey = key
+        }
+      })
       await lessonsRef
         .child(lessonId)
         .child("Users")

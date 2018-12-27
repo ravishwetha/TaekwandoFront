@@ -96,7 +96,7 @@ export default {
     studentInLessonTableData() {
       const lessonId = this.$route.query["lessonId"]
 
-      console.log(this.$store.getters.getLessonDayTimeslots(lessonId))
+      // console.log(this.$store.getters.getLessonDayTimeslots(lessonId))
 
       const lessonData = this.$store.getters.getLessonData(lessonId)
       const studentIdsInLesson = _.values(lessonData.Users)
