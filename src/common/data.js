@@ -22,12 +22,12 @@ export const PRESENT = "PRESENT"
 export const ABSENT = "ABSENT"
 export const MAKEUP = "MAKEUP"
 export const firebaseConfig = {
-  apiKey: process.env.VUE_APP_FIREBASE,
-  authDomain: "taekwandobackend-d1edf.firebaseapp.com",
-  databaseURL: "https://taekwandobackend-d1edf.firebaseio.com",
-  projectId: "taekwandobackend-d1edf",
-  storageBucket: "taekwandobackend-d1edf.appspot.com",
-  messagingSenderId: "1011970784530",
+  apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
+  authDomain: process.env.VUE_APP_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.VUE_APP_FIREBASE_DB_URL,
+  projectId: process.env.VUE_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VUE_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VUE_APP_FIREBASE_SENDER_ID,
 }
 
 export const UNLIMITED = "UNLIMITED"
