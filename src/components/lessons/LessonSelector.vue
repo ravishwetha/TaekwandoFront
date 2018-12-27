@@ -11,6 +11,7 @@
 <script>
 import _ from "lodash"
 import { DAYS_ENGLISH } from "@/common/data"
+import { dayInDayTimeslotArray } from "@/common/findUtils"
 export default {
   computed: {
     lessonData() {
@@ -22,7 +23,7 @@ export default {
     options() {
       const options = _.map(DAYS_ENGLISH, (day, dayKey) => {
         const filteredLessonData = _.filter(this.lessonData, (lesson) =>
-          _.includes(lesson.days, dayKey)
+          dayInDayTimeslotArray(_.get(lesson, "dayTimeslots", []), dayKey)
         )
         const children = _.map(filteredLessonData, (lesson) => ({
           value: lesson.id,

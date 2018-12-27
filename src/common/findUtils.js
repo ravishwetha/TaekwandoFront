@@ -1,4 +1,5 @@
 import _ from "lodash"
+import { getDayTimeslotToObject } from "./dateUtils"
 
 const dfsKeysArrayUncleaned = (object, keyToSearch, appendedArray = []) => {
   if (!(object instanceof Object)) {
@@ -22,3 +23,6 @@ export const dfsKeysArray = (object, keyToSearch) => {
   )
   return _.flattenDeep(cleanedKeysArray)
 }
+
+export const dayInDayTimeslotArray = (dayTimeslot, day) =>
+  getDayTimeslotToObject(dayTimeslot)[day] !== undefined

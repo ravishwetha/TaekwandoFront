@@ -42,7 +42,10 @@ const lessonsModule = {
         const lessonsObject = await lessonsRef
           .once("value")
           .then((snapshot) => snapshot.val())
-        commit("loadAllLessonsData", lessonsObject)
+        commit("loadAllLessonsData", {
+          ...lessonsObject,
+          dayTimeslots: _.toArray(lessonsObject.dayTimeslots),
+        })
       } catch {
         console.log("lesson retrieval failed")
       }
