@@ -13,11 +13,7 @@
             <el-col :span="6">
               <el-select style="padding-bottom: 10px" value-key="key" v-model="lessonValue">
                 <el-option :key="1" label="Select a lesson" :value="null"></el-option>
-                <el-option-group
-                  v-for="group in lessonData"
-                  :key="group.timeslot"
-                  :label="group.label"
-                >
+                <el-option-group v-for="group in lessonData" :key="group.key" :label="group.label">
                   <el-option
                     v-for="item in group.options"
                     :key="item.key"
@@ -140,6 +136,7 @@ import {
   readableTimeslotParser,
   englishTimeslotToMoment,
   getDayShort,
+  getDayTimeslotFromDayAndTimeslotEnglish,
 } from "@/common/dateUtils"
 import { englishTimeslotInArray } from "@/common/findUtils"
 import DateSelector from "@/components/utils/DateSelector"
@@ -174,8 +171,11 @@ export default {
           label: timeslot,
           options: _.map(todayLessonsWhichHasThisTimeslot, (lesson) => ({
             label: lesson.name,
-            value: { lessonId: lesson.id, timeslot },
-            key: Math.random(),
+            value: {
+              lessonId: lesson.id,
+              timeslot,
+              key: Math.random(),
+            },
           })),
           key: Math.random(),
         }
@@ -449,6 +449,11 @@ export default {
       const userIdAndPresence = _.map(this.studentsAddedToLesson, (userId) => ({
         userId: userId,
         presence: MAKEUP,
+        dateOfLesson: moment(this.selectedDate).toISOString(),
+        dayTimeslot: getDayTimeslotFromDayAndTimeslotEnglish(
+          getDayShort(this.selectedDate),
+          this.lessonValue.timeslot
+        ),
       }))
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: userIdAndPresence,
@@ -465,6 +470,11 @@ export default {
               userId: key,
               presence: PRESENT,
               description: this.description[key],
+              dateOfLesson: moment(this.selectedDate).toISOString(),
+              dayTimeslot: getDayTimeslotFromDayAndTimeslotEnglish(
+                getDayShort(this.selectedDate),
+                this.lessonValue.timeslot
+              ),
             }
           }
           return null
@@ -477,6 +487,11 @@ export default {
               userId: key,
               presence: ABSENT,
               description: this.description[key],
+              dateOfLesson: moment(this.selectedDate).toISOString(),
+              dayTimeslot: getDayTimeslotFromDayAndTimeslotEnglish(
+                getDayShort(this.selectedDate),
+                this.lessonValue.timeslot
+              ),
             }
           }
           return null
@@ -491,11 +506,12 @@ export default {
           return _.get(details, "contact", null)
         })
       )
-      this.$store.dispatch("submitAttendance", {
-        userIdsAndPresence: present.concat(absent),
-        lessonId: this.lessonValue.lessonId,
-        studentsToBeUpdated: this.toBeUpdated,
-      })
+      console.log(present.concat(absent))
+      // this.$store.dispatch("submitAttendance", {
+      //   userIdsAndPresence: present.concat(absent),
+      //   lessonId: this.lessonValue.lessonId,
+      //   studentsToBeUpdated: this.toBeUpdated,
+      // })
       absentSmsAPI({ absenteeNumbers })
       this.$router.push({
         name: "home",

@@ -393,10 +393,10 @@ export default {
             vm: this,
           }
 
-          const dispatch = this.$store.dispatch(
-            "addSinglePayment",
-            paymentDataAndVm
-          )
+          // const dispatch = this.$store.dispatch(
+          //   "addSinglePayment",
+          //   paymentDataAndVm
+          // )
           const recp = RecieptGenerator(
             [LESSONS, ...this.payment.paymentForm.type].join(" / "),
             this.payment.paymentForm.description,

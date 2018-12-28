@@ -57,6 +57,12 @@ export const getDayAndTimeslotFromDayTimeslot = (dayTimeslot) => {
 export const getDayTimeslotFromDayAndTimeslot = (day, timeslot) =>
   `${day}|${timeslot}`
 
+export const getDayTimeslotFromDayAndTimeslotEnglish = (day, timeslot) => {
+  const { from, to } = englishTimeslotToMoment(timeslot)
+  const isoTimeslot = getTimeslotFromISO(from.toISOString(), to.toISOString())
+  return getDayTimeslotFromDayAndTimeslot(day, isoTimeslot)
+}
+
 export const armyTimeToISO = (time) => moment(time, "HH:mm").toISOString()
 
 export const getTimeslotFromISO = (start, end) => start + "/" + end

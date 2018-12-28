@@ -16,6 +16,7 @@ import {
   REFUNDED,
   TERMINATED,
   PRESENT,
+  ABSENT,
 } from "@/common/data"
 import { lessonsRef } from "./lessonStore"
 
@@ -469,12 +470,6 @@ const studentModule = {
               .child("lessons")
               .child(lessonId)
               .update({ entitlement: parseInt(entitlementCount) - 1 })
-          } else {
-            usersRef
-              .child(userIdAndPresence.userId)
-              .child("lessons")
-              .child(lessonId)
-              .update({ entitlement: parseInt(entitlementCount) + 1 })
           }
           if (attendanceToBeUpdated) {
             usersRef
@@ -486,6 +481,13 @@ const studentModule = {
                 presence: userIdAndPresence.presence,
                 timestamp: moment().toISOString(),
               })
+            if (userIdAndPresence.presence === ABSENT) {
+              usersRef
+                .child(userIdAndPresence.userId)
+                .child("lessons")
+                .child(lessonId)
+                .update({ entitlement: parseInt(entitlementCount) + 1 })
+            }
           } else {
             usersRef
               .child(userIdAndPresence.userId)
@@ -494,6 +496,8 @@ const studentModule = {
                 lessonId,
                 presence: userIdAndPresence.presence,
                 timestamp: moment().toISOString(),
+                dayTimeslot: userIdAndPresence.dayTimeslot,
+                dateOfLesson: userIdAndPresence.dateOfLesson,
               })
           }
         })
