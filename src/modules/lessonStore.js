@@ -8,6 +8,7 @@ import {
   getDayTimeslotToObject,
   getDayTimeslotToArray,
 } from "@/common/dateUtils"
+import { NUMBER_DAYS } from "@/common/data"
 export const lessonsRef = firebaseDB.database().ref("Lessons")
 
 const lessonsModule = {
@@ -44,7 +45,6 @@ const lessonsModule = {
           .then((snapshot) => snapshot.val())
         commit("loadAllLessonsData", {
           ...lessonsObject,
-          dayTimeslots: _.toArray(lessonsObject.dayTimeslots),
         })
       } catch {
         console.log("lesson retrieval failed")
@@ -168,6 +168,13 @@ const lessonsModule = {
     getLessonDayTimeslots: (state) => (id) => {
       const lessonDayTimeslot = state.lessons[id].dayTimeslots
       return getDayTimeslotToArray(lessonDayTimeslot)
+    },
+    getTodayLessons: (state) => {
+      const today = NUMBER_DAYS[moment().day()]
+      return _.omitBy(state.lessons, (lesson) => {
+        const lessonDayTimeslots = getDayTimeslotToObject(lesson.dayTimeslots)
+        return lessonDayTimeslots[today] ? false : true
+      })
     },
   },
 }

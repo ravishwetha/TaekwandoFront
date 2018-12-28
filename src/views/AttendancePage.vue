@@ -138,9 +138,10 @@ import Vue from "vue"
 import {
   DATEANDTIME,
   readableTimeslotParser,
-  timeslotToMoment,
-  timeslotInArray,
+  englishTimeslotToMoment,
+  getTodayShort,
 } from "@/common/dateUtils"
+import { englishTimeslotInArray } from "@/common/findUtils"
 
 export default {
   beforeMount() {
@@ -148,40 +149,25 @@ export default {
   },
   computed: {
     lessonData() {
-      const todayLessons = _.omitBy(
-        this.$store.getters.getAllLessonData,
-        (lesson) => {
-          for (const day of lesson.days) {
-            if (moment().day() === DAYS[day]) {
-              return false
-            }
-          }
-          return true
-        }
-      )
+      const todayLessons = this.$store.getters.getTodayLessons
       const todayLessonWithId = _.map(todayLessons, (lesson, id) => ({
         ...lesson,
         id,
       }))
       const timeslotToStudents = this.getTimeslotsToStudents()
-      // console.log(timeslotToStudents)(
-      //) console.log(todayLessonWithId)
       const timeSlotOptions = _.map(_.keys(timeslotToStudents), (timeslot) => {
-        const englishTime = readableTimeslotParser(timeslot)
         const todayLessonsWhichHasThisTimeslot = _.filter(
           todayLessonWithId,
           (lesson) => {
-            if (timeslotInArray(lesson.timeslots, timeslot) === undefined) {
-              console.log(timeslotToStudents[timeslot])
-              console.log(lesson)
-              console.log(readableTimeslotParser(timeslot))
-            }
-            return timeslotInArray(lesson.timeslots, timeslot)
+            const lessonTimeslots = this.$store.getters.getLessonDayTimeslotsKeyedByDay(
+              lesson.id
+            )[getTodayShort]
+
+            return englishTimeslotInArray(lessonTimeslots, timeslot)
           }
         )
         return {
-          label: englishTime,
-          timeslot,
+          label: timeslot,
           options: _.map(todayLessonsWhichHasThisTimeslot, (lesson) => ({
             label: lesson.name,
             value: JSON.stringify({ lessonId: lesson.id, timeslot }),
@@ -189,8 +175,10 @@ export default {
           })),
         }
       })
+
+      // not sorting properly
       const sortedTimeslotOptions = _.sortBy(timeSlotOptions, (option) => {
-        const { from } = timeslotToMoment(option.timeslot)
+        const { from } = englishTimeslotToMoment(option.label)
         return from.unix()
       })
 
@@ -217,7 +205,9 @@ export default {
           const todayMakeup = _.find(
             idNameAttendance.attendance,
             (attendanceObject) => {
-              const sameId = attendanceObject.lessonId === this.lessonValue
+              const sameId =
+                attendanceObject.lessonId ===
+                JSON.parse(this.lessonValue).lessonId
               const sameDay = moment(attendanceObject.timestamp)
                 .startOf("day")
                 .isSame(moment().startOf("day"))
@@ -239,7 +229,9 @@ export default {
           const todayMakeupAttendance = _.find(
             attendanceWithId,
             (attendanceObject) => {
-              const sameId = attendanceObject.lessonId === this.lessonValue
+              const sameId =
+                attendanceObject.lessonId ===
+                JSON.parse(this.lessonValue).lessonId
               const sameDay = moment(attendanceObject.timestamp)
                 .startOf("day")
                 .isSame(moment().startOf("day"))
@@ -259,34 +251,39 @@ export default {
       return mostRecentMakeupMap
     },
     tableData() {
-      // let filteredStudentInfo = _.filter(
-      //   this.$store.getters.getAllStudentsInfo,
-      //   (student) => {
-      //     return _.includes(_.keys(student.lessons), this.lessonValue)
-      //   }
-      // )
-      // filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-      //   return (
-      //     DAYS[user.lessons[this.lessonValue].day] === moment().day() ||
-      //     user.lessons[this.lessonValue].timeslot === UNLIMITED
-      //   )
-      // })
-      // filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-      //   return (
-      //     _.includes(
-      //       this.selectedTimeslot,
-      //       user.lessons[this.lessonValue].timeslot
-      //     ) || user.lessons[this.lessonValue].timeslot === UNLIMITED
-      //   )
-      // })
-      // this.updatePresentAbsent()
-      // return filteredStudentInfo
-      return []
+      const { lessonId, timeslot } = JSON.parse(this.lessonValue)
+      let filteredStudentInfo = _.filter(
+        this.$store.getters.getAllStudentsInfo,
+        (student) => {
+          return _.includes(_.keys(student.lessons), lessonId)
+        }
+      )
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+        return (
+          DAYS[user.lessons[lessonId].day] === moment().day() ||
+          user.lessons[lessonId].timeslot === UNLIMITED
+        )
+      })
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
+        return (
+          user.lessons[lessonId].timeslot === UNLIMITED ||
+          _.includes(
+            timeslot,
+            readableTimeslotParser(user.lessons[lessonId].timeslot)
+          )
+        )
+      })
+      this.updatePresentAbsent()
+      return filteredStudentInfo
     },
     studentData() {
       const filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
-        (student) => _.includes(_.keys(student.lessons), this.lessonValue)
+        (student) =>
+          _.includes(
+            _.keys(student.lessons),
+            JSON.parse(this.lessonValue).lessonId
+          )
       )
       return _.compact(
         _.map(filteredStudentInfo, (studentInfo) => {
@@ -298,7 +295,7 @@ export default {
                   .startOf("day")
                   .isSame(moment().startOf("day")) &&
                 attendance.presence == MAKEUP &&
-                attendance.lessonId == this.lessonValue
+                attendance.lessonId == JSON.parse(this.lessonValue).lessonId
               )
             }
           )
@@ -322,17 +319,13 @@ export default {
       return _.filter(this.present, (present) => present === true).length
     },
     absentCount() {
-      return (
-        this.tableData.length -
-        _.filter(this.present, (absent) => absent === true).length
-      )
+      return _.filter(this.absent, (absent) => absent === true).length
     },
   },
   data() {
     return {
       selectedDate: moment().format("DD MMM YYYY"),
-      selectedTimeslot: null,
-      lessonValue: null,
+      lessonValue: JSON.stringify({}),
       makeupModalVisible: false,
       studentsAddedToLesson: [],
       present: {},
@@ -344,13 +337,14 @@ export default {
   },
   methods: {
     updatePresentAbsent() {
+      const { lessonId } = JSON.parse(this.lessonValue)
       _.forEach(this.$store.getters.getAllStudentsInfo, (student) => {
         _.forEach(student.attendance, (lessonsAttended, key) => {
           if (
             moment(lessonsAttended.timestamp)
               .startOf("day")
               .isSame(moment().startOf("day")) &&
-            (this.lessonValue && lessonsAttended.lessonId === this.lessonValue)
+            lessonsAttended.lessonId === lessonId
           ) {
             if (lessonsAttended.presence === PRESENT) {
               Vue.set(this.present, student.userId, true)
@@ -369,32 +363,44 @@ export default {
     },
     getTimeslotsToStudents() {
       // Gets all students with lessons today or unlimited timeslots
-      const allLessonData = this.$store.getters.getAllLessonData
       let filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
         (student) => {
           return _.find(_.values(student.lessons), (lesson) => {
-            moment().day() === DAYS[lesson.day] || lesson.timeslot === UNLIMITED
+            return moment().day() === DAYS[lesson.day] ||
+              lesson.timeslot === UNLIMITED
+              ? true
+              : false
           })
         }
       )
+      // Today's day in 3 letter string
+      const todayDay = getTodayShort
+
       const timeslots = {}
       filteredStudentInfo.forEach((user) => {
-        _.forEach(_.keys(user.lessons), (lessonId) => {
-          if (user.lessons[lessonId].timeslot === UNLIMITED) {
-            const lessonTimeslots = this.$store.getters.getLessonData(lessonId)
-              .timeslots
-            lessonTimeslots.forEach((timeslot) => {
-              if (timeslots[timeslot] === undefined) {
-                timeslots[timeslot] = []
+        _.forEach(user.lessons, (lesson, lessonId) => {
+          if (lesson.timeslot === UNLIMITED) {
+            const todayTimeslots = this.$store.getters.getLessonDayTimeslotsKeyedByDay(
+              lessonId
+            )[todayDay]
+            todayTimeslots.forEach((timeslot) => {
+              //Check if its already added
+              const englishTimeslot = readableTimeslotParser(timeslot)
+
+              if (timeslots[englishTimeslot] === undefined) {
+                timeslots[englishTimeslot] = []
               }
-              timeslots[timeslot].push(user)
+              timeslots[englishTimeslot].push(user)
             })
           } else {
-            if (timeslots[user.lessons[lessonId].timeslot] === undefined) {
-              timeslots[user.lessons[lessonId].timeslot] = []
+            if (lesson.day === todayDay) {
+              const englishTimeslot = readableTimeslotParser(lesson.timeslot)
+              if (timeslots[englishTimeslot] === undefined) {
+                timeslots[englishTimeslot] = []
+              }
+              timeslots[englishTimeslot].push(user)
             }
-            timeslots[user.lessons[lessonId].timeslot].push(user)
           }
         })
       })
@@ -442,7 +448,7 @@ export default {
       }))
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: userIdAndPresence,
-        lessonId: this.lessonValue,
+        lessonId: JSON.parse(this.lessonValue).lessonId,
         studentsToBeUpdated: this.toBeUpdated,
       })
       this.makeupModalVisible = false
@@ -474,16 +480,16 @@ export default {
       )
       const absenteeNumbers = _.compact(
         _.map(absent, (absentee) => {
-          if (_.includes(_.keys(this.toBeUpdated), absentee.userId)) {
-            return null
-          }
+          // if (_.includes(_.keys(this.toBeUpdated), absentee.userId)) {
+          //   return null
+          // }
           const details = this.$store.getters.getStudentInfo(absentee.userId)
           return _.get(details, "contact", null)
         })
       )
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: present.concat(absent),
-        lessonId: this.lessonValue,
+        lessonId: JSON.parse(this.lessonValue).lessonId,
         studentsToBeUpdated: this.toBeUpdated,
       })
       absentSmsAPI({ absenteeNumbers })

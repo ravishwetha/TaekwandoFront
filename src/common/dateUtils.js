@@ -1,4 +1,6 @@
 import moment from "moment"
+import _ from "lodash"
+import { NUMBER_DAYS } from "./data"
 export const readableTimeslotParser = (timeslot) => {
   if (timeslot === "UNLIMITED") {
     return "UNLIMITED"
@@ -19,16 +21,18 @@ export const timeslotToMoment = (timeslot) => {
   }
 }
 
-export const timeslotInArray = (timeslots, timeslotToFind) => {
-  return _.find(
+export const timeslotInArray = (timeslots, timeslotToFind) =>
+  _.find(
     timeslots,
     (timeslot) =>
       readableTimeslotParser(timeslot) ===
       readableTimeslotParser(timeslotToFind)
   )
-}
 
 export const getDayTimeslotToObject = (dayTimeslots) => {
+  if (_.isUndefined(dayTimeslots)) {
+    return []
+  }
   let dayTimeslotsObject = {}
   dayTimeslots.forEach((dayTimeslot) => {
     const [day, timeslot] = dayTimeslot.split("|")
@@ -53,3 +57,12 @@ export const armyTimeToISO = (time) => moment(time, "HH:mm").toISOString()
 export const getTimeslotFromISO = (start, end) => start + "/" + end
 
 export const DATEANDTIME = "DD-MM-YY, h:mma"
+
+export const TIME = "h:mma"
+
+export const getTodayShort = NUMBER_DAYS[moment().day()]
+
+export const englishTimeslotToMoment = (englishTimeslot) => {
+  const [from, to] = englishTimeslot.split("-")
+  return { from: moment(from, TIME), to: moment(to, TIME) }
+}

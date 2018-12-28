@@ -8,6 +8,16 @@ export const DAYS = {
   SAT: 6,
 }
 
+export const NUMBER_DAYS = {
+  0: "SUN",
+  1: "MON",
+  2: "TUE",
+  3: "WED",
+  4: "THU",
+  5: "FRI",
+  6: "SAT",
+}
+
 export const DAYS_ENGLISH = {
   SUN: "Sunday",
   MON: "Monday",

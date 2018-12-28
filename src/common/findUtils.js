@@ -1,5 +1,5 @@
 import _ from "lodash"
-import { getDayTimeslotToObject } from "./dateUtils"
+import { getDayTimeslotToObject, readableTimeslotParser } from "./dateUtils"
 
 const dfsKeysArrayUncleaned = (object, keyToSearch, appendedArray = []) => {
   if (!(object instanceof Object)) {
@@ -26,3 +26,9 @@ export const dfsKeysArray = (object, keyToSearch) => {
 
 export const dayInDayTimeslotArray = (dayTimeslot, day) =>
   getDayTimeslotToObject(dayTimeslot)[day] !== undefined
+
+export const englishTimeslotInArray = (timeslots, timeslotToFind) =>
+  _.find(
+    timeslots,
+    (timeslot) => readableTimeslotParser(timeslot) === timeslotToFind
+  )
