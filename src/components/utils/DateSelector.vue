@@ -5,7 +5,6 @@
     @input="(event) => $emit('input', event)"
     type="date"
     placeholder="Pick a day"
-    :picker-options="datePickerOptions"
     format="dd-MM-yyyy"
     clearable
   ></el-date-picker>

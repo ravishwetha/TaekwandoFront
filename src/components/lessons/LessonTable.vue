@@ -88,11 +88,9 @@ import {
   readableTimeslotParser,
   getDayAndTimeslotFromDayTimeslot,
 } from "@/common/dateUtils"
-import DateSelector from "@/components/utils/DateSelector"
 export default {
   components: {
     AddUserToLessonModal,
-    DateSelector,
   },
   props: {
     userId: {

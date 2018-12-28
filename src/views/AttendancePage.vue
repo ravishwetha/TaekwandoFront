@@ -3,7 +3,7 @@
     <el-container>
       <el-header>
         <div id="header">
-          <span id="date">{{selectedDate}}</span>
+          <date-selector v-model="selectedDate" single></date-selector>
         </div>
       </el-header>
       <el-main>
@@ -132,20 +132,24 @@
 <script>
 import moment from "moment"
 import _ from "lodash"
+import Vue from "vue"
 import { DAYS, PRESENT, ABSENT, UNLIMITED, MAKEUP } from "@/common/data"
 import { absentSmsAPI } from "@/common/api"
-import Vue from "vue"
 import {
   DATEANDTIME,
   readableTimeslotParser,
   englishTimeslotToMoment,
-  getTodayShort,
+  getDayShort,
 } from "@/common/dateUtils"
 import { englishTimeslotInArray } from "@/common/findUtils"
+import DateSelector from "@/components/utils/DateSelector"
 
 export default {
   beforeMount() {
     this.updatePresentAbsent()
+  },
+  components: {
+    DateSelector,
   },
   computed: {
     lessonData() {
@@ -161,7 +165,7 @@ export default {
           (lesson) => {
             const lessonTimeslots = this.$store.getters.getLessonDayTimeslotsKeyedByDay(
               lesson.id
-            )[getTodayShort]
+            )[getDayShort(this.selectedDate)]
 
             return englishTimeslotInArray(lessonTimeslots, timeslot)
           }
@@ -210,7 +214,7 @@ export default {
                 attendanceObject.lessonId === this.lessonValue.lessonId
               const sameDay = moment(attendanceObject.timestamp)
                 .startOf("day")
-                .isSame(moment().startOf("day"))
+                .isSame(moment(this.selectedDate).startOf("day"))
               const isMakeup = attendanceObject.presence === MAKEUP
               return sameId && sameDay && isMakeup
             }
@@ -233,7 +237,7 @@ export default {
                 attendanceObject.lessonId === this.lessonValue.lessonId
               const sameDay = moment(attendanceObject.timestamp)
                 .startOf("day")
-                .isSame(moment().startOf("day"))
+                .isSame(moment(this.selectedDate).startOf("day"))
               const isMakeup = attendanceObject.presence === MAKEUP
               return sameId && sameDay && isMakeup
             }
@@ -259,7 +263,8 @@ export default {
       )
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
         return (
-          DAYS[user.lessons[lessonId].day] === moment().day() ||
+          DAYS[user.lessons[lessonId].day] ===
+            moment(this.selectedDate).day() ||
           user.lessons[lessonId].timeslot === UNLIMITED
         )
       })
@@ -289,7 +294,7 @@ export default {
               return (
                 moment(attendance.timestamp)
                   .startOf("day")
-                  .isSame(moment().startOf("day")) &&
+                  .isSame(moment(this.selectedDate).startOf("day")) &&
                 attendance.presence == MAKEUP &&
                 attendance.lessonId == this.lessonValue.lessonId
               )
@@ -320,7 +325,7 @@ export default {
   },
   data() {
     return {
-      selectedDate: moment().format("DD MMM YYYY"),
+      selectedDate: moment(),
       lessonValue: "",
       makeupModalVisible: false,
       studentsAddedToLesson: [],
@@ -339,7 +344,7 @@ export default {
           if (
             moment(lessonsAttended.timestamp)
               .startOf("day")
-              .isSame(moment().startOf("day")) &&
+              .isSame(moment(this.selectedDate).startOf("day")) &&
             lessonsAttended.lessonId === lessonId
           ) {
             if (lessonsAttended.presence === PRESENT) {
@@ -363,7 +368,7 @@ export default {
         this.$store.getters.getAllStudentsInfo,
         (student) => {
           return _.find(_.values(student.lessons), (lesson) => {
-            return moment().day() === DAYS[lesson.day] ||
+            return moment(this.selectedDate).day() === DAYS[lesson.day] ||
               lesson.timeslot === UNLIMITED
               ? true
               : false
@@ -371,7 +376,7 @@ export default {
         }
       )
       // Today's day in 3 letter string
-      const todayDay = getTodayShort
+      const todayDay = getDayShort(this.selectedDate)
 
       const timeslots = {}
       filteredStudentInfo.forEach((user) => {

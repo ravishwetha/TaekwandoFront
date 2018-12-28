@@ -66,6 +66,7 @@ export const DATEANDTIME = "DD-MM-YY, h:mma"
 export const TIME = "h:mma"
 
 export const getTodayShort = NUMBER_DAYS[moment().day()]
+export const getDayShort = (date) => NUMBER_DAYS[moment(date).day()]
 
 export const englishTimeslotToMoment = (englishTimeslot) => {
   const [from, to] = englishTimeslot.split("-")

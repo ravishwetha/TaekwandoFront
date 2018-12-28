@@ -42,7 +42,8 @@
 <script>
 import _ from "lodash"
 import { UNLIMITED } from "@/common/data"
-import DaySelector from "@/components/utils/DaySelector"
+import DateSelector from "@/components/utils/DateSelector"
+
 import {
   getDayAndTimeslotFromDayTimeslot,
   readableTimeslotParser,
@@ -50,7 +51,7 @@ import {
 
 export default {
   components: {
-    DaySelector,
+    DateSelector,
   },
   data() {
     return {
