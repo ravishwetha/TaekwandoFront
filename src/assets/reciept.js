@@ -53,7 +53,7 @@ const generateInvoice = (invoice, filename, success, error) => {
 
 const invoice = {
   logo: "https://i.imgur.com/l4NpIMw.jpg",
-  from: "TKD Taekwando\n12 Haig Road\nSingapore 430012\n9625 1640",
+  from: "TKD Taekwando Academy\n12 Haig Road\nSingapore 430012\n9625 1640",
   to: "A student",
   currency: "sgd",
   number: "INV-0001",
