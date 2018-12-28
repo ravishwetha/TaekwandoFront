@@ -49,6 +49,11 @@ export const getDayTimeslotToArray = (dayTimeslots) =>
     return { day, timeslot }
   })
 
+export const getDayAndTimeslotFromDayTimeslot = (dayTimeslot) => {
+  const [day, timeslot] = dayTimeslot.split("|")
+  return { day, timeslot }
+}
+
 export const getDayTimeslotFromDayAndTimeslot = (day, timeslot) =>
   `${day}|${timeslot}`
 

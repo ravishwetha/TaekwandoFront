@@ -48,20 +48,15 @@
       <div v-if="!lessonSwappingToUnlimited">
         <span>Select the timeslot to swap the student into</span>
         <br>
-        <el-select v-model="lessonSwappingToTimeslot" placeholder="Select">
+        <el-select v-model="lessonSwappingToDayTimeslot" value-key="key" placeholder="Select">
           <el-option
             v-for="item in selectedLessonTimeslots"
-            :key="item.val"
+            :key="item.label"
             :label="item.label"
             :value="item.val"
           ></el-option>
         </el-select>
         <br>
-        <span>Select the day of lesson this student is in</span>
-        <br>
-        <el-select v-model="lessonSwappingToDay" placeholder="Select">
-          <el-option v-for="item in DAYS" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
       </div>
       <br>
       <span>Unlimited?</span>
@@ -89,7 +84,10 @@ import _ from "lodash"
 import moment from "moment"
 import { DAYS, UNLIMITED } from "@/common/data"
 import AddUserToLessonModal from "@/components/lessons/AddUserToLessonsDialog"
-import { readableTimeslotParser } from "@/common/dateUtils"
+import {
+  readableTimeslotParser,
+  getDayAndTimeslotFromDayTimeslot,
+} from "@/common/dateUtils"
 import DateSelector from "@/components/utils/DateSelector"
 export default {
   components: {
@@ -140,16 +138,18 @@ export default {
     },
     selectedLessonTimeslots() {
       const allLessonData = this.$store.getters.getAllLessonData
-      let selectedLessonPayload = _.get(allLessonData, this.lessonAddingTo)
-      if (this.swapDialogVisible) {
-        selectedLessonPayload = _.get(allLessonData, this.lessonSwappingTo)
-      }
-      const selectedLessonTimeslots = _.get(selectedLessonPayload, "timeslots")
-      const selectOptions = _.map(selectedLessonTimeslots, (timeslot) => {
-        const [from, to] = timeslot.split("/")
-        const parsedFrom = moment(from).format("ha")
-        const parsedTo = moment(to).format("ha")
-        return { label: parsedFrom + "-" + parsedTo, val: timeslot }
+      const selectedLessonPayload = _.get(allLessonData, this.lessonSwappingTo)
+      const selectedDayLessonTimeslots = _.get(
+        selectedLessonPayload,
+        "dayTimeslots"
+      )
+      const selectOptions = _.map(selectedDayLessonTimeslots, (dayTimeslot) => {
+        const { day, timeslot } = getDayAndTimeslotFromDayTimeslot(dayTimeslot)
+        const englishTime = readableTimeslotParser(timeslot)
+        return {
+          label: `${day}, ${englishTime}`,
+          val: { day, timeslot, key: Math.random() },
+        }
       })
       return selectOptions
     },
@@ -166,8 +166,7 @@ export default {
       lessonIdToBeSwapped: "",
       lessonSwappingTo: "",
       lessonSwappingToSessions: "",
-      lessonSwappingToTimeslot: "",
-      lessonSwappingToDay: "",
+      lessonSwappingToDayTimeslot: "",
       lessonSwappingToUnlimited: false,
       swapDialogVisible: false,
       addDialogVisible: false,
@@ -224,8 +223,8 @@ export default {
           userIdSessions: {
             userId: this.userId,
             sessions: this.lessonSwappingToSessions,
-            timeslot: this.lessonSwappingToTimeslot,
-            day: this.lessonSwappingToDay,
+            timeslot: this.lessonSwappingToDayTimeslot.timeslot,
+            day: this.lessonSwappingToDayTimeslot.day,
           },
         }
       }

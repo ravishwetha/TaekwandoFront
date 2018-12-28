@@ -20,18 +20,14 @@
     <div v-if="!lessonAddingToUnlimited">
       <span>Select the timeslot to add the student into</span>
       <br>
-      <el-select v-model="lessonAddingToTimeslot" placeholder="Select">
+      <el-select v-model="lessonAddingToDayTimeslot" value-key="key" placeholder="Select">
         <el-option
           v-for="item in selectedLessonTimeslots"
-          :key="item.val"
+          :key="item.label"
           :label="item.label"
           :value="item.val"
         ></el-option>
       </el-select>
-      <br>
-      <span>Select the day of lesson this student is in</span>
-      <br>
-      <day-selector v-model="lessonAddingToDay"></day-selector>
     </div>
     <br>
     <span>Unlimited?</span>
@@ -44,10 +40,13 @@
 </template>
 
 <script>
-import moment from "moment"
 import _ from "lodash"
 import { UNLIMITED } from "@/common/data"
 import DaySelector from "@/components/utils/DaySelector"
+import {
+  getDayAndTimeslotFromDayTimeslot,
+  readableTimeslotParser,
+} from "@/common/dateUtils"
 
 export default {
   components: {
@@ -56,9 +55,8 @@ export default {
   data() {
     return {
       lessonAddingTo: "",
-      lessonAddingToDay: "",
       lessonAddingToSessions: "",
-      lessonAddingToTimeslot: "",
+      lessonAddingToDayTimeslot: "",
       lessonAddingToUnlimited: "",
       sessionOptions: [4, 12, 24],
     }
@@ -68,12 +66,17 @@ export default {
       const allLessonData = this.$store.getters.getAllLessonData
       const selectedLessonPayload = _.get(allLessonData, this.lessonAddingTo)
 
-      const selectedLessonTimeslots = _.get(selectedLessonPayload, "timeslots")
-      const selectOptions = _.map(selectedLessonTimeslots, (timeslot) => {
-        const [from, to] = timeslot.split("/")
-        const parsedFrom = moment(from).format("ha")
-        const parsedTo = moment(to).format("ha")
-        return { label: parsedFrom + "-" + parsedTo, val: timeslot }
+      const selectedDayLessonTimeslots = _.get(
+        selectedLessonPayload,
+        "dayTimeslots"
+      )
+      const selectOptions = _.map(selectedDayLessonTimeslots, (dayTimeslot) => {
+        const { day, timeslot } = getDayAndTimeslotFromDayTimeslot(dayTimeslot)
+        const englishTime = readableTimeslotParser(timeslot)
+        return {
+          label: `${day}, ${englishTime}`,
+          val: { day, timeslot, key: Math.random() },
+        }
       })
       return selectOptions
     },
@@ -100,8 +103,8 @@ export default {
             {
               userId: this.userId,
               sessions: this.lessonAddingToSessions,
-              timeslot: this.lessonAddingToTimeslot,
-              day: this.lessonAddingToDay,
+              timeslot: this.lessonAddingToDayTimeslot.timeslot,
+              day: this.lessonAddingToDayTimeslot.day,
             },
           ],
           lessonId: this.lessonAddingTo,
