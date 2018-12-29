@@ -33,6 +33,7 @@
 import moment from "moment"
 import RecieptGenerator from "@/assets/reciept"
 import DateSelector from "@/components/utils/DateSelector"
+import { REFUNDED } from "@/common/data"
 
 export default {
   components: {
@@ -75,6 +76,7 @@ export default {
   data() {
     return {
       paymentDateRange: "",
+      REFUNDED,
     }
   },
   methods: {

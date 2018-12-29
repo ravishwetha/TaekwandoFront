@@ -204,40 +204,43 @@ const studentModule = {
       await deleteCustomerAPI(userCustomerId)
       commit("removeCustomer", { userId })
     },
-    async addLessonCashPayment({ commit }, { paymentData, userId, vm }) {
+    async addLessonCashPayment({ commit }, { paymentItems, userId, vm }) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        const { paymentKey, paymentPayload } = await addCashNetsPayment(
-          paymentData,
+        const paymentKeyPaymentPayload = await addCashNetsPayment(
+          paymentItems,
           userId
         )
-        const lessonData = store.getters.getAllLessonData
-        const lessonId = _.findKey(lessonData, (lesson) => {
-          return _.includes(
-            lesson.name,
-            _.last(_.initial(paymentData.paymentInfo.type))
-          )
+        paymentItems.forEach(async ({ paymentData }) => {
+          const lessonData = store.getters.getAllLessonData
+          const lessonId = _.findKey(lessonData, (lesson) => {
+            return _.includes(lesson.name, paymentData.paymentInfo.type[1])
+          })
+          if (lessonId) {
+            const entitlement = await usersRef
+              .child(userId)
+              .child("lessons")
+              .child(lessonId)
+              .child("entitlement")
+              .once("value")
+              .then((r) => r.val())
+            await usersRef
+              .child(userId)
+              .child("lessons")
+              .child(lessonId)
+              .update({
+                lastPayment: moment().toISOString(),
+                entitlement:
+                  parseInt(entitlement) +
+                  parseInt(_.last(paymentData.paymentInfo.type)),
+                nextPayment: moment()
+                  .add(_.last(paymentData.paymentInfo.type), "weeks")
+                  .toISOString(),
+              })
+          }
         })
-        if (lessonId) {
-          const entitlement = await usersRef
-            .child(userId)
-            .child("lessons")
-            .child(lessonId)
-            .child("entitlement")
-            .once("value")
-            .then((r) => r.val())
-          await usersRef
-            .child(userId)
-            .child("lessons")
-            .child(lessonId)
-            .update({
-              lastPayment: moment().toISOString(),
-              entitlement:
-                parseInt(entitlement) +
-                parseInt(_.last(paymentData.paymentInfo.type)),
-            })
-        }
-        commit("addPayment", { userId, paymentPayload, paymentKey })
+
+        commit("addPayment", { userId, paymentKeyPaymentPayload })
         vm.$notify({
           type: "success",
           title: "Payment success",
@@ -284,7 +287,7 @@ const studentModule = {
             .update({
               lastPayment: moment().toISOString(),
               nextPayment: moment()
-                .add(paymentData.paymentInfo.type, "weeks")
+                .add(_.last(paymentData.paymentInfo.type), "weeks")
                 .toISOString(),
               entitlement:
                 parseInt(entitlement) +
@@ -373,7 +376,6 @@ const studentModule = {
           paymentItems,
           userId
         )
-        console.log(paymentKeyPaymentPayload)
         commit("addPayment", { userId, paymentKeyPaymentPayload })
         // }
         vm.$notify({

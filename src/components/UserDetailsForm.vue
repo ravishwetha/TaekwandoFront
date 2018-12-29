@@ -66,12 +66,8 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item v-for="form in payment.paymentForm" :key="form.key">
-          <!-- <el-form-item label="Item paying for" prop="type"> -->
           <el-cascader :options="miscPaymentCascaderOptions" v-model="form.type"></el-cascader>
-          <!-- </el-form-item> -->
-          <!-- <el-form-item label="Description"> -->
           <el-input v-model="form.description"></el-input>
-          <!-- </el-form-item> -->
           <el-button @click.prevent="removePaymentItem(form)">Delete</el-button>
         </el-form-item>
         <el-form-item
@@ -106,11 +102,10 @@
       :visible.sync="payment.paymentDialogLessonVisible"
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
-        <el-form-item label="Item paying for" prop="type">
-          <el-cascader :options="lessonsPaymentCascaderOptions" v-model="payment.paymentForm.type"></el-cascader>
-        </el-form-item>
-        <el-form-item label="Description">
-          <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
+        <el-form-item v-for="form in payment.paymentForm" :key="form.key">
+          <el-cascader :options="lessonsPaymentCascaderOptions" v-model="form.type"></el-cascader>
+          <el-input type="textarea" v-model="form.description"></el-input>
+          <el-button @click.prevent="removePaymentItem(form)">Delete</el-button>
         </el-form-item>
 
         <el-form-item
@@ -121,6 +116,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer">
+        <el-button @click="addPaymentItem">Add Payment Item</el-button>
         <el-button
           v-if="payment.paymentType === CARD"
           :loading="this.paymentLoading"
@@ -149,13 +145,7 @@ import RecieptGenerator from "@/assets/reciept"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"
-import {
-  CARD,
-  CASHNETS,
-  MISCELLEANEOUS,
-  LESSONS,
-  REFUNDED,
-} from "@/common/data"
+import { CARD, CASHNETS, MISCELLEANEOUS, LESSONS } from "@/common/data"
 import LessonTable from "@/components/lessons/LessonTable"
 import CardRegistration from "@/components/common/CardRegistration"
 import StudentDetails from "@/components/studentDetails/StudentDetails"
@@ -327,7 +317,6 @@ export default {
       },
       CARD,
       CASHNETS,
-      REFUNDED,
       stripeKey: process.env.VUE_APP_STRIPE_KEY,
       userId: this.$route.query["userId"],
     }
@@ -425,33 +414,30 @@ export default {
     payCashLessons(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const priceList = this.$store.getters.getPriceList
-          let price = priceList[LESSONS]
-          for (const key of this.payment.paymentForm.type) {
-            price = price[key]
-          }
-          const paymentDataAndVm = {
-            paymentData: {
-              paymentInfo: {
-                ...this.payment.paymentForm,
-                type: [LESSONS, ...this.payment.paymentForm.type],
-                price,
-                userEmail: this.contactDetails.email,
+          const paymentItems = this.payment.paymentForm.map((paymentForm) => {
+            const priceList = this.$store.getters.getPriceList
+            let price = priceList[LESSONS]
+            for (const key of paymentForm.type) {
+              price = price[key]
+            }
+            return {
+              paymentData: {
+                paymentInfo: {
+                  ...paymentForm,
+                  type: [LESSONS, ...paymentForm.type],
+                  price,
+                  userEmail: this.contactDetails.email,
+                },
               },
-            },
-            userId: this.$route.query["userId"],
+            }
+          })
+
+          await this.$store.dispatch("addLessonCashPayment", {
+            paymentItems,
             vm: this,
-          }
-          const dispatch = this.$store.dispatch(
-            "addLessonCashPayment",
-            paymentDataAndVm
-          )
-          const recp = RecieptGenerator(
-            [LESSONS, ...this.payment.paymentForm.type].join(" / "),
-            this.payment.paymentForm.description,
-            price
-          )
-          await Promise.all([dispatch, recp])
+            userId: this.$route.query["userId"],
+          })
+
           this.payment.paymentDialogLessonVisible = false
         }
       })
