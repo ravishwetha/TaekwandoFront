@@ -54,6 +54,8 @@
       <div style="padding-bottom: 20px">
         <el-checkbox v-model="message.sendEmail">Send email</el-checkbox>
         <el-checkbox v-model="message.sendSMS">Send SMS</el-checkbox>
+        <span style="margin-left: 60px">Select lesson:</span>
+        <lesson-selector style="margin-left: 20px" v-model="messageSelectedLessonId"></lesson-selector>
       </div>
       <el-input type="textarea" v-model="message.messageText"></el-input>
       <div style="display: flex; justify-content: center; margin-top: 20px">
@@ -119,7 +121,19 @@ export default {
       return this.$store.getters.getAllLessonData
     },
     studentData() {
-      return _.map(this.$store.getters.getAllStudentsInfo, (studentInfo) => {
+      const studentFilteredByLessonId = _.filter(
+        this.$store.getters.getAllStudentsInfo,
+        (studentInfo) => {
+          if (this.messageSelectedLessonId === "") {
+            return true
+          }
+          return _.includes(
+            _.keys(studentInfo["lessons"]),
+            this.messageSelectedLessonId[1]
+          )
+        }
+      )
+      return _.map(studentFilteredByLessonId, (studentInfo) => {
         return {
           key: studentInfo.userId,
           label: studentInfo.name,
@@ -252,6 +266,7 @@ export default {
   },
   data() {
     return {
+      messageSelectedLessonId: "",
       searchString: "",
       activeTab: ACTIVE,
       selectedLessonId: [],
