@@ -471,35 +471,30 @@ export default {
           } else {
             paymentToken = this.customerDetails.customerId
           }
-
-          const priceList = this.$store.getters.getPriceList
-          let price = priceList[LESSONS]
-          for (const key of this.payment.paymentForm.type) {
-            price = price[key]
-          }
-          const paymentDataAndVm = {
-            paymentData: {
-              paymentInfo: {
-                ...this.payment.paymentForm,
-                type: [LESSONS, ...this.payment.paymentForm.type],
-                price,
-                userEmail: this.contactDetails.email,
+          const paymentItems = this.payment.paymentForm.map((paymentForm) => {
+            const priceList = this.$store.getters.getPriceList
+            let price = priceList[LESSONS]
+            for (const key of paymentForm.type) {
+              price = price[key]
+            }
+            return {
+              paymentData: {
+                paymentInfo: {
+                  ...paymentForm,
+                  type: [LESSONS, ...paymentForm.type],
+                  price,
+                },
               },
-              paymentToken,
-            },
-            userId: this.$route.query["userId"],
+            }
+          })
+          await this.$store.dispatch("addLessonCardPayment", {
+            paymentItems,
             vm: this,
-          }
-          const dispatch = this.$store.dispatch(
-            "addLessonCardPayment",
-            paymentDataAndVm
-          )
-          const recp = RecieptGenerator(
-            [LESSONS, ...this.payment.paymentForm.type].join(" / "),
-            this.payment.paymentForm.description,
-            price
-          )
-          await Promise.all([dispatch, recp])
+            userId: this.$route.query["userId"],
+            paymentToken,
+            userEmail: this.contactDetails.email,
+            customer: !_.isUndefined(this.customerDetails),
+          })
           this.payment.paymentDialogLessonVisible = false
         }
       })

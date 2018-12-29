@@ -65,7 +65,6 @@ export const tokenPaymentAPI = async (
   userEmail
 ) => {
   const api = await axiosConfig()
-  console.log(token)
   return api
     .post("/payment/token", { paymentInfo, token, customer, userEmail })
     .then((r) => r.data)

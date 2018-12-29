@@ -212,6 +212,7 @@ const studentModule = {
           userId
         )
         paymentItems.forEach(async ({ paymentData }) => {
+          //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {
             return _.includes(lesson.name, paymentData.paymentInfo.type[1])
@@ -257,43 +258,58 @@ const studentModule = {
         })
       }
     },
-    async addLessonCardPayment({ commit }, { paymentData, userId, vm }) {
+    async addLessonCardPayment(
+      { commit },
+      { paymentItems, vm, userId, customer, paymentToken, userEmail }
+    ) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        const paymentKeyPaymentPayload = await addCardPaymentNonCustomer(
-          paymentData,
-          userId
-        )
-        commit("addPayment", { userId, paymentKeyPaymentPayload })
-        const lessonData = store.getters.getAllLessonData
-        const lessonId = _.findKey(lessonData, (lesson) => {
-          return _.includes(
-            lesson.name,
-            _.last(_.initial(paymentData.paymentInfo.type))
+        if (customer) {
+          const paymentKeyPaymentPayload = await addCardPaymentCustomer(
+            paymentItems,
+            userId,
+            paymentToken,
+            userEmail
           )
-        })
-        if (lessonId) {
-          const entitlement = await usersRef
-            .child(userId)
-            .child("lessons")
-            .child(lessonId)
-            .child("entitlement")
-            .once("value")
-            .then((r) => r.val())
-          await usersRef
-            .child(userId)
-            .child("lessons")
-            .child(lessonId)
-            .update({
-              lastPayment: moment().toISOString(),
-              nextPayment: moment()
-                .add(_.last(paymentData.paymentInfo.type), "weeks")
-                .toISOString(),
-              entitlement:
-                parseInt(entitlement) +
-                parseInt(_.last(paymentData.paymentInfo.type)),
-            })
+          commit("addPayment", { userId, paymentKeyPaymentPayload })
+        } else {
+          const paymentKeyPaymentPayload = await addCardPaymentNonCustomer(
+            paymentItems,
+            userId,
+            paymentToken,
+            userEmail
+          )
+          commit("addPayment", { userId, paymentKeyPaymentPayload })
         }
+        paymentItems.forEach(async ({ paymentData }) => {
+          //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE
+          const lessonData = store.getters.getAllLessonData
+          const lessonId = _.findKey(lessonData, (lesson) => {
+            return _.includes(lesson.name, paymentData.paymentInfo.type[1])
+          })
+          if (lessonId) {
+            const entitlement = await usersRef
+              .child(userId)
+              .child("lessons")
+              .child(lessonId)
+              .child("entitlement")
+              .once("value")
+              .then((r) => r.val())
+            await usersRef
+              .child(userId)
+              .child("lessons")
+              .child(lessonId)
+              .update({
+                lastPayment: moment().toISOString(),
+                nextPayment: moment()
+                  .add(_.last(paymentData.paymentInfo.type), "weeks")
+                  .toISOString(),
+                entitlement:
+                  parseInt(entitlement) +
+                  parseInt(_.last(paymentData.paymentInfo.type)),
+              })
+          }
+        })
         vm.$notify({
           type: "success",
           title: "Payment success",

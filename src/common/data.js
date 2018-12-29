@@ -41,6 +41,7 @@ export const firebaseConfig = {
 }
 
 export const UNLIMITED = "UNLIMITED"
+export const ONCE = "ONCE"
 
 export const CARD = "CARD"
 export const CASHNETS = "CASHNETS"
