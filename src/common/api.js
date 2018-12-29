@@ -70,6 +70,32 @@ export const tokenPaymentAPI = async (
     .then((r) => r.data)
 }
 
+export const ReceiptGeneratorAPI = async (
+  paymentItems,
+  userId,
+  paymentType
+) => {
+  const api = await axiosConfig()
+  return api
+    .get("/payment/receipt", {
+      params: {
+        paymentItems,
+        userId,
+        paymentType,
+      },
+      responseType: "blob",
+    })
+    .then((r) => {
+      var headers = r.headers
+      var blob = new Blob([r.data], { type: headers["content-type"] })
+      var link = document.createElement("a")
+      link.href = window.URL.createObjectURL(blob)
+      link.download = "receipt.pdf"
+      link.click()
+      // window.location = "/myfile/" + r.fileId
+    })
+}
+
 export const refundAPI = async (chargeId) => {
   const api = await axiosConfig()
   return api.post("/payment/refund", { chargeId }).then((r) => r.data)

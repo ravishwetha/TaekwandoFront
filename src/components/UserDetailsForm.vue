@@ -24,7 +24,9 @@
                 <el-table-column prop="presence" label="Presence"></el-table-column>
               </el-table>
             </el-row>
-            <payment-history :userId="userId"></payment-history>
+            <br>
+            <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
+            <lesson-table :userId="userId"></lesson-table>
           </el-col>
           <el-col :span="10">
             <div id="paymentAndAttendanceHeader">
@@ -47,12 +49,12 @@
             <el-row id="commentsRow">
               <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
             </el-row>
+            <payment-history :userId="userId"></payment-history>
+            <br>
             <span id="paymentAndAttendanceHeader">Register Credit/Debit Card</span>
             <br>
             <card-registration style="margin-top: 20px" :userId="userId"></card-registration>
             <br>
-            <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
-            <lesson-table :userId="userId"></lesson-table>
           </el-col>
         </el-container>
       </div>
@@ -151,7 +153,6 @@
 <script>
 import _ from "lodash"
 import moment from "moment"
-import RecieptGenerator from "@/assets/reciept"
 import LessonSelector from "@/components/lessons/LessonSelector"
 import DateSelector from "@/components/utils/DateSelector"
 import { Card, createToken } from "vue-stripe-elements-plus"

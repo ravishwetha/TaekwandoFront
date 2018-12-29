@@ -8,10 +8,10 @@
         <date-selector style="margin-left: 20px;" v-model="paymentDateRange"></date-selector>
       </el-row>
       <el-table max-height="500" :data="paymentData" style="width: 90%">
-        <el-table-column prop="mode" label="Payment mode"></el-table-column>
-        <el-table-column prop="type" label="Item paid for"></el-table-column>
+        <el-table-column prop="mode" label="Mode"></el-table-column>
+        <el-table-column prop="type" label="Item"></el-table-column>
         <el-table-column prop="created" label="Paid on"></el-table-column>
-        <el-table-column prop="description" label="Payment Description"></el-table-column>
+        <el-table-column prop="description" label="Description"></el-table-column>
         <el-table-column prop="price" label="Amount"></el-table-column>
         <el-table-column label="Operations" fixed="right">
           <template slot-scope="scope">
@@ -31,7 +31,6 @@
 
 <script>
 import moment from "moment"
-import RecieptGenerator from "@/assets/reciept"
 import DateSelector from "@/components/utils/DateSelector"
 import { REFUNDED } from "@/common/data"
 
@@ -87,10 +86,7 @@ export default {
         vm: this,
       })
     },
-    generateReceipt({ type, description, price }) {
-      const paymentType = type.split(" / ")
-      RecieptGenerator(paymentType, description, price)
-    },
+    generateReceipt({ type, description, price }) {},
   },
   props: {
     userId: {

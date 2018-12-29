@@ -1,9 +1,9 @@
 <template>
   <span>
     <el-table :data="lessonData" style="width: 100%">
-      <el-table-column prop="name" label="Lesson Name"></el-table-column>
-      <el-table-column prop="lastPayment" label="Last Payment Date"></el-table-column>
-      <el-table-column prop="expectPayment" label="Next Expected Payment Date"></el-table-column>
+      <el-table-column prop="name" label="Name"></el-table-column>
+      <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
+      <el-table-column prop="expectPayment" label="Expected Payment"></el-table-column>
       <el-table-column prop="day" label="Day"></el-table-column>
       <el-table-column prop="timeslot" label="Time slot"></el-table-column>
       <el-table-column label="Operations" fixed="right">

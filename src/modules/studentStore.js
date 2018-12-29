@@ -8,6 +8,7 @@ import {
   cardRegistrationAPI,
   refundAPI,
   deleteCustomerAPI,
+  ReceiptGeneratorAPI,
 } from "@/common/api"
 import {
   MAKEUP,
@@ -211,12 +212,14 @@ const studentModule = {
           paymentItems,
           userId
         )
+        ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
         paymentItems.forEach(async ({ paymentData }) => {
           //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {
             return _.includes(lesson.name, paymentData.paymentInfo.type[1])
           })
+
           if (lessonId) {
             const entitlement = await usersRef
               .child(userId)
@@ -281,6 +284,7 @@ const studentModule = {
           )
           commit("addPayment", { userId, paymentKeyPaymentPayload })
         }
+        ReceiptGeneratorAPI(paymentItems, userId, CARD)
         paymentItems.forEach(async ({ paymentData }) => {
           //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE
           const lessonData = store.getters.getAllLessonData
@@ -388,12 +392,14 @@ const studentModule = {
             )
             commit("addPayment", { userId, paymentKeyPaymentPayload })
           }
+          ReceiptGeneratorAPI(paymentItems, userId, CARD)
         } else {
-          const paymentKeyPaymentPayload = await addCashNetsPayment(
-            paymentItems,
-            userId
-          )
-          commit("addPayment", { userId, paymentKeyPaymentPayload })
+          // const paymentKeyPaymentPayload = await addCashNetsPayment(
+          //   paymentItems,
+          //   userId
+          // )
+          // commit("addPayment", { userId, paymentKeyPaymentPayload })
+          ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
         }
         vm.$notify({
           type: "success",
