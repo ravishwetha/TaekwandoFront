@@ -65,11 +65,14 @@
       :visible.sync="payment.paymentDialogVisible"
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
-        <el-form-item label="Item paying for" prop="type">
-          <el-cascader :options="miscPaymentCascaderOptions" v-model="payment.paymentForm.type"></el-cascader>
-        </el-form-item>
-        <el-form-item label="Description">
-          <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
+        <el-form-item v-for="form in payment.paymentForm" :key="form.key">
+          <!-- <el-form-item label="Item paying for" prop="type"> -->
+          <el-cascader :options="miscPaymentCascaderOptions" v-model="form.type"></el-cascader>
+          <!-- </el-form-item> -->
+          <!-- <el-form-item label="Description"> -->
+          <el-input v-model="form.description"></el-input>
+          <!-- </el-form-item> -->
+          <el-button @click.prevent="removePaymentItem(form)">Delete</el-button>
         </el-form-item>
         <el-form-item
           v-if="payment.paymentType === CARD && customerDetails === undefined"
@@ -79,6 +82,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer">
+        <el-button @click="addPaymentItem">Add Payment Item</el-button>
         <el-button
           v-if="payment.paymentType === CARD"
           :loading="this.paymentLoading"
@@ -108,6 +112,7 @@
         <el-form-item label="Description">
           <el-input type="textarea" v-model="payment.paymentForm.description"></el-input>
         </el-form-item>
+
         <el-form-item
           v-if="payment.paymentType === CARD && customerDetails === undefined"
           label="Card Information (If card input does not appear, reload the page.)"
@@ -293,10 +298,13 @@ export default {
       attendanceDateRange: [],
       payment: {
         paymentType: "",
-        paymentForm: {
-          type: "",
-          description: "",
-        },
+        paymentForm: [
+          {
+            type: "",
+            description: "",
+            key: Math.random(),
+          },
+        ],
         rules: {
           type: [
             {
@@ -325,6 +333,19 @@ export default {
     }
   },
   methods: {
+    removePaymentItem(item) {
+      const index = this.payment.paymentForm.indexOf(item)
+      if (index !== -1) {
+        this.payment.paymentForm.splice(index, 1)
+      }
+    },
+    addPaymentItem() {
+      this.payment.paymentForm.push({
+        type: "",
+        description: "",
+        key: Math.random(),
+      })
+    },
     payCardMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
@@ -374,36 +395,30 @@ export default {
     payCashMisc(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const priceList = this.$store.getters.getPriceList
-          let price = priceList[MISCELLEANEOUS]
-          for (const key of this.payment.paymentForm.type) {
-            price = price[key]
-          }
-          const paymentDataAndVm = {
-            type: CASHNETS,
-            paymentData: {
-              paymentInfo: {
-                ...this.payment.paymentForm,
-                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type],
-                price,
-                userEmail: this.contactDetails.email,
+          const paymentItems = this.payment.paymentForm.map((paymentForm) => {
+            const priceList = this.$store.getters.getPriceList
+            let price = priceList[MISCELLEANEOUS]
+            for (const key of paymentForm.type) {
+              price = price[key]
+            }
+            return {
+              type: CASHNETS,
+              paymentData: {
+                paymentInfo: {
+                  ...paymentForm,
+                  type: [MISCELLEANEOUS, ...paymentForm.type],
+                  price,
+                  userEmail: this.contactDetails.email,
+                },
               },
-            },
-            userId: this.$route.query["userId"],
+            }
+          })
+          await this.$store.dispatch("addSinglePayment", {
+            paymentItems,
             vm: this,
-          }
-
-          // const dispatch = this.$store.dispatch(
-          //   "addSinglePayment",
-          //   paymentDataAndVm
-          // )
-          const recp = RecieptGenerator(
-            [LESSONS, ...this.payment.paymentForm.type].join(" / "),
-            this.payment.paymentForm.description,
-            price
-          )
-          await Promise.all([dispatch, recp])
-          this.payment.paymentDialogVisible = false
+            userId: this.$route.query["userId"],
+          })
+          // this.payment.paymentDialogVisible = false
         }
       })
     },

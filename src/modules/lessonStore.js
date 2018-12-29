@@ -133,25 +133,26 @@ const lessonsModule = {
           .push(userId).key
         return { key, userId }
       })
-      const userPromises = userIdsSessions.map(
-        ({ userId, sessions, timeslot, day }) => {
-          const payload = {
-            entitlement: sessions,
-            paymentPlan: sessions,
-            timeslot,
-            day,
-          }
-          usersRef
-            .child(userId)
-            .child("lessons")
-            .child(lessonId)
-            .set(payload)
-          return {
-            userId,
-            payload,
-          }
+      const userPromises = userIdsSessions.map((userIdSession) => {
+        const { userId, sessions, timeslot, day } = userIdSession
+        let payload = {
+          entitlement: sessions,
+          paymentPlan: sessions,
+          timeslot,
         }
-      )
+        if (day) {
+          payload = { ...payload, day }
+        }
+        usersRef
+          .child(userId)
+          .child("lessons")
+          .child(lessonId)
+          .set(payload)
+        return {
+          userId,
+          payload,
+        }
+      })
       const addUsersToLesson = await Promise.all(lessonPromises)
       const addLessonToUsers = await Promise.all(userPromises)
       commit("addUsersToLesson", { addUsersToLesson, lessonId })
@@ -175,6 +176,11 @@ const lessonsModule = {
         const lessonDayTimeslots = getDayTimeslotToObject(lesson.dayTimeslots)
         return lessonDayTimeslots[today] ? false : true
       })
+    },
+    studentInLesson: (state) => (lessonId, userId) => {
+      const lessonData = state.lessons[lessonId]
+      const usersInLesson = lessonData["Users"]
+      return _.includes(_.values(usersInLesson), userId)
     },
   },
 }

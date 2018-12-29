@@ -213,6 +213,7 @@ export default {
           userIdSessions: {
             userId: this.userId,
             timeslot: UNLIMITED,
+            sessions: this.lessonSwappingToSessions,
           },
         }
       } else {

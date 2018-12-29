@@ -263,9 +263,8 @@ export default {
       )
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
         return (
-          DAYS[user.lessons[lessonId].day] ===
-            moment(this.selectedDate).day() ||
-          user.lessons[lessonId].timeslot === UNLIMITED
+          user.lessons[lessonId].timeslot === UNLIMITED ||
+          DAYS[user.lessons[lessonId].day] === moment(this.selectedDate).day()
         )
       })
       filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
@@ -338,14 +337,22 @@ export default {
   },
   methods: {
     updatePresentAbsent() {
+      this.present = {}
+      this.absent = {}
       const { lessonId } = this.lessonValue
+      // TODO: Conditional check for attendance dayTimeslot so that it updates correctly. Now it is updating for other timeslots also
       _.forEach(this.$store.getters.getAllStudentsInfo, (student) => {
         _.forEach(student.attendance, (lessonsAttended, key) => {
           if (
-            moment(lessonsAttended.timestamp)
-              .startOf("day")
-              .isSame(moment(this.selectedDate).startOf("day")) &&
-            lessonsAttended.lessonId === lessonId
+            (lessonsAttended.dateOfLesson
+              ? moment(lessonsAttended.dateOfLesson)
+                .startOf("day")
+                  .isSame(moment(this.selectedDate).startOf("day"))
+              : moment(lessonsAttended.timestamp)
+                  .startOf("day")
+                  .isSame(moment(this.selectedDate).startOf("day"))) &&
+            lessonsAttended.lessonId === lessonId &&
+            this.$store.getters.studentInLesson(lessonId, student.userId)
           ) {
             if (lessonsAttended.presence === PRESENT) {
               Vue.set(this.present, student.userId, true)
@@ -499,9 +506,9 @@ export default {
       )
       const absenteeNumbers = _.compact(
         _.map(absent, (absentee) => {
-          // if (_.includes(_.keys(this.toBeUpdated), absentee.userId)) {
-          //   return null
-          // }
+          if (_.includes(_.keys(this.toBeUpdated), absentee.userId)) {
+            return null
+          }
           const details = this.$store.getters.getStudentInfo(absentee.userId)
           return _.get(details, "contact", null)
         })
