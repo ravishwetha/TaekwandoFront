@@ -260,11 +260,11 @@ const studentModule = {
     async addLessonCardPayment({ commit }, { paymentData, userId, vm }) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        const { paymentKey, paymentPayload } = await addCardPaymentNonCustomer(
+        const paymentKeyPaymentPayload = await addCardPaymentNonCustomer(
           paymentData,
           userId
         )
-        commit("addPayment", { userId, paymentPayload, paymentKey })
+        commit("addPayment", { userId, paymentKeyPaymentPayload })
         const lessonData = store.getters.getAllLessonData
         const lessonId = _.findKey(lessonData, (lesson) => {
           return _.includes(
@@ -294,7 +294,6 @@ const studentModule = {
                 parseInt(_.last(paymentData.paymentInfo.type)),
             })
         }
-        commit("addPayment", { userId, paymentPayload, paymentKey })
         vm.$notify({
           type: "success",
           title: "Payment success",
@@ -351,33 +350,35 @@ const studentModule = {
     },
     async addSinglePayment(
       { commit },
-      // { type, paymentData, userId, vm, customer },
-      { paymentItems, vm, userId }
+      { paymentItems, vm, userId, type, customer, paymentToken, userEmail }
     ) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
-        console.log(paymentItems)
-        // if (type == CARD) {
-        //   if (customer) {
-        //     const { paymentKey, paymentPayload } = await addCardPaymentCustomer(
-        //       paymentData,
-        //       userId
-        //     )
-        //     commit("addPayment", { userId, paymentPayload, paymentKey })
-        //   } else {
-        //     const {
-        //       paymentKey,
-        //       paymentPayload,
-        //     } = await addCardPaymentNonCustomer(paymentData, userId)
-        //     commit("addPayment", { userId, paymentPayload, paymentKey })
-        //   }
-        // } else {
-        const paymentKeyPaymentPayload = await addCashNetsPayment(
-          paymentItems,
-          userId
-        )
-        commit("addPayment", { userId, paymentKeyPaymentPayload })
-        // }
+        if (type == CARD) {
+          if (customer) {
+            const paymentKeyPaymentPayload = await addCardPaymentCustomer(
+              paymentItems,
+              userId,
+              paymentToken,
+              userEmail
+            )
+            commit("addPayment", { userId, paymentKeyPaymentPayload })
+          } else {
+            const paymentKeyPaymentPayload = await addCardPaymentNonCustomer(
+              paymentItems,
+              userId,
+              paymentToken,
+              userEmail
+            )
+            commit("addPayment", { userId, paymentKeyPaymentPayload })
+          }
+        } else {
+          const paymentKeyPaymentPayload = await addCashNetsPayment(
+            paymentItems,
+            userId
+          )
+          commit("addPayment", { userId, paymentKeyPaymentPayload })
+        }
         vm.$notify({
           type: "success",
           title: "Payment success",
@@ -513,41 +514,66 @@ const studentModule = {
   },
 }
 
-const addCardPaymentNonCustomer = async (paymentData, userId) => {
-  const { chargeId, chargeCreated } = await tokenPaymentAPI(paymentData)
-  let paymentPayload = {
-    mode: CARD,
-    chargeId,
-    created: moment.unix(chargeCreated).toISOString(),
-    price: paymentData.paymentInfo.price,
-    type: paymentData.paymentInfo.type,
-    description: paymentData.paymentInfo.description,
-  }
-  const paymentKey = await usersRef
-    .child(userId)
-    .child("payments")
-    .push(paymentPayload).key
-  return { paymentKey, paymentPayload }
+const addCardPaymentNonCustomer = async (
+  paymentInfo,
+  userId,
+  token,
+  userEmail
+) => {
+  const { chargeId, chargeCreated } = await tokenPaymentAPI(
+    paymentInfo,
+    token,
+    false,
+    userEmail
+  )
+  return await Promise.all(
+    paymentInfo.map(async ({ paymentData }) => {
+      let paymentPayload = {
+        mode: CARD,
+        chargeId,
+        created: moment.unix(chargeCreated).toISOString(),
+        price: paymentData.paymentInfo.price,
+        type: paymentData.paymentInfo.type,
+        description: paymentData.paymentInfo.description,
+      }
+      const paymentKey = await usersRef
+        .child(userId)
+        .child("payments")
+        .push(paymentPayload).key
+      return { paymentKey, paymentPayload }
+    })
+  )
 }
 
-const addCardPaymentCustomer = async (paymentData, userId) => {
-  const { chargeId, chargeCreated } = await tokenPaymentAPI({
-    ...paymentData,
-    customer: true,
-  })
-  let paymentPayload = {
-    mode: CARD,
-    chargeId,
-    created: moment.unix(chargeCreated).toISOString(),
-    price: paymentData.paymentInfo.price,
-    type: paymentData.paymentInfo.type,
-    description: paymentData.paymentInfo.description,
-  }
-  const paymentKey = await usersRef
-    .child(userId)
-    .child("payments")
-    .push(paymentPayload).key
-  return { paymentKey, paymentPayload }
+const addCardPaymentCustomer = async (
+  paymentInfo,
+  userId,
+  paymentToken,
+  userEmail
+) => {
+  const { chargeId, chargeCreated } = await tokenPaymentAPI(
+    paymentInfo,
+    paymentToken,
+    true,
+    userEmail
+  )
+  return await Promise.all(
+    paymentInfo.map(async ({ paymentData }) => {
+      let paymentPayload = {
+        mode: CARD,
+        chargeId,
+        created: moment.unix(chargeCreated).toISOString(),
+        price: paymentData.paymentInfo.price,
+        type: paymentData.paymentInfo.type,
+        description: paymentData.paymentInfo.description,
+      }
+      const paymentKey = await usersRef
+        .child(userId)
+        .child("payments")
+        .push(paymentPayload).key
+      return { paymentKey, paymentPayload }
+    })
+  )
 }
 
 const addCashNetsPayment = async (paymentItems, userId) => {

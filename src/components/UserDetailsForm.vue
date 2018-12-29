@@ -66,9 +66,14 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item v-for="form in payment.paymentForm" :key="form.key">
+          <span>Select item</span>
+          <br>
           <el-cascader :options="miscPaymentCascaderOptions" v-model="form.type"></el-cascader>
+          <br>
+          <span>Description</span>
+          <br>
           <el-input v-model="form.description"></el-input>
-          <el-button @click.prevent="removePaymentItem(form)">Delete</el-button>
+          <el-button @click.prevent="removePaymentItem(form)">Delete item</el-button>
         </el-form-item>
         <el-form-item
           v-if="payment.paymentType === CARD && customerDetails === undefined"
@@ -103,9 +108,14 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item v-for="form in payment.paymentForm" :key="form.key">
+          <span>Select lesson</span>
+          <br>
           <el-cascader :options="lessonsPaymentCascaderOptions" v-model="form.type"></el-cascader>
+          <br>
+          <span>Description</span>
+          <br>
           <el-input type="textarea" v-model="form.description"></el-input>
-          <el-button @click.prevent="removePaymentItem(form)">Delete</el-button>
+          <el-button @click.prevent="removePaymentItem(form)">Delete item</el-button>
         </el-form-item>
 
         <el-form-item
@@ -351,32 +361,33 @@ export default {
           } else {
             paymentToken = this.customerDetails.customerId
           }
-          const priceList = this.$store.getters.getPriceList
-          let price = priceList[MISCELLEANEOUS]
-          for (const key of this.payment.paymentForm.type) {
-            price = price[key]
-          }
-          let paymentDataAndVm = {
-            type: CARD,
-            paymentData: {
-              paymentInfo: {
-                ...this.payment.paymentForm,
-                type: [MISCELLEANEOUS, ...this.payment.paymentForm.type],
-                price,
-                userEmail: this.contactDetails.email,
+          const paymentItems = this.payment.paymentForm.map((paymentForm) => {
+            const priceList = this.$store.getters.getPriceList
+            let price = priceList[MISCELLEANEOUS]
+            for (const key of paymentForm.type) {
+              price = price[key]
+            }
+            let paymentData = {
+              type: CARD,
+              paymentData: {
+                paymentInfo: {
+                  ...paymentForm,
+                  type: [MISCELLEANEOUS, ...paymentForm.type],
+                  price,
+                },
               },
-              paymentToken,
-            },
+            }
+            return paymentData
+          })
+          await this.$store.dispatch("addSinglePayment", {
+            paymentItems,
             userId: this.$route.query["userId"],
             vm: this,
-          }
-          if (this.customerDetails !== undefined) {
-            paymentDataAndVm = {
-              ...paymentDataAndVm,
-              customer: true,
-            }
-          }
-          await this.$store.dispatch("addSinglePayment", paymentDataAndVm)
+            type: CARD,
+            customer: !_.isUndefined(this.customerDetails),
+            paymentToken,
+            userEmail: this.contactDetails.email,
+          })
           this.payment.paymentDialogVisible = false
         }
       })
@@ -406,8 +417,9 @@ export default {
             paymentItems,
             vm: this,
             userId: this.$route.query["userId"],
+            type: CASHNETS,
           })
-          // this.payment.paymentDialogVisible = false
+          this.payment.paymentDialogVisible = false
         }
       })
     },
@@ -436,6 +448,7 @@ export default {
             paymentItems,
             vm: this,
             userId: this.$route.query["userId"],
+            type: CASHNETS,
           })
 
           this.payment.paymentDialogLessonVisible = false
