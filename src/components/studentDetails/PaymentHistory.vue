@@ -33,6 +33,7 @@
 import moment from "moment"
 import DateSelector from "@/components/utils/DateSelector"
 import { REFUNDED } from "@/common/data"
+import { ReceiptGeneratorAPI } from "@/common/api"
 
 export default {
   components: {
@@ -86,7 +87,10 @@ export default {
         vm: this,
       })
     },
-    generateReceipt({ type, description, price }) {},
+    generateReceipt(item) {
+      const payload = [{ paymentData: { paymentInfo: item } }]
+      ReceiptGeneratorAPI(payload, this.userId, item.mode)
+    },
   },
   props: {
     userId: {

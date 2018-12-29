@@ -394,11 +394,11 @@ const studentModule = {
           }
           ReceiptGeneratorAPI(paymentItems, userId, CARD)
         } else {
-          // const paymentKeyPaymentPayload = await addCashNetsPayment(
-          //   paymentItems,
-          //   userId
-          // )
-          // commit("addPayment", { userId, paymentKeyPaymentPayload })
+          const paymentKeyPaymentPayload = await addCashNetsPayment(
+            paymentItems,
+            userId
+          )
+          commit("addPayment", { userId, paymentKeyPaymentPayload })
           ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
         }
         vm.$notify({
