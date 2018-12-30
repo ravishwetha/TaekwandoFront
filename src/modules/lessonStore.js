@@ -170,11 +170,13 @@ const lessonsModule = {
       const lessonDayTimeslot = state.lessons[id].dayTimeslots
       return getDayTimeslotToArray(lessonDayTimeslot)
     },
-    getTodayLessons: (state) => {
-      const today = NUMBER_DAYS[moment().day()]
+    getTodayLessons: (state) => (dayShort) => {
+      const today = dayShort
       return _.omitBy(state.lessons, (lesson) => {
         const lessonDayTimeslots = getDayTimeslotToObject(lesson.dayTimeslots)
-        return lessonDayTimeslots[today] ? false : true
+        console.log(lesson.name)
+        console.log(lessonDayTimeslots)
+        return lessonDayTimeslots[today] !== undefined ? false : true
       })
     },
     studentInLesson: (state) => (lessonId, userId) => {

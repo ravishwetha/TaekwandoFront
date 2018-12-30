@@ -150,7 +150,9 @@ export default {
   },
   computed: {
     lessonData() {
-      const todayLessons = this.$store.getters.getTodayLessons
+      const todayLessons = this.$store.getters.getTodayLessons(
+        getDayShort(this.selectedDate)
+      )
       const todayLessonWithId = _.map(todayLessons, (lesson, id) => ({
         ...lesson,
         id,
@@ -181,7 +183,6 @@ export default {
         }
       })
 
-      // not sorting properly
       const sortedTimeslotOptions = _.sortBy(timeSlotOptions, (option) => {
         const { from } = englishTimeslotToMoment(option.label)
         return from.unix()
@@ -346,7 +347,7 @@ export default {
           if (
             (lessonsAttended.dateOfLesson
               ? moment(lessonsAttended.dateOfLesson)
-                .startOf("day")
+                  .startOf("day")
                   .isSame(moment(this.selectedDate).startOf("day"))
               : moment(lessonsAttended.timestamp)
                   .startOf("day")
@@ -394,7 +395,6 @@ export default {
               todayDay,
               []
             )
-
             todayTimeslots.forEach((timeslot) => {
               //Check if its already added
               const englishTimeslot = readableTimeslotParser(timeslot)
@@ -513,12 +513,11 @@ export default {
           return _.get(details, "contact", null)
         })
       )
-      console.log(present.concat(absent))
-      // this.$store.dispatch("submitAttendance", {
-      //   userIdsAndPresence: present.concat(absent),
-      //   lessonId: this.lessonValue.lessonId,
-      //   studentsToBeUpdated: this.toBeUpdated,
-      // })
+      this.$store.dispatch("submitAttendance", {
+        userIdsAndPresence: present.concat(absent),
+        lessonId: this.lessonValue.lessonId,
+        studentsToBeUpdated: this.toBeUpdated,
+      })
       absentSmsAPI({ absenteeNumbers })
       this.$router.push({
         name: "home",

@@ -14,18 +14,28 @@ def split(arr, size):
      arrs.append(arr)
      return arrs
 
+#prod
+# config = {
+#     "apiKey": "AIzaSyBHWG0CQwlwct1F0-_CnCrjN3r-aYiNuRY",
+#     "authDomain": "taekwandobackend-d1edf.firebaseapp.com",
+#     "databaseURL": "https://taekwandobackend-d1edf.firebaseio.com",
+#     "projectId": "taekwandobackend-d1edf",
+#     "storageBucket": "taekwandobackend-d1edf.appspot.com",
+#     "messagingSenderId": "1011970784530"
+# }
+
 config = {
-    "apiKey": "AIzaSyBHWG0CQwlwct1F0-_CnCrjN3r-aYiNuRY",
-    "authDomain": "taekwandobackend-d1edf.firebaseapp.com",
-    "databaseURL": "https://taekwandobackend-d1edf.firebaseio.com",
-    "projectId": "taekwandobackend-d1edf",
-    "storageBucket": "taekwandobackend-d1edf.appspot.com",
-    "messagingSenderId": "1011970784530"
+    "apiKey": "AIzaSyClyjEjuN7tAIodcn1MnWVHLgtsBUcQsBE",
+    "authDomain": "taekwandodev.firebaseapp.com",
+    "databaseURL": "https://taekwandodev.firebaseio.com",
+    "projectId": "taekwandodev",
+    "storageBucket": "taekwandodev.appspot.com",
+    "messagingSenderId": "198973657637"
 }
 firebase = pyrebase.initialize_app(config)
 
 
-workbook = xlrd.open_workbook("./data/KATONG STUDENTS RECORDS V3.xlsx")
+workbook = xlrd.open_workbook("./data/KATONG STUDENTS RECORDS V4.xlsx")
 
 masterList = workbook.sheet_by_name("RECORDS")
 
@@ -39,8 +49,7 @@ for row in range(1,masterList.nrows):
     lessonRows = masterList.row_values(row, 12)
     finished = False
     lessonsStudentIsIn = []
-    if lessonRows[0] == '-' or "ADVANCE" in lessonRows[0]:
-        continue
+   
     for j in range(4):
         for i in range(4):
             data = lessonRows[start*4+i]
@@ -52,13 +61,17 @@ for row in range(1,masterList.nrows):
     lessonsStudentIsIn = split(lessonsStudentIsIn, 4)[:-1]
     for lesson in lessonsStudentIsIn:
         lessonName = lesson[0]
+        if lessonName == '-' or "ADVANCE" in lessonName:
+            continue
         if ("UNLIMITIED" in lessonName or "UNLIMITED" in lessonName):
             lessonName = lesson[0].split()[0]
         if lessonsData.get(lessonName) == None:
             lessonsData.update({
-                lessonName: {"days": set(), "timeslots": set()}
-            })
-        lessonsData[lessonName]["days"].add(lesson[2][:3])
+                lessonName: {"dayTimeslots": set()}
+            })  
+        lessonDay = lesson[2][:3]
+
+
         timeslotArray = lesson[3].split("-")
 
         startingTime = timeslotArray[0][:2]
@@ -67,18 +80,15 @@ for row in range(1,masterList.nrows):
         endingTime = timeslotArray[1][0:-2]
         endingAmPm = timeslotArray[1][-2:]
         startingAmPm = endingAmPm
-        if (str(endingTime)) == 12:
+        if (str(endingTime)) == "12":
             if endingAmPm == "PM":
                 startingAmPm = "AM"
-            else:
-                endingAmPm = "PM"
-        
         startTime = str(arrow.get(startingTime+startingAmPm, "hA").replace(year=2018).shift(hours=-8))[:-6]+".000Z"
         endTime = str(arrow.get(endingTime+endingAmPm, "hA").replace(year=2018).shift(hours=-8))[:-6]+".000Z"
-        lessonsData[lessonName]["timeslots"].add(startTime+"/"+endTime)
+        lessonsData[lessonName]["dayTimeslots"].add(lessonDay+"|"+startTime+"/"+endTime)
 
 for key, val in lessonsData.items():
-    lessonsData[key].update({"name":key, "days": list(lessonsData[key]["days"]), "timeslots": list(lessonsData[key]["timeslots"])})
+    lessonsData[key].update({"name":key, "dayTimeslots": list(lessonsData[key]["dayTimeslots"])})
     firebase.database().child("Lessons").push(lessonsData[key])
 
 with open("./data/priceList.json") as f:
@@ -124,6 +134,7 @@ for row in range(1,masterList.nrows):
     start = 0
     if masterList.cell_value(row, 10) != "NIL":
         if type(masterList.cell_value(row, 10)) == str:
+            print(masterList.cell_value(row, 10))
             lastPayment= str(arrow.get(masterList.cell_value(row, 10), "DD/MM/YYYY"))
         else:
             lastPayment = xlrd.xldate_as_datetime(masterList.cell_value(row, 10), 0).isoformat()
@@ -142,8 +153,7 @@ for row in range(1,masterList.nrows):
     lessonRows = masterList.row_values(row, 12)
     finished = False
     lessonsStudentIsIn = []
-    if lessonRows[0] == '-' or "ADVANCE" in lessonRows[0]:
-        continue
+   
     for j in range(4):
         for i in range(4):
             cellData = lessonRows[start*4+i]
@@ -155,6 +165,8 @@ for row in range(1,masterList.nrows):
     lessonsStudentIsIn = split(lessonsStudentIsIn, 4)[:-1]
     parsedLessonPayload = {}
     for lesson in lessonsStudentIsIn:
+        if lesson[0] == '-' or "ADVANCE" in lesson[0]:
+            continue
         paymentPlan = int(lesson[1])
         entitlement = int(lesson[1])
         firstWordLessonName = lesson[0].split(" ")[0].split("/")[0]

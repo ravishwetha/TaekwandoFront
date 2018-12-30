@@ -27,8 +27,8 @@ export const dfsKeysArray = (object, keyToSearch) => {
 export const dayInDayTimeslotArray = (dayTimeslot, day) =>
   getDayTimeslotToObject(dayTimeslot)[day] !== undefined
 
-export const englishTimeslotInArray = (timeslots, timeslotToFind) =>
-  _.find(
-    timeslots,
-    (timeslot) => readableTimeslotParser(timeslot) === timeslotToFind
-  )
+export const englishTimeslotInArray = (timeslots, timeslotToFind) => {
+  return _.find(timeslots, (timeslot) => {
+    return readableTimeslotParser(timeslot) === timeslotToFind
+  })
+}

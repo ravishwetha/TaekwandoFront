@@ -36,7 +36,7 @@
               placeholder="Select end time"
               :picker-options="endTimePickerOptions"
             ></el-time-select>
-            <el-button @click.prevent="removeTimeslot(timeslot)">Delete</el-button>
+            <el-button @click.prevent="removeTimeslot(dayTimeslot)">Delete</el-button>
           </el-form-item>
           <el-form-item>
             <el-button v-if="edit" @click="deleteLesson()" type="primary">Delete lesson</el-button>
@@ -49,6 +49,7 @@
       <el-col v-if="edit" :span="12">
         <el-table :data="studentInLessonTableData" style="width: 100%">
           <el-table-column prop="name" label="Name"></el-table-column>
+          <el-table-column prop="userId" label="id"></el-table-column>
           <el-table-column prop="day" label="Day"></el-table-column>
           <el-table-column prop="timeslot" label="Timeslot"></el-table-column>
         </el-table>
@@ -67,9 +68,10 @@ import {
   getDayTimeslotFromDayAndTimeslot,
 } from "@/common/dateUtils"
 import DaySelector from "@/components/utils/DaySelector"
+import { sortByDay, sortByFromArmyTime } from "@/common/sortUtils"
 
 export default {
-  beforeMount() {
+  mounted() {
     const lessonId = this.$route.query["lessonId"]
     if (lessonId) {
       this.edit = true
@@ -85,8 +87,10 @@ export default {
           key: Math.random(),
         }
       })
+      const sortedByFromParsedTimeslots = sortByFromArmyTime(parsedTimeSlots)
+      const sortedByDayParsedTimslots = sortByDay(sortedByFromParsedTimeslots)
 
-      this.form.dayTimeslots = parsedTimeSlots
+      this.form.dayTimeslots = sortedByDayParsedTimslots
     }
   },
   components: {
@@ -102,6 +106,7 @@ export default {
         const studentInfo = this.$store.getters.getStudentInfo(studentId)
         let studentCol = {
           name: studentInfo.name,
+          userId: studentId,
         }
         const { day, timeslot } = studentInfo.lessons[lessonId]
 
@@ -112,7 +117,7 @@ export default {
         }
         return studentCol
       })
-      return studentsInLesson
+      return _.sortBy(studentsInLesson, (student) => student.name)
     },
   },
   data() {
@@ -131,12 +136,12 @@ export default {
       },
       startTimePickerOptions: {
         start: "09:00",
-        end: "20:00",
+        end: "21:00",
         step: "00:30",
       },
       endTimePickerOptions: {
         start: "09:00",
-        end: "20:00",
+        end: "21:00",
         step: "00:30",
       },
       rules: {
@@ -194,9 +199,9 @@ export default {
       })
     },
     removeTimeslot(item) {
-      var index = this.form.timeslots.indexOf(item)
+      const index = this.form.dayTimeslots.indexOf(item)
       if (index !== -1) {
-        this.form.timeslots.splice(index, 1)
+        this.form.dayTimeslots.splice(index, 1)
       }
     },
     addTimeslot() {
