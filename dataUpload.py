@@ -182,11 +182,9 @@ for row in range(1,masterList.nrows):
         endingTime = timeslotArray[1][0:-2]
         endingAmPm = timeslotArray[1][-2:]
         startingAmPm = endingAmPm
-        if (str(endingTime)) == 12:
+        if (str(endingTime)) == "12":
             if endingAmPm == "PM":
                 startingAmPm = "AM"
-            else:
-                endingAmPm = "PM"
         if len(startingTime) == 1:
             startingTime = "0"+startingTime
         if len(endingTime) == 1:

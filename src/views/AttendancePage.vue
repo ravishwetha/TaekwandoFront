@@ -28,13 +28,13 @@
                 id="newStudentDiv"
                 type="primary"
                 @click="makeupModalVisible = true"
-                :disabled="lessonValue === null"
+                :disabled="lessonValue === ''"
               >Make up</el-button>
               <el-button
                 id="newStudentDiv"
                 type="primary"
                 @click="viewMakeUpModalVisible = true"
-                :disabled="lessonValue === null"
+                :disabled="lessonValue === ''"
               >View make up students</el-button>
             </el-col>
             <el-col id="presentAbsent" :span="6">
