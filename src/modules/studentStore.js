@@ -92,9 +92,12 @@ const studentModule = {
         Vue.set(
           state.studentData[userId]["lessons"][lessonId],
           "expectPayment",
-          {}
+          ""
         )
       }
+      console.log(
+        state.studentData[userId]["lessons"][lessonId]["expectPayment"]
+      )
       state.studentData[userId]["lessons"][lessonId][
         "expectPayment"
       ] = expectPayment

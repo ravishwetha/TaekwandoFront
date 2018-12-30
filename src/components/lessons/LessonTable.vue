@@ -84,6 +84,8 @@ import _ from "lodash"
 import moment from "moment"
 import { DAYS, UNLIMITED } from "@/common/data"
 import AddUserToLessonModal from "@/components/lessons/AddUserToLessonsDialog"
+import DateSelector from "@/components/utils/DateSelector"
+
 import {
   readableTimeslotParser,
   getDayAndTimeslotFromDayTimeslot,
@@ -91,6 +93,7 @@ import {
 export default {
   components: {
     AddUserToLessonModal,
+    DateSelector,
   },
   props: {
     userId: {
@@ -117,7 +120,7 @@ export default {
               ? moment(userLessonDetails.lastPayment).format("DD/MM/YYYY")
               : "Not set"
           const expectPayment =
-            userLessonDetails.lastPayment !== undefined
+            userLessonDetails.expectPayment !== undefined
               ? moment(userLessonDetails.expectPayment).format("DD/MM/YYYY")
               : "Not set"
           return {

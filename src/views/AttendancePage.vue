@@ -136,7 +136,6 @@ import {
   readableTimeslotParser,
   englishTimeslotToMoment,
   getDayShort,
-  getDayTimeslotFromDayAndTimeslotEnglish,
 } from "@/common/dateUtils"
 import { englishTimeslotInArray } from "@/common/findUtils"
 import DateSelector from "@/components/utils/DateSelector"
