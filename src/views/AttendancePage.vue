@@ -93,7 +93,7 @@
     >
       <el-table :data="makeupLessonUserData" style="width: 100%">
         <el-table-column prop="name" label="Name"></el-table-column>
-        <el-table-column prop="timestamp" label="Date and Time"></el-table-column>
+        <el-table-column prop="timestamp" label="Taken at"></el-table-column>
         <el-table-column label="Operations" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="deleteMakeup(scope.row)">Delete</el-button>
@@ -213,7 +213,7 @@ export default {
             (attendanceObject) => {
               const sameId =
                 attendanceObject.lessonId === this.lessonValue.lessonId
-              const sameDay = moment(attendanceObject.timestamp)
+              const sameDay = moment(attendanceObject.dateOfLesson)
                 .startOf("day")
                 .isSame(moment(this.selectedDate).startOf("day"))
               const isMakeup = attendanceObject.presence === MAKEUP
@@ -236,7 +236,7 @@ export default {
             (attendanceObject) => {
               const sameId =
                 attendanceObject.lessonId === this.lessonValue.lessonId
-              const sameDay = moment(attendanceObject.timestamp)
+              const sameDay = moment(attendanceObject.dateOfLesson)
                 .startOf("day")
                 .isSame(moment(this.selectedDate).startOf("day"))
               const isMakeup = attendanceObject.presence === MAKEUP
@@ -457,10 +457,7 @@ export default {
         userId: userId,
         presence: MAKEUP,
         dateOfLesson: moment(this.selectedDate).toISOString(),
-        dayTimeslot: getDayTimeslotFromDayAndTimeslotEnglish(
-          getDayShort(this.selectedDate),
-          this.lessonValue.timeslot
-        ),
+        timeslot: this.lessonValue.timeslot,
       }))
       this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: userIdAndPresence,
@@ -492,7 +489,7 @@ export default {
               presence: ABSENT,
               description: this.description[key],
               dateOfLesson: moment(this.selectedDate).toISOString(),
-              timeslot: getDayShort(this.selectedDate),
+              timeslot: this.lessonValue.timeslot,
             }
           }
           return null
