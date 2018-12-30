@@ -95,9 +95,7 @@ const studentModule = {
           ""
         )
       }
-      console.log(
-        state.studentData[userId]["lessons"][lessonId]["expectPayment"]
-      )
+
       state.studentData[userId]["lessons"][lessonId][
         "expectPayment"
       ] = expectPayment
@@ -140,8 +138,8 @@ const studentModule = {
         Vue.set(state.studentData[userId].payments, paymentKey, paymentPayload)
       })
     },
-    addCustomer(state, { userId, cardToken }) {
-      Vue.set(state.studentData[userId], "customer", cardToken)
+    addCustomer(state, { userId, customerObject }) {
+      Vue.set(state.studentData[userId], "customer", customerObject)
     },
     removeCustomer(state, { userId }) {
       Vue.delete(state.studentData[userId], "customer")
@@ -204,7 +202,10 @@ const studentModule = {
     async unregisterCard({ commit }, { userId }) {
       const userCustomerId = store.getters.getStudentInfo(userId)["customer"]
         .customerId
-      await usersRef[userId].child("customer").remove()
+      await usersRef
+        .child(userId)
+        .child("customer")
+        .remove()
       await deleteCustomerAPI(userCustomerId)
       commit("removeCustomer", { userId })
     },
@@ -346,16 +347,14 @@ const studentModule = {
       const { mode, id, userId, vm } = paymentData
       vm.$message({ type: "warning", message: "Refunding, please wait!" })
       try {
-        if (mode === CASHNETS) {
-          await usersRef
-            .child(userId)
-            .child("payments")
-            .child(id)
-            .update({ mode: REFUNDED })
-        } else if (mode === CARD) {
-          const { chargeId } = paymentData
-          await refundAPI(chargeId)
+        if (mode === CARD) {
+          await refundAPI(paymentData)
         }
+        await usersRef
+          .child(userId)
+          .child("payments")
+          .child(id)
+          .update({ mode: REFUNDED })
         commit("refundPayment", { userId, paymentId: id })
         vm.$notify({
           type: "success",

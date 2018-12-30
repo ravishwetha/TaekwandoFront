@@ -8,7 +8,11 @@
       <span v-if="this.customerDetails !== undefined">Card is already registered</span>
       <span v-else>Register</span>
     </el-button>
-    <el-button type="warning" v-if="this.customerDetails !== undefined">Remove registered card</el-button>
+    <el-button
+      @click="unregisterCard"
+      type="warning"
+      v-if="this.customerDetails !== undefined"
+    >Remove registered card</el-button>
     <el-dialog
       title="Register your credit/debit card"
       :show-close="!this.registrationLoading"
@@ -36,16 +40,18 @@ export default {
   components: {
     Card,
   },
-  mounted() {
-    const details = this.$store.getters.getStudentInfo(this.userId)
-    this.customerDetails = details.customer
+
+  computed: {
+    customerDetails() {
+      const details = this.$store.getters.getStudentInfo(this.userId)
+      return details.customer
+    },
   },
   data() {
     return {
       registrationDialogVisible: false,
       registrationLoading: false,
       stripeKey: process.env.VUE_APP_STRIPE_KEY,
-      customerDetails: {},
     }
   },
   methods: {
@@ -69,18 +75,18 @@ export default {
       this.registrationLoading = false
       this.registrationDialogVisible = false
     },
-  },
-  async unregisterCard() {
-    this.registrationLoading = true
-    await this.$store.dispatch("unregisterCard", {
-      userId: this.userId,
-    })
-    this.$notify.success({
-      title: "Success",
-      message: "Card has been unregistered",
-    })
-    this.registrationLoading = false
-    this.registrationDialogVisible = false
+    async unregisterCard() {
+      this.registrationLoading = true
+      await this.$store.dispatch("unregisterCard", {
+        userId: this.userId,
+      })
+      this.$notify.success({
+        title: "Success",
+        message: "Card has been unregistered",
+      })
+      this.registrationLoading = false
+      this.registrationDialogVisible = false
+    },
   },
   props: {
     userId: {

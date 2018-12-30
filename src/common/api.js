@@ -96,14 +96,14 @@ export const ReceiptGeneratorAPI = async (
     })
 }
 
-export const refundAPI = async (chargeId) => {
+export const refundAPI = async ({ chargeId, price }) => {
   const api = await axiosConfig()
-  return api.post("/payment/refund", { chargeId }).then((r) => r.data)
+  return api.post("/payment/refund", { chargeId, price }).then((r) => r.data)
 }
 
 export const deleteCustomerAPI = async (customerId) => {
   const api = await axiosConfig()
-  return api.post("/payment/refund", { customerId }).then((r) => r.data)
+  return api.post("/payment/delete", { customerId }).then((r) => r.data)
 }
 
 export const cardRegistrationAPI = async ({ cardToken }) => {
