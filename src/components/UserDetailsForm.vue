@@ -10,7 +10,7 @@
         </div>
         <hr>
         <el-container>
-          <el-col :span="14">
+          <el-col :span="10">
             <div id="paymentAndAttendanceHeader">
               <span>Student Attendance</span>
             </div>
@@ -28,7 +28,7 @@
             <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
             <lesson-table :userId="userId"></lesson-table>
           </el-col>
-          <el-col :span="10">
+          <el-col :span="14">
             <div id="paymentAndAttendanceHeader">
               <span>Payment Type</span>
             </div>

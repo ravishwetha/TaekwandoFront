@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-table
-      show-summary
+      :show-summary="false"
       sum-text="Total present and absent count for selected date range"
       v-loading="isLoading"
       stripe

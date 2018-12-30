@@ -252,7 +252,8 @@ const studentModule = {
         vm.$notify({
           type: "success",
           title: "Payment success",
-          message: "Payment was a success",
+          message:
+            "Payment was a success, please wait while receipt is downloading",
         })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
@@ -321,7 +322,8 @@ const studentModule = {
         vm.$notify({
           type: "success",
           title: "Payment success",
-          message: "Payment was a success",
+          message:
+            "Payment was a success, please wait while receipt is downloading",
         })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
@@ -406,7 +408,8 @@ const studentModule = {
         vm.$notify({
           type: "success",
           title: "Payment success",
-          message: "Payment was a success",
+          message:
+            "Payment was a success, please wait while receipt is downloading",
         })
         commit("modifyStudentDataLoadingStatus", { status: false })
       } catch (e) {
