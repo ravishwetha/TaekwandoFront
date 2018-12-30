@@ -525,7 +525,7 @@ const studentModule = {
                 lessonId,
                 presence: userIdAndPresence.presence,
                 timestamp: moment().toISOString(),
-                dayTimeslot: userIdAndPresence.dayTimeslot,
+                timeslot: userIdAndPresence.timeslot,
                 dateOfLesson: userIdAndPresence.dateOfLesson,
               })
           }

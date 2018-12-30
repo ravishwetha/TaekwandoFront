@@ -174,8 +174,6 @@ const lessonsModule = {
       const today = dayShort
       return _.omitBy(state.lessons, (lesson) => {
         const lessonDayTimeslots = getDayTimeslotToObject(lesson.dayTimeslots)
-        console.log(lesson.name)
-        console.log(lessonDayTimeslots)
         return lessonDayTimeslots[today] !== undefined ? false : true
       })
     },

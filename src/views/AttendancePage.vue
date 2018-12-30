@@ -341,7 +341,6 @@ export default {
       this.present = {}
       this.absent = {}
       const { lessonId } = this.lessonValue
-      // TODO: Conditional check for attendance dayTimeslot so that it updates correctly. Now it is updating for other timeslots also
       _.forEach(this.$store.getters.getAllStudentsInfo, (student) => {
         _.forEach(student.attendance, (lessonsAttended, key) => {
           if (
@@ -353,7 +352,8 @@ export default {
                   .startOf("day")
                   .isSame(moment(this.selectedDate).startOf("day"))) &&
             lessonsAttended.lessonId === lessonId &&
-            this.$store.getters.studentInLesson(lessonId, student.userId)
+            this.$store.getters.studentInLesson(lessonId, student.userId) &&
+            lessonsAttended.timeslot === this.lessonValue.timeslot
           ) {
             if (lessonsAttended.presence === PRESENT) {
               Vue.set(this.present, student.userId, true)
@@ -478,10 +478,7 @@ export default {
               presence: PRESENT,
               description: this.description[key],
               dateOfLesson: moment(this.selectedDate).toISOString(),
-              dayTimeslot: getDayTimeslotFromDayAndTimeslotEnglish(
-                getDayShort(this.selectedDate),
-                this.lessonValue.timeslot
-              ),
+              timeslot: this.lessonValue.timeslot,
             }
           }
           return null
@@ -495,10 +492,7 @@ export default {
               presence: ABSENT,
               description: this.description[key],
               dateOfLesson: moment(this.selectedDate).toISOString(),
-              dayTimeslot: getDayTimeslotFromDayAndTimeslotEnglish(
-                getDayShort(this.selectedDate),
-                this.lessonValue.timeslot
-              ),
+              timeslot: getDayShort(this.selectedDate),
             }
           }
           return null
