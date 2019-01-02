@@ -16,11 +16,12 @@
             </div>
             <el-row id="commentsRow">
               <el-row>
+                <span style="margin-right: 20px">Select lesson to filter:</span>
                 <lesson-selector v-model="selectedLessonId"></lesson-selector>
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
-                <el-table-column prop="timestamp" label="Date and Time of attendance taken"></el-table-column>
+                <el-table-column prop="timestamp" label="Attendance taken on"></el-table-column>
                 <el-table-column prop="presence" label="Presence"></el-table-column>
               </el-table>
             </el-row>

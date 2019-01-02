@@ -10,8 +10,8 @@
       style="width: 100%"
     >
       <el-table-column min-width="250" prop="name" label="Name"></el-table-column>
-      <el-table-column prop="presentCount" label="Total Present Count"></el-table-column>
-      <el-table-column prop="absentCount" label="Total Absent Count"></el-table-column>
+      <el-table-column prop="presentCount" label="Present"></el-table-column>
+      <el-table-column prop="absentCount" label="Absent"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">

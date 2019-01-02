@@ -28,9 +28,9 @@
       :userId="userId"
     ></add-user-to-lesson-modal>
     <el-dialog title="Swap lesson" :visible.sync="swapDialogVisible">
-      <span>Select which lesson to swap to from below</span>
+      <span>Select which lesson to swap to from below:</span>
       <br>
-      <el-select v-model="lessonSwappingTo" style="margin-top: 20px">
+      <el-select v-model="lessonSwappingTo" style="margin-top: 10px; margin-bottom: 10px;">
         <el-option
           v-for="lesson in swapLessonData"
           :key="lesson.id"
@@ -39,16 +39,25 @@
         ></el-option>
       </el-select>
       <br>
-      <span>Select the number of sessions for payment plan</span>
+      <span>Select the number of sessions for payment plan:</span>
       <br>
-      <el-select v-model="lessonSwappingToSessions" placeholder="Select">
+      <el-select
+        style="margin-top: 10px; margin-bottom: 10px;"
+        v-model="lessonSwappingToSessions"
+        placeholder="Select"
+      >
         <el-option v-for="item in sessionOptions" :key="item" :label="item" :value="item"></el-option>
       </el-select>
       <br>
       <div v-if="!lessonSwappingToUnlimited">
-        <span>Select the timeslot to swap the student into</span>
+        <span>Select the day and timeslot to swap the student into:</span>
         <br>
-        <el-select v-model="lessonSwappingToDayTimeslot" value-key="key" placeholder="Select">
+        <el-select
+          style="margin-top: 10px; margin-bottom: 10px;"
+          v-model="lessonSwappingToDayTimeslot"
+          value-key="key"
+          placeholder="Select"
+        >
           <el-option
             v-for="item in selectedLessonTimeslots"
             :key="item.label"
@@ -59,8 +68,7 @@
         <br>
       </div>
       <br>
-      <span>Unlimited?</span>
-      <el-checkbox v-model="lessonSwappingToUnlimited"></el-checkbox>
+      <el-checkbox label="Unlimited?" v-model="lessonSwappingToUnlimited"></el-checkbox>
       <span slot="footer">
         <el-button type="primary" @click="conductSwap">Swap</el-button>
         <el-button @click="swapDialogVisible = false">Cancel</el-button>

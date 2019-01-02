@@ -5,6 +5,7 @@
     </div>
     <el-row id="commentsRow">
       <el-row>
+        <span style="margin-right: 20px">Select date range to filter:</span>
         <date-selector style="margin-left: 20px;" v-model="paymentDateRange"></date-selector>
       </el-row>
       <el-table max-height="500" :data="paymentData" style="width: 90%">

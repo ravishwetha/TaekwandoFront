@@ -1,8 +1,8 @@
 <template>
   <el-dialog title="Add student into lesson" :visible.sync="dialogVisible">
-    <span>Select which lesson to add student into</span>
+    <span>Select which lesson to add student into:</span>
     <br>
-    <el-select v-model="lessonAddingTo" style="margin-top: 20px">
+    <el-select v-model="lessonAddingTo" style="margin-top: 10px; margin-bottom: 10px;">
       <el-option
         v-for="lesson in lessonData"
         :key="lesson.id"
@@ -11,16 +11,25 @@
       ></el-option>
     </el-select>
     <br>
-    <span>Select the number of sessions for payment plan</span>
+    <span>Select the number of sessions for payment plan:</span>
     <br>
-    <el-select v-model="lessonAddingToSessions" placeholder="Select">
+    <el-select
+      style="margin-top: 10px; margin-bottom: 10px;"
+      v-model="lessonAddingToSessions"
+      placeholder="Select"
+    >
       <el-option v-for="item in sessionOptions" :key="item" :label="item" :value="item"></el-option>
     </el-select>
     <br>
     <div v-if="!lessonAddingToUnlimited">
-      <span>Select the timeslot to add the student into</span>
+      <span>Select the day and timeslot to add the student into:</span>
       <br>
-      <el-select v-model="lessonAddingToDayTimeslot" value-key="key" placeholder="Select">
+      <el-select
+        style="margin-top: 10px; margin-bottom: 10px;"
+        v-model="lessonAddingToDayTimeslot"
+        value-key="key"
+        placeholder="Select"
+      >
         <el-option
           v-for="item in selectedLessonTimeslots"
           :key="item.label"
@@ -30,8 +39,7 @@
       </el-select>
     </div>
     <br>
-    <span>Unlimited?</span>
-    <el-checkbox v-model="lessonAddingToUnlimited"></el-checkbox>
+    <el-checkbox label="Unlimited?" v-model="lessonAddingToUnlimited"></el-checkbox>
     <span slot="footer">
       <el-button type="primary" @click="addUserToLesson">Add</el-button>
       <el-button @click="closeDialog">Cancel</el-button>
