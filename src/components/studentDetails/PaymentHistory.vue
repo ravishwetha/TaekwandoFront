@@ -12,9 +12,9 @@
         <el-table-column prop="mode" label="Mode"></el-table-column>
         <el-table-column width="400px" prop="type" label="Item"></el-table-column>
         <el-table-column prop="created" label="Paid on"></el-table-column>
-        <el-table-column prop="description" label="Description"></el-table-column>
+        <el-table-column prop="description" label="Desc"></el-table-column>
         <el-table-column prop="price" label="Amount"></el-table-column>
-        <el-table-column label="Operations" fixed="right">
+        <el-table-column label="Ops" fixed="right">
           <template slot-scope="scope">
             <el-button @click="generateReceipt(scope.row)" type="text" size="small">Download Receipt</el-button>
             <el-button

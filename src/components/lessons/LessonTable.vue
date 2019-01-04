@@ -221,7 +221,8 @@ export default {
     },
     openUpdateExpectPaymentDialog(row) {
       this.updatedExpectPaymentDateLessonId = row.id
-      this.updatedExpectPaymentDate = moment(row.expectPayment)
+      this.updatedExpectPaymentDate =
+        row.expectPayment !== "Not set" ? moment(row.expectPayment) : ""
       this.updatedExpectPaymentPrice = row.price
       this.expectPaymentEditDialogVisible = true
     },
