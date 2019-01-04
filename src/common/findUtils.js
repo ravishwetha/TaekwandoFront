@@ -17,7 +17,8 @@ const dfsKeysArrayUncleaned = (object, keyToSearch, appendedArray = []) => {
 }
 
 export const dfsKeysArray = (object, keyToSearch) => {
-  const dfsArray = dfsKeysArrayUncleaned(object, keyToSearch)
+  const key = keyToSearch.split(/[.\-_ /]/)[0]
+  const dfsArray = dfsKeysArrayUncleaned(object, key)
   const cleanedKeysArray = _.compact(
     _.map(dfsArray, (dfsArray) => (dfsArray.length > 0 ? dfsArray : null))
   )

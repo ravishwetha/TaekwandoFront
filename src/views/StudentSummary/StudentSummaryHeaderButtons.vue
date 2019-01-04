@@ -5,6 +5,11 @@
     <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
     <el-button @click="openSendMessageModal" type="primary" round>Send a message</el-button>
     <el-button @click="routeToPriceList()" type="primary" round>View/Edit Price List</el-button>
+    <el-button
+      @click="() => paymentDueDialogVisible = true"
+      type="primary"
+      round
+    >Expected payments today</el-button>
     <el-popover
       style="margin-left: 10px"
       placement="bottom"
@@ -22,10 +27,17 @@
         ></el-option>
       </el-select>
     </el-popover>
+
+    <payment-due-dialog
+      :paymentDialogVisible="paymentDueDialogVisible"
+      @close="() => paymentDueDialogVisible = false"
+    ></payment-due-dialog>
   </div>
 </template>
 
 <script>
+import PaymentDueDialog from "@/components/studentDetails/PaymentDue"
+
 export default {
   computed: {
     lessonSelectData() {
@@ -36,12 +48,19 @@ export default {
       return parsedData
     },
   },
+  components: {
+    PaymentDueDialog,
+  },
+  data() {
+    return { paymentDueDialogVisible: false }
+  },
   methods: {
     routeToAttendancePage() {
       this.$router.push({
         name: "attendance",
       })
     },
+
     routeToAddLesson() {
       this.$router.push("newLesson")
     },

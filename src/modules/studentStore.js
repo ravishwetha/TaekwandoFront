@@ -66,7 +66,9 @@ const studentModule = {
             presentCount: _.keys(
               _.filter(
                 value.attendance,
-                (attendance) => attendance.presence === PRESENT
+                (attendance) =>
+                  attendance.presence === PRESENT ||
+                  attendance.presence === MAKEUP
               )
             ).length,
           }
@@ -85,9 +87,11 @@ const studentModule = {
     refundPayment(state, { userId, paymentId }) {
       state.studentData[userId].payments[paymentId].mode = REFUNDED
     },
-    updateExpectPaymentDate(state, { userId, lessonId, expectPayment }) {
+    updateExpectPaymentDate(state, { userId, lessonId, expectPayment, price }) {
       const existingExpectPayment =
         state.studentData[userId]["lessons"][lessonId]["expectPayment"]
+      const existingPrice =
+        state.studentData[userId]["lessons"][lessonId]["price"]
       if (existingExpectPayment === undefined) {
         Vue.set(
           state.studentData[userId]["lessons"][lessonId],
@@ -95,10 +99,14 @@ const studentModule = {
           ""
         )
       }
+      if (existingPrice === undefined) {
+        Vue.set(state.studentData[userId]["lessons"][lessonId], "price", "")
+      }
 
       state.studentData[userId]["lessons"][lessonId][
         "expectPayment"
       ] = expectPayment
+      state.studentData[userId]["lessons"][lessonId]["price"] = price
     },
     removeUser(state, { userId }) {
       state.studentData = _.filter(
@@ -421,13 +429,21 @@ const studentModule = {
         })
       }
     },
-    async updateExpectPaymentDate({ commit }, updateExpectPaymentPayload) {
-      const { userId, lessonId, expectPayment } = updateExpectPaymentPayload
+    async updateExpectPaymentDateAndPrice(
+      { commit },
+      updateExpectPaymentPayload
+    ) {
+      const {
+        userId,
+        lessonId,
+        expectPayment,
+        price,
+      } = updateExpectPaymentPayload
       await usersRef
         .child(userId)
         .child("lessons")
         .child(lessonId)
-        .update({ expectPayment })
+        .update({ expectPayment, price })
       commit("updateExpectPaymentDate", updateExpectPaymentPayload)
     },
     async addUser({ commit, dispatch }, userData) {

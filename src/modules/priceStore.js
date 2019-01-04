@@ -68,6 +68,14 @@ const priceModule = {
   },
   getters: {
     getPriceList: (state) => state.priceList,
+    getPriceListFromKeyArray: (state) => (keyArray) => {
+      let price = state.priceList[keyArray[0]]
+      keyArray.splice(0, 1)
+      for (const key of keyArray) {
+        price = price[key]
+      }
+      return price
+    },
   },
 }
 

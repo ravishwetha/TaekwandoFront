@@ -6,6 +6,7 @@
       <el-table-column prop="expectPayment" label="Expected Payment"></el-table-column>
       <el-table-column prop="day" label="Day"></el-table-column>
       <el-table-column prop="timeslot" label="Time slot"></el-table-column>
+      <el-table-column prop="price" label="Price"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
           <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
@@ -75,10 +76,13 @@
       </span>
     </el-dialog>
     <el-dialog
-      title="Update new expected payment date"
+      title="Update new expected payment date and price"
       :visible.sync="expectPaymentEditDialogVisible"
     >
+      <p>Next expected payment date:</p>
       <date-selector single v-model="updatedExpectPaymentDate"></date-selector>
+      <p>Price to charge:</p>
+      <el-input type="number" label="Price:" v-model="updatedExpectPaymentPrice"></el-input>
       <span slot="footer">
         <el-button type="primary" @click="updateExpectedPaymentDate">Update</el-button>
         <el-button @click="expectPaymentEditDialogVisible = false">Cancel</el-button>
@@ -98,6 +102,8 @@ import {
   readableTimeslotParser,
   getDayAndTimeslotFromDayTimeslot,
 } from "@/common/dateUtils"
+import { dfsKeysArray } from "../../common/findUtils"
+import { ONCE } from "../../common/data"
 export default {
   components: {
     AddUserToLessonModal,
@@ -131,6 +137,26 @@ export default {
             userLessonDetails.expectPayment !== undefined
               ? moment(userLessonDetails.expectPayment).format("DD/MM/YYYY")
               : "Not set"
+
+          const lessonToPayFor = this.$store.getters.getLessonData(lessonId)
+          const keyArray = dfsKeysArray(
+            this.$store.getters.getPriceList,
+            lessonToPayFor.name
+          )
+          const priceList = this.$store.getters.getPriceListFromKeyArray(
+            keyArray
+          )
+          let sessionsPrice = priceList
+          if (userLessonDetails.timeslot === UNLIMITED) {
+            sessionsPrice = sessionsPrice[UNLIMITED]
+          } else {
+            sessionsPrice = sessionsPrice[ONCE]
+              ? sessionsPrice[ONCE]
+              : sessionsPrice
+          }
+          const price = userLessonDetails.price
+            ? userLessonDetails.price
+            : sessionsPrice[userLessonDetails.paymentPlan]
           return {
             name: _.get(allLessonData[lessonId], "name"),
             sessions: userLessonDetails.paymentPlan,
@@ -140,6 +166,7 @@ export default {
             customer: details.customer,
             day,
             timeslot,
+            price,
           }
         }
       )
@@ -183,6 +210,7 @@ export default {
       expectPaymentEditDialogVisible: false,
       updatedExpectPaymentDate: "",
       updatedExpectPaymentDateLessonId: "",
+      updatedExpectPaymentPrice: "",
       DAYS: _.keys(DAYS),
     }
   },
@@ -193,14 +221,17 @@ export default {
     },
     openUpdateExpectPaymentDialog(row) {
       this.updatedExpectPaymentDateLessonId = row.id
+      this.updatedExpectPaymentDate = moment(row.expectPayment)
+      this.updatedExpectPaymentPrice = row.price
       this.expectPaymentEditDialogVisible = true
     },
     updateExpectedPaymentDate() {
       const expectPayment = moment(this.updatedExpectPaymentDate).toISOString()
-      this.$store.dispatch("updateExpectPaymentDate", {
+      this.$store.dispatch("updateExpectPaymentDateAndPrice", {
         userId: this.userId,
         lessonId: this.updatedExpectPaymentDateLessonId,
         expectPayment,
+        price: Number.parseInt(this.updatedExpectPaymentPrice),
       })
       this.expectPaymentEditDialogVisible = false
     },
