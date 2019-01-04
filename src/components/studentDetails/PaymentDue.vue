@@ -121,7 +121,7 @@ export default {
   },
   data() {
     return {
-      selectedDate: "",
+      selectedDate: moment(),
       expectPaymentEditDialogVisible: false,
       updatedFields: {
         updatedExpectPaymentUserId: "",
