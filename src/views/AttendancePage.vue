@@ -11,7 +11,12 @@
         <el-col id="center">
           <el-row :gutter="10">
             <el-col :span="6">
-              <el-select style="padding-bottom: 10px" value-key="key" v-model="lessonValue">
+              <el-select
+                style="padding-bottom: 10px"
+                value-key="key"
+                @change="() => initializeAttendanceData(tableData)"
+                v-model="lessonValue"
+              >
                 <el-option :key="1" label="Select a lesson" :value="null"></el-option>
                 <el-option-group v-for="group in lessonData" :key="group.key" :label="group.label">
                   <el-option
@@ -276,7 +281,6 @@ export default {
           )
         )
       })
-      this.updatePresentAbsent()
       return filteredStudentInfo
     },
     studentData() {
@@ -336,6 +340,12 @@ export default {
     }
   },
   methods: {
+    initializePresentAbsent(filteredStudentInfo) {
+      filteredStudentInfo.forEach((user) => {
+        Vue.set(this.present, user.userId, false)
+        Vue.set(this.absent, user.userId, false)
+      })
+    },
     updatePresentAbsent() {
       this.present = {}
       this.absent = {}
@@ -356,11 +366,17 @@ export default {
           ) {
             if (lessonsAttended.presence === PRESENT) {
               Vue.set(this.present, student.userId, true)
-              this.toBeUpdated[student.userId] = key
+              this.toBeUpdated[student.userId] = {
+                attendanceId: key,
+                previous: PRESENT,
+              }
             }
             if (lessonsAttended.presence === ABSENT) {
               Vue.set(this.absent, student.userId, true)
-              this.toBeUpdated[student.userId] = key
+              this.toBeUpdated[student.userId] = {
+                attendanceId: key,
+                previous: ABSENT,
+              }
             }
             if (lessonsAttended.description) {
               this.description[student.userId] = lessonsAttended.description
@@ -368,6 +384,10 @@ export default {
           }
         })
       })
+    },
+    initializeAttendanceData(tableData) {
+      this.initializePresentAbsent(tableData)
+      this.updatePresentAbsent()
     },
     getTimeslotsToStudents() {
       // Gets all students with lessons today or unlimited timeslots

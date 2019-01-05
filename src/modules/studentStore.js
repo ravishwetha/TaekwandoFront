@@ -525,13 +525,16 @@ const studentModule = {
             usersRef
               .child(userIdAndPresence.userId)
               .child("attendance")
-              .child(attendanceToBeUpdated)
+              .child(attendanceToBeUpdated.attendanceId)
               .update({
                 lessonId,
                 presence: userIdAndPresence.presence,
                 timestamp: moment().toISOString(),
               })
-            if (userIdAndPresence.presence === ABSENT) {
+            if (
+              userIdAndPresence.presence === ABSENT &&
+              attendanceToBeUpdated.previous === PRESENT
+            ) {
               usersRef
                 .child(userIdAndPresence.userId)
                 .child("lessons")
