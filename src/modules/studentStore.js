@@ -226,7 +226,6 @@ const studentModule = {
         )
         ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
         paymentItems.forEach(async ({ paymentData }) => {
-          //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {
             return _.includes(lesson.name, paymentData.paymentInfo.type[1])
@@ -252,6 +251,7 @@ const studentModule = {
                 nextPayment: moment()
                   .add(_.last(paymentData.paymentInfo.type), "weeks")
                   .toISOString(),
+                messageSent: false,
               })
           }
         })
@@ -570,7 +570,8 @@ const addCardPaymentNonCustomer = async (
     paymentInfo,
     token,
     false,
-    userEmail
+    userEmail,
+    userId
   )
   return await Promise.all(
     paymentInfo.map(async ({ paymentData }) => {
@@ -601,7 +602,8 @@ const addCardPaymentCustomer = async (
     paymentInfo,
     paymentToken,
     true,
-    userEmail
+    userEmail,
+    userId
   )
   return await Promise.all(
     paymentInfo.map(async ({ paymentData }) => {

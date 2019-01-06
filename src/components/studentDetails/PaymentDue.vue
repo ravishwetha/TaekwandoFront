@@ -18,9 +18,11 @@
             >
               <el-table-column label="Lesson Name" prop="lessonName"></el-table-column>
               <el-table-column label="Price" prop="price"></el-table-column>
+              <el-table-column label="Status" prop="status"></el-table-column>
               <el-table-column label="Operations" fixed="right">
                 <template slot-scope="scope">
                   <el-button
+                    v-if="scope.row.status !== 'Paid' "
                     type="text"
                     size="small"
                     @click="openUpdateExpectPaymentDialog(scope.row, props.row.userId)"
@@ -72,6 +74,22 @@ export default {
         const lessonsUsersAreIn = _.get(user, "lessons", {})
         let expectedPaymentArray = []
         _.forEach(lessonsUsersAreIn, (lessonIn, lessonId) => {
+          const lessonToPayFor = this.$store.getters.getLessonData(lessonId)
+          const keyArray = dfsKeysArray(
+            this.$store.getters.getPriceList,
+            lessonToPayFor.name
+          )
+          const priceList = this.$store.getters.getPriceListFromKeyArray(
+            keyArray
+          )
+          let sessionsPrice = priceList
+          if (lessonIn.timeslot === UNLIMITED) {
+            sessionsPrice = sessionsPrice[UNLIMITED]
+          } else {
+            sessionsPrice = sessionsPrice[ONCE]
+              ? sessionsPrice[ONCE]
+              : sessionsPrice
+          }
           if (
             lessonIn.expectPayment &&
             this.selectedDate &&
@@ -79,22 +97,6 @@ export default {
               .startOf("day")
               .isSame(moment(this.selectedDate).startOf("day"))
           ) {
-            const lessonToPayFor = this.$store.getters.getLessonData(lessonId)
-            const keyArray = dfsKeysArray(
-              this.$store.getters.getPriceList,
-              lessonToPayFor.name
-            )
-            const priceList = this.$store.getters.getPriceListFromKeyArray(
-              keyArray
-            )
-            let sessionsPrice = priceList
-            if (lessonIn.timeslot === UNLIMITED) {
-              sessionsPrice = sessionsPrice[UNLIMITED]
-            } else {
-              sessionsPrice = sessionsPrice[ONCE]
-                ? sessionsPrice[ONCE]
-                : sessionsPrice
-            }
             const price = lessonIn.price
               ? lessonIn.price
               : sessionsPrice[lessonIn.paymentPlan]
@@ -103,6 +105,24 @@ export default {
               lessonName: lessonToPayFor.name,
               lessonId,
               expectPayment: lessonIn.expectPayment,
+              status: "Not Paid",
+            })
+          } else if (
+            lessonIn.lastPayment &&
+            this.selectedDate &&
+            moment(lessonIn.lastPayment)
+              .startOf("day")
+              .isSame(moment(this.selectedDate).startOf("day"))
+          ) {
+            const price = lessonIn.price
+              ? lessonIn.price
+              : sessionsPrice[lessonIn.paymentPlan]
+            expectedPaymentArray.push({
+              price,
+              lessonName: lessonToPayFor.name,
+              lessonId,
+              lastPayment: lessonIn.expectPayment,
+              status: "Paid",
             })
           }
         })
@@ -147,7 +167,6 @@ export default {
         price: Number.parseInt(updatedExpectPaymentPrice),
       })
       this.expectPaymentEditDialogVisible = false
-      // },
     },
     openUpdateExpectPaymentDialog(row, userId) {
       this.updatedFields.updatedExpectPaymentDateLessonId = row.lessonId

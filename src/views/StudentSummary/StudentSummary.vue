@@ -144,8 +144,12 @@ export default {
       let filteredData = _.filter(
         this.$store.getters.getAllStudentsInfo,
         (user) =>
-          _.includes(user.name.toUpperCase(), this.searchString.toUpperCase())
+          _.includes(
+            _.get(user, "name", "").toUpperCase(),
+            this.searchString.toUpperCase()
+          )
       )
+
       if (this.dateRange !== null) {
         const startDate = moment(this.dateRange[0]).startOf("day")
         const endDate = moment(this.dateRange[1]).endOf("day")

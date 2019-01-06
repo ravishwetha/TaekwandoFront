@@ -62,11 +62,12 @@ export const tokenPaymentAPI = async (
   paymentInfo,
   token,
   customer,
-  userEmail
+  userEmail,
+  userId
 ) => {
   const api = await axiosConfig()
   return api
-    .post("/payment/token", { paymentInfo, token, customer, userEmail })
+    .post("/payment/token", { paymentInfo, token, customer, userEmail, userId })
     .then((r) => r.data)
 }
 
