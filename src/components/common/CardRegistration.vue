@@ -1,5 +1,11 @@
 <template>
   <div>
+    <el-button @click="updateAutoDeductionStatus(false)" type="primary" v-if="autoDeduction">
+      <span>Disable Auto Deduction</span>
+    </el-button>
+    <el-button @click="updateAutoDeductionStatus(true)" v-else type="primary">
+      <span>Enable Auto Deduction</span>
+    </el-button>
     <el-button
       :disabled="this.customerDetails !== undefined"
       @click="registrationDialogVisible = true"
@@ -46,6 +52,9 @@ export default {
       const details = this.$store.getters.getStudentInfo(this.userId)
       return details.customer
     },
+    autoDeduction() {
+      return this.$store.getters.getStudentInfo(this.userId).autoDeduction
+    },
   },
   data() {
     return {
@@ -86,6 +95,12 @@ export default {
       })
       this.registrationLoading = false
       this.registrationDialogVisible = false
+    },
+    async updateAutoDeductionStatus(status) {
+      this.$store.dispatch("autoDeductionStatus", {
+        userId: this.userId,
+        autoDeduction: status,
+      })
     },
   },
   props: {

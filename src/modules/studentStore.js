@@ -155,6 +155,9 @@ const studentModule = {
     deleteMakeupAttendance(state, { userId, attendanceId }) {
       Vue.delete(state.studentData[userId].attendance, attendanceId)
     },
+    autoDeductionStatus(state, { userId, autoDeduction }) {
+      Vue.set(state.studentData[userId], "autoDeduction", autoDeduction)
+    },
   },
   actions: {
     async deleteUser({ commit }, { userId }) {
@@ -217,6 +220,10 @@ const studentModule = {
       await deleteCustomerAPI(userCustomerId)
       commit("removeCustomer", { userId })
     },
+    async autoDeductionStatus({ commit }, { userId, autoDeduction }) {
+      await usersRef.child(userId).update({ autoDeduction })
+      commit("autoDeductionStatus", { userId, autoDeduction })
+    },
     async addCashPayment({ commit }, { paymentItems, userId, vm }) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
@@ -247,7 +254,7 @@ const studentModule = {
                 entitlement:
                   parseInt(entitlement) +
                   parseInt(_.last(paymentData.paymentInfo.type)),
-                nextPayment: moment()
+                expectPayment: moment()
                   .add(_.last(paymentData.paymentInfo.type), "weeks")
                   .toISOString(),
                 messageSent: false,
@@ -317,7 +324,7 @@ const studentModule = {
               .child(lessonId)
               .update({
                 lastPayment: moment().toISOString(),
-                nextPayment: moment()
+                expectPayment: moment()
                   .add(_.last(paymentData.paymentInfo.type), "weeks")
                   .toISOString(),
                 entitlement:
