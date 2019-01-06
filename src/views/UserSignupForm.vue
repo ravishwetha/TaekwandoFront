@@ -3,7 +3,13 @@
     <el-main>
       <el-col class="userDetailsCol">
         <span class="detailsHeader">User Details</span>
-        <el-form :model="formData" :rules="rules" label-width="120px" ref="userDetailsForm">
+        <el-form
+          label-position="left"
+          :model="formData"
+          :rules="rules"
+          label-width="120px"
+          ref="userDetailsForm"
+        >
           <el-form-item label="Name" prop="name">
             <el-input v-model="formData.name"></el-input>
           </el-form-item>
@@ -45,7 +51,13 @@
       </el-col>
       <el-col class="contactDetailsCol">
         <span class="detailsHeader">Contact Details</span>
-        <el-form :model="this.formData" :rules="rules" label-width="120px" ref="contactDetailsForm">
+        <el-form
+          label-position="left"
+          :model="this.formData"
+          :rules="rules"
+          label-width="120px"
+          ref="contactDetailsForm"
+        >
           <el-form-item prop="email" label="Email">
             <el-input v-model="formData.email"></el-input>
           </el-form-item>

@@ -3,11 +3,7 @@
     <student-details :userId="userId"></student-details>
     <el-footer>
       <div>
-        <span id="commentsHeader">Comments</span>
-        <br>
-        <div id="comments">
-          <span id="commentsText">{{userDetails.comments}}</span>
-        </div>
+        <span id="commentsHeader">Activities</span>
         <hr>
         <el-container>
           <el-col :span="12">
@@ -140,9 +136,6 @@ export default {
     const details = this.$store.getters.getStudentInfo(
       this.$route.query["userId"]
     )
-    const userDetails = _.pick(details, ["comments"])
-
-    this.userDetails = userDetails
     this.customerDetails = details.customer
     const contactDetails = _.pick(details, ["email"])
     this.contactDetails = contactDetails
@@ -251,9 +244,6 @@ export default {
   data() {
     return {
       active: true,
-      userDetails: {
-        comments: "",
-      },
       contactDetails: {
         email: "",
       },

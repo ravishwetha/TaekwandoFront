@@ -28,7 +28,7 @@
                 </el-option-group>
               </el-select>
             </el-col>
-            <el-col :span="6">
+            <el-col style="display: flex; flex-direction: row" :span="10">
               <el-button
                 id="newStudentDiv"
                 type="primary"
@@ -41,16 +41,16 @@
                 @click="viewMakeUpModalVisible = true"
                 :disabled="lessonValue === ''"
               >View make up students</el-button>
-            </el-col>
-            <el-col id="presentAbsent" :span="6">
-              <span>Present count : {{presentCount}} / {{tableData.length}}</span>
-              <br>
               <el-button @click="() => allPresent(tableData)">All present</el-button>
-            </el-col>
-            <el-col id="presentAbsent" :span="6">
-              <span>Absent count : {{absentCount}} / {{tableData.length}}</span>
-              <br>
               <el-button @click="() => allAbsent(tableData)">All absent</el-button>
+            </el-col>
+            <el-col
+              style="display: flex; flex-direction: row; justify-content: space-between; margin-top: -5px"
+              id="presentAbsent"
+              :span="6"
+            >
+              <p>Present count : {{presentCount}} / {{tableData.length}}</p>
+              <p>Absent count : {{absentCount}} / {{tableData.length}}</p>
             </el-col>
           </el-row>
         </el-col>
