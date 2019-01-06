@@ -1,14 +1,8 @@
 <template>
   <div id="nav">
-    <el-row style="width: 98%;">
-      <el-col :span="8" style="padding-top: 7%;">
-        <span v-if="loggedIn" id="header">
-          <el-select v-model="branchId" disabled>
-            <el-option value="1" label="Haig Branch"></el-option>
-          </el-select>
-        </span>
-      </el-col>
-      <el-col :offset="1" :span="8">
+    <el-row style="width: 97%;">
+      <el-col :span="8" style="padding-top: 7%;"></el-col>
+      <el-col :offset="2" :span="8">
         <router-link to="/">
           <img src="@/assets/tkdlogo.jpg" style="width: 50%; height: 50%;">
         </router-link>
@@ -20,9 +14,6 @@
 
 <script>
 export default {
-  data() {
-    return { branchId: "1" }
-  },
   props: {
     loggedIn: {
       type: Boolean,
@@ -35,7 +26,6 @@ export default {
 <style scoped>
 #nav {
   display: flex;
-
   justify-content: space-around;
   padding-bottom: 20px;
 }

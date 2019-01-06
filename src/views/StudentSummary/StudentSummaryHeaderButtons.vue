@@ -1,15 +1,31 @@
 <template>
   <div id="headerDiv">
-    <el-button @click="routeToAttendancePage()" type="primary" round>Take attendance</el-button>
-    <el-button @click="routeToAddUser()" type="primary" round>Add student</el-button>
-    <el-button @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
-    <el-button @click="openSendMessageModal" type="primary" round>Send a message</el-button>
-    <el-button @click="routeToPriceList()" type="primary" round>View/Edit Price List</el-button>
     <el-button
+      style="width: 200px"
+      @click="routeToAttendancePage()"
+      type="primary"
+      round
+    >Take attendance</el-button>
+    <el-button style="width: 200px" @click="routeToAddUser()" type="primary" round>Add student</el-button>
+    <el-button style="width: 200px" @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
+    <el-button
+      style="width: 200px"
+      @click="openSendMessageModal"
+      type="primary"
+      round
+    >Send a message</el-button>
+    <el-button
+      style="width: 200px"
+      @click="routeToPriceList()"
+      type="primary"
+      round
+    >View/Edit Price List</el-button>
+    <el-button
+      style="width: 200px"
       @click="() => paymentDueDialogVisible = true"
       type="primary"
       round
-    >Expected payments today</el-button>
+    >Payments</el-button>
     <el-popover
       style="margin-left: 10px"
       placement="bottom"
@@ -17,7 +33,7 @@
       width="200"
       trigger="click"
     >
-      <el-button type="primary" slot="reference" round>View/Edit Lessons</el-button>
+      <el-button style="width: 200px" type="primary" slot="reference" round>View/Edit Lessons</el-button>
       <el-select v-on:change="editSelectedLesson">
         <el-option
           v-for="lesson in lessonSelectData"
