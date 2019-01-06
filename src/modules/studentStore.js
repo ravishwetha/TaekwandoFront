@@ -158,6 +158,11 @@ const studentModule = {
     autoDeductionStatus(state, { userId, autoDeduction }) {
       Vue.set(state.studentData[userId], "autoDeduction", autoDeduction)
     },
+    updateNextPaymentDate(state, { userId, lessonId, payload }) {
+      _.forEach(payload, (value, key) => {
+        Vue.set(state.studentData[userId]["lessons"][lessonId], key, value)
+      })
+    },
   },
   actions: {
     async deleteUser({ commit }, { userId }) {
@@ -245,20 +250,22 @@ const studentModule = {
               .child("entitlement")
               .once("value")
               .then((r) => r.val())
+            const payload = {
+              lastPayment: moment().toISOString(),
+              entitlement:
+                parseInt(entitlement) +
+                parseInt(_.last(paymentData.paymentInfo.type)),
+              expectPayment: moment()
+                .add(_.last(paymentData.paymentInfo.type), "weeks")
+                .toISOString(),
+              messageSent: false,
+            }
             await usersRef
               .child(userId)
               .child("lessons")
               .child(lessonId)
-              .update({
-                lastPayment: moment().toISOString(),
-                entitlement:
-                  parseInt(entitlement) +
-                  parseInt(_.last(paymentData.paymentInfo.type)),
-                expectPayment: moment()
-                  .add(_.last(paymentData.paymentInfo.type), "weeks")
-                  .toISOString(),
-                messageSent: false,
-              })
+              .update(payload)
+            commit("updateNextPaymentDate", { userId, lessonId, payload })
           }
         })
 
@@ -318,19 +325,21 @@ const studentModule = {
               .child("entitlement")
               .once("value")
               .then((r) => r.val())
+            const payload = {
+              lastPayment: moment().toISOString(),
+              expectPayment: moment()
+                .add(_.last(paymentData.paymentInfo.type), "weeks")
+                .toISOString(),
+              entitlement:
+                parseInt(entitlement) +
+                parseInt(_.last(paymentData.paymentInfo.type)),
+            }
             await usersRef
               .child(userId)
               .child("lessons")
               .child(lessonId)
-              .update({
-                lastPayment: moment().toISOString(),
-                expectPayment: moment()
-                  .add(_.last(paymentData.paymentInfo.type), "weeks")
-                  .toISOString(),
-                entitlement:
-                  parseInt(entitlement) +
-                  parseInt(_.last(paymentData.paymentInfo.type)),
-              })
+              .update(payload)
+            commit("updateNextPaymentDate", { userId, lessonId, payload })
           }
         })
         vm.$notify({
