@@ -11,18 +11,22 @@
       <el-table max-height="500" :data="paymentData" style="width: 90%">
         <el-table-column prop="mode" label="Mode"></el-table-column>
         <el-table-column width="400px" prop="type" label="Item"></el-table-column>
-        <el-table-column prop="created" label="Paid on"></el-table-column>
+        <el-table-column width="100px" prop="created" label="Paid on"></el-table-column>
         <el-table-column prop="description" label="Desc"></el-table-column>
         <el-table-column prop="price" label="Amount"></el-table-column>
         <el-table-column label="Ops" fixed="right">
           <template slot-scope="scope">
-            <el-button @click="generateReceipt(scope.row)" type="text" size="small">Download Receipt</el-button>
-            <el-button
-              v-if="scope.row.mode !== REFUNDED"
-              @click="refund(scope.row)"
-              type="text"
-              size="small"
-            >Refund</el-button>
+            <div>
+              <el-button @click="generateReceipt(scope.row)" type="text" size="small">Download</el-button>
+            </div>
+            <div>
+              <el-button
+                v-if="scope.row.mode !== REFUNDED"
+                @click="refund(scope.row)"
+                type="text"
+                size="small"
+              >Refund</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>

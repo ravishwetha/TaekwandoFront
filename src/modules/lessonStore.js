@@ -136,7 +136,7 @@ const lessonsModule = {
       const userPromises = userIdsSessions.map((userIdSession) => {
         const { userId, sessions, timeslot, day } = userIdSession
         let payload = {
-          entitlement: sessions,
+          entitlement: 0,
           paymentPlan: sessions,
           timeslot,
         }

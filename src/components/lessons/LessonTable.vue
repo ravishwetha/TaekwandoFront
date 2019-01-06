@@ -4,14 +4,25 @@
       <el-table-column prop="name" label="Name"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
       <el-table-column prop="expectPayment" label="Expected Payment"></el-table-column>
-      <el-table-column prop="day" label="Day"></el-table-column>
-      <el-table-column prop="timeslot" label="Time slot"></el-table-column>
-      <el-table-column prop="price" label="Price"></el-table-column>
+      <el-table-column width="70px" prop="day" label="Day"></el-table-column>
+      <el-table-column width="150px" prop="timeslot" label="Timeslot"></el-table-column>
+      <el-table-column width="70px" prop="price" label="Price"></el-table-column>
+      <el-table-column width="120px" prop="entitlement" label="Lessons Left"></el-table-column>
       <el-table-column label="Operations" fixed="right">
         <template slot-scope="scope">
-          <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
-          <el-button @click="removeLesson(scope.row)" type="text" size="small">Remove</el-button>
-          <el-button type="text" size="small" @click="openUpdateExpectPaymentDialog(scope.row)">Edit</el-button>
+          <div>
+            <el-button @click="swap(scope.row)" type="text" size="small">Swap</el-button>
+          </div>
+          <div>
+            <el-button @click="removeLesson(scope.row)" type="text" size="small">Remove</el-button>
+          </div>
+          <div>
+            <el-button
+              type="text"
+              size="small"
+              @click="openUpdateExpectPaymentDialog(scope.row)"
+            >Edit</el-button>
+          </div>
           <el-button
             v-if="scope.row.lastPayment === undefined && scope.row.customer"
             @click="startPayment(scope.row)"
@@ -167,6 +178,7 @@ export default {
             day,
             timeslot,
             price,
+            entitlement: userLessonDetails.paymentPlan,
           }
         }
       )
