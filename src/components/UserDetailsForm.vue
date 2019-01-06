@@ -45,10 +45,10 @@
               :width="60"
             ></el-switch>
             <el-row id="commentsRow">
-              <el-button @click="payment.paymentDialogLessonVisible = true">Lesson Payment</el-button>
-            </el-row>
-            <el-row id="commentsRow">
-              <el-button @click="payment.paymentDialogVisible = true">Miscellaneous Payment</el-button>
+              <el-button
+                :type="payment.paymentType === 'CARD' ? 'success' : 'primary'"
+                @click="payment.paymentDialogLessonVisible = true"
+              >Payment</el-button>
             </el-row>
             <payment-history :userId="userId"></payment-history>
             <br>
@@ -61,49 +61,7 @@
       </div>
     </el-footer>
     <el-dialog
-      title="Miscellaneous Payment"
-      :show-close="!this.paymentLoading"
-      :close-on-click-modal="!this.paymentLoading"
-      :close-on-press-escape="this.paymentLoading"
-      :visible.sync="payment.paymentDialogVisible"
-    >
-      <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
-        <el-form-item v-for="form in payment.paymentForm" :key="form.key">
-          <span>Select item</span>
-          <br>
-          <el-cascader :options="miscPaymentCascaderOptions" v-model="form.type"></el-cascader>
-          <br>
-          <span>Description</span>
-          <br>
-          <el-input v-model="form.description"></el-input>
-          <el-button @click.prevent="removePaymentItem(form)">Delete item</el-button>
-        </el-form-item>
-        <el-form-item
-          v-if="payment.paymentType === CARD && customerDetails === undefined"
-          label="Card Information (If card input does not appear, reload the page.)"
-        >
-          <card :stripe="stripeKey"></card>
-        </el-form-item>
-      </el-form>
-      <span slot="footer">
-        <el-button @click="addPaymentItem">Add Payment Item</el-button>
-        <el-button
-          v-if="payment.paymentType === CARD"
-          :loading="this.paymentLoading"
-          type="primary"
-          @click="payCardMisc('paymentForm')"
-        >Pay</el-button>
-        <el-button
-          v-else
-          :loading="this.paymentLoading"
-          type="primary"
-          @click="payCashMisc('paymentForm')"
-        >Pay</el-button>
-        <el-button v-if="!this.paymentLoading" @click="payment.paymentDialogVisible = false">Cancel</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog
-      title="Lessons Payment"
+      title="Payment"
       :show-close="!this.paymentLoading"
       :close-on-click-modal="!this.paymentLoading"
       :close-on-press-escape="this.paymentLoading"
@@ -111,9 +69,12 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item v-for="form in payment.paymentForm" :key="form.key">
-          <span>Select lesson</span>
+          <span>Select {{form.lessonMisc}} item</span>
           <br>
-          <el-cascader :options="lessonsPaymentCascaderOptions" v-model="form.type"></el-cascader>
+          <el-cascader
+            :options="form.lessonMisc === `LESSONS` ? lessonsPaymentCascaderOptions : miscPaymentCascaderOptions"
+            v-model="form.type"
+          ></el-cascader>
           <br>
           <span>Description</span>
           <br>
@@ -129,18 +90,19 @@
         </el-form-item>
       </el-form>
       <span slot="footer">
-        <el-button @click="addPaymentItem">Add Payment Item</el-button>
+        <el-button @click="addPaymentItem(`MISCELLEANEOUS`)">Add Misc Payment Item</el-button>
+        <el-button @click="addPaymentItem(`LESSONS`)">Add Lesson Payment Item</el-button>
         <el-button
           v-if="payment.paymentType === CARD"
           :loading="this.paymentLoading"
           type="primary"
-          @click="payCardLessons('paymentForm')"
+          @click="payCard('paymentForm')"
         >Pay</el-button>
         <el-button
           v-else
           :loading="this.paymentLoading"
           type="primary"
-          @click="payCashLessons('paymentForm')"
+          @click="payCash('paymentForm')"
         >Pay</el-button>
         <el-button
           v-if="!this.paymentLoading"
@@ -305,6 +267,7 @@ export default {
             type: "",
             description: "",
             key: Math.random(),
+            lessonMisc: MISCELLEANEOUS,
           },
         ],
         rules: {
@@ -340,97 +303,20 @@ export default {
         this.payment.paymentForm.splice(index, 1)
       }
     },
-    addPaymentItem() {
+    addPaymentItem(lessonMisc) {
       this.payment.paymentForm.push({
         type: "",
         description: "",
         key: Math.random(),
+        lessonMisc,
       })
     },
-    payCardMisc(formName) {
-      this.$refs[formName].validate(async (valid) => {
-        if (valid) {
-          let paymentToken
-          if (this.customerDetails === undefined) {
-            const token = await createToken()
-            if (token.error) {
-              this.$notify.error({
-                title: "Card Error",
-                message: token.error.message,
-              })
-            }
-            paymentToken = token.token.id
-          } else {
-            paymentToken = this.customerDetails.customerId
-          }
-          const paymentItems = this.payment.paymentForm.map((paymentForm) => {
-            const priceList = this.$store.getters.getPriceList
-            let price = priceList[MISCELLEANEOUS]
-            for (const key of paymentForm.type) {
-              price = price[key]
-            }
-            let paymentData = {
-              type: CARD,
-              paymentData: {
-                paymentInfo: {
-                  ...paymentForm,
-                  type: [MISCELLEANEOUS, ...paymentForm.type],
-                  price,
-                },
-              },
-            }
-            return paymentData
-          })
-          await this.$store.dispatch("addSinglePayment", {
-            paymentItems,
-            userId: this.$route.query["userId"],
-            vm: this,
-            type: CARD,
-            customer: !_.isUndefined(this.customerDetails),
-            paymentToken,
-            userEmail: this.contactDetails.email,
-          })
-          this.payment.paymentDialogVisible = false
-        }
-      })
-    },
-    payCashMisc(formName) {
+    payCash(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const paymentItems = this.payment.paymentForm.map((paymentForm) => {
             const priceList = this.$store.getters.getPriceList
-            let price = priceList[MISCELLEANEOUS]
-            for (const key of paymentForm.type) {
-              price = price[key]
-            }
-            return {
-              type: CASHNETS,
-              paymentData: {
-                paymentInfo: {
-                  ...paymentForm,
-                  type: [MISCELLEANEOUS, ...paymentForm.type],
-                  price,
-                  userEmail: this.contactDetails.email,
-                },
-              },
-            }
-          })
-          await this.$store.dispatch("addSinglePayment", {
-            paymentItems,
-            vm: this,
-            userId: this.$route.query["userId"],
-            type: CASHNETS,
-          })
-          this.payment.paymentDialogVisible = false
-        }
-      })
-    },
-    payCashLessons(formName) {
-      this.$refs[formName].validate(async (valid) => {
-        if (valid) {
-          const paymentItems = this.payment.paymentForm.map((paymentForm) => {
-            const priceList = this.$store.getters.getPriceList
-            let price = priceList[LESSONS]
+            let price = priceList[paymentForm.lessonMisc]
             for (const key of paymentForm.type) {
               price = price[key]
             }
@@ -438,7 +324,7 @@ export default {
               paymentData: {
                 paymentInfo: {
                   ...paymentForm,
-                  type: [LESSONS, ...paymentForm.type],
+                  type: [paymentForm.lessonMisc, ...paymentForm.type],
                   price,
                   userEmail: this.contactDetails.email,
                 },
@@ -446,7 +332,7 @@ export default {
             }
           })
 
-          await this.$store.dispatch("addLessonCashPayment", {
+          await this.$store.dispatch("addCashPayment", {
             paymentItems,
             vm: this,
             userId: this.$route.query["userId"],
@@ -457,7 +343,7 @@ export default {
         }
       })
     },
-    payCardLessons(formName) {
+    payCard(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           let paymentToken
@@ -475,7 +361,7 @@ export default {
           }
           const paymentItems = this.payment.paymentForm.map((paymentForm) => {
             const priceList = this.$store.getters.getPriceList
-            let price = priceList[LESSONS]
+            let price = priceList[paymentForm.lessonMisc]
             for (const key of paymentForm.type) {
               price = price[key]
             }
@@ -483,13 +369,13 @@ export default {
               paymentData: {
                 paymentInfo: {
                   ...paymentForm,
-                  type: [LESSONS, ...paymentForm.type],
+                  type: [paymentForm.lessonMisc, ...paymentForm.type],
                   price,
                 },
               },
             }
           })
-          await this.$store.dispatch("addLessonCardPayment", {
+          await this.$store.dispatch("addCardPayment", {
             paymentItems,
             vm: this,
             userId: this.$route.query["userId"],

@@ -100,21 +100,6 @@ export default {
           trigger: "blur",
         },
       ],
-      email: [
-        {
-          type: "email",
-          message: "Email format is wrong.",
-          trigger: "blur",
-        },
-      ],
-      contact: [
-        {
-          min: 0,
-          max: 8,
-          message: "Singapore phone numbers have only 8 digits.",
-          trigger: "blur",
-        },
-      ],
     }
 
     if (this.$route.query["userId"]) {

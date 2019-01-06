@@ -9,7 +9,7 @@
         <date-selector style="margin-left: 20px;" v-model="paymentDateRange"></date-selector>
       </el-row>
       <el-table max-height="500" :data="paymentData" style="width: 90%">
-        <el-table-column prop="mode" label="Mode"></el-table-column>
+        <el-table-column width="100px" prop="mode" label="Mode"></el-table-column>
         <el-table-column width="400px" prop="type" label="Item"></el-table-column>
         <el-table-column width="100px" prop="created" label="Paid on"></el-table-column>
         <el-table-column prop="description" label="Desc"></el-table-column>

@@ -217,7 +217,7 @@ const studentModule = {
       await deleteCustomerAPI(userCustomerId)
       commit("removeCustomer", { userId })
     },
-    async addLessonCashPayment({ commit }, { paymentItems, userId, vm }) {
+    async addCashPayment({ commit }, { paymentItems, userId, vm }) {
       try {
         commit("modifyStudentDataLoadingStatus", { status: true })
         const paymentKeyPaymentPayload = await addCashNetsPayment(
@@ -230,7 +230,6 @@ const studentModule = {
           const lessonId = _.findKey(lessonData, (lesson) => {
             return _.includes(lesson.name, paymentData.paymentInfo.type[1])
           })
-
           if (lessonId) {
             const entitlement = await usersRef
               .child(userId)
@@ -274,7 +273,7 @@ const studentModule = {
         })
       }
     },
-    async addLessonCardPayment(
+    async addCardPayment(
       { commit },
       { paymentItems, vm, userId, customer, paymentToken, userEmail }
     ) {
@@ -299,7 +298,7 @@ const studentModule = {
         }
         ReceiptGeneratorAPI(paymentItems, userId, CARD)
         paymentItems.forEach(async ({ paymentData }) => {
-          //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE
+          //TODO: DOES NOT WORK FOR UNLIMITED AND ONCE?
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {
             return _.includes(lesson.name, paymentData.paymentInfo.type[1])
@@ -380,55 +379,7 @@ const studentModule = {
         })
       }
     },
-    async addSinglePayment(
-      { commit },
-      { paymentItems, vm, userId, type, customer, paymentToken, userEmail }
-    ) {
-      try {
-        commit("modifyStudentDataLoadingStatus", { status: true })
-        if (type == CARD) {
-          if (customer) {
-            const paymentKeyPaymentPayload = await addCardPaymentCustomer(
-              paymentItems,
-              userId,
-              paymentToken,
-              userEmail
-            )
-            commit("addPayment", { userId, paymentKeyPaymentPayload })
-          } else {
-            const paymentKeyPaymentPayload = await addCardPaymentNonCustomer(
-              paymentItems,
-              userId,
-              paymentToken,
-              userEmail
-            )
-            commit("addPayment", { userId, paymentKeyPaymentPayload })
-          }
-          ReceiptGeneratorAPI(paymentItems, userId, CARD)
-        } else {
-          const paymentKeyPaymentPayload = await addCashNetsPayment(
-            paymentItems,
-            userId
-          )
-          commit("addPayment", { userId, paymentKeyPaymentPayload })
-          ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
-        }
-        vm.$notify({
-          type: "success",
-          title: "Payment success",
-          message:
-            "Payment was a success, please wait while receipt is downloading",
-        })
-        commit("modifyStudentDataLoadingStatus", { status: false })
-      } catch (e) {
-        commit("modifyStudentDataLoadingStatus", { status: false })
-        vm.$notify({
-          title: "Payment error",
-          message: e.response.data,
-          type: "error",
-        })
-      }
-    },
+
     async updateExpectPaymentDateAndPrice(
       { commit },
       updateExpectPaymentPayload
