@@ -160,6 +160,8 @@ export default {
           let sessionsPrice = priceList
           if (userLessonDetails.timeslot === UNLIMITED) {
             sessionsPrice = sessionsPrice[UNLIMITED]
+              ? sessionsPrice[ONCE]
+              : sessionsPrice
           } else {
             sessionsPrice = sessionsPrice[ONCE]
               ? sessionsPrice[ONCE]
