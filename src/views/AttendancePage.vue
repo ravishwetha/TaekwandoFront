@@ -80,6 +80,11 @@
               ></el-checkbox>
             </template>
           </el-table-column>
+          <el-table-column label="Taken by">
+            <template slot-scope="scope">
+              <p>{{takenBy[scope.row.userId]}}</p>
+            </template>
+          </el-table-column>
           <el-table-column label="Description">
             <template slot-scope="scope">
               <el-input v-model="description[scope.row.userId]"></el-input>
@@ -335,6 +340,8 @@ export default {
       present: {},
       absent: {},
       description: {},
+      takenBy: {},
+      modifiedBy: {},
       toBeUpdated: {},
       viewMakeUpModalVisible: false,
     }
@@ -380,6 +387,9 @@ export default {
             }
             if (lessonsAttended.description) {
               this.description[student.userId] = lessonsAttended.description
+            }
+            if (lessonsAttended.takenBy) {
+              this.takenBy[student.userId] = lessonsAttended.takenBy
             }
           }
         })

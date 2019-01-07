@@ -14,11 +14,13 @@ export default new Vuex.Store({
   plugins: [createPersistedState({ storage: window.sessionStorage })],
   state: {
     loggedIn: false,
+    userEmail: "",
     priceList: {},
   },
   mutations: {
-    isLoggedIn(state, { loggedIn }) {
+    isLoggedIn(state, { loggedIn, userEmail }) {
       state.loggedIn = loggedIn
+      state.userEmail = userEmail
     },
   },
   modules: {
@@ -49,7 +51,7 @@ export default new Vuex.Store({
       vm.$router.push({
         name: "login",
       })
-      commit("isLoggedIn", { loggedIn: false })
+      commit("isLoggedIn", { loggedIn: false, userEmail: "" })
     },
     async login({ commit }, { username, password, vm, signup }) {
       const keyString = process.env.VUE_APP_AES_ENCRYPTION_KEY
@@ -75,7 +77,7 @@ export default new Vuex.Store({
             type: "Success",
           })
         }
-        commit("isLoggedIn", { loggedIn: true })
+        commit("isLoggedIn", { loggedIn: true, userEmail: username })
         vm.$router.push({
           name: "home",
         })
@@ -92,5 +94,6 @@ export default new Vuex.Store({
   },
   getters: {
     getLoggedInStatus: (state) => state.loggedIn,
+    getUserEmail: (state) => state.userEmail,
   },
 })
