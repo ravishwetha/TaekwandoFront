@@ -167,9 +167,10 @@ export default {
               ? sessionsPrice[ONCE]
               : sessionsPrice
           }
-          const price = userLessonDetails.price
-            ? userLessonDetails.price
-            : sessionsPrice[userLessonDetails.paymentPlan]
+          const price =
+            userLessonDetails.price || userLessonDetails.price > -1
+              ? userLessonDetails.price
+              : sessionsPrice[userLessonDetails.paymentPlan]
           return {
             name: _.get(allLessonData[lessonId], "name"),
             sessions: userLessonDetails.paymentPlan,
