@@ -10,17 +10,26 @@ export const axiosConfig = () => {
   })
 }
 
-export const loginAPI = async (encryptedUsernamePassword) => {
+export const loginAPI = async (encryptedUsernamePassword, signup) => {
   const api = await axiosConfig()
   return api
     .get("/login", {
       params: {
         encryptedUsernamePassword,
+        signup,
       },
     })
     .then((r) => r.data)
 }
 
+export const resetPasswordAPI = async (email) => {
+  const api = await axiosConfig()
+  return api
+    .post("/login/reset", {
+      email,
+    })
+    .then((r) => r.data)
+}
 export const priceListAPI = async () => {
   return await firebase
     .database()

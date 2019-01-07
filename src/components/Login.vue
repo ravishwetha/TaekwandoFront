@@ -7,7 +7,21 @@
       <el-input type="password" v-model="loginDetails.password"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button :loading="loggingIn" type="primary" @click="submitForm('loginDetails')">Login</el-button>
+      <el-button
+        :loading="loggingIn"
+        type="primary"
+        @click="submitForm('loginDetails', false)"
+      >Login</el-button>
+      <el-popover placement="top-start" width="400" trigger="click">
+        <el-button type="warning" slot="reference">Change/Forgot Password</el-button>
+        <el-form :model="passwordResetUsername" :rules="rules" ref="reset">
+          <el-form-item prop="username" label="Email Address">
+            <el-input v-model="passwordResetUsername.username"></el-input>
+          </el-form-item>
+          <el-button @click="resetPassword('reset')" type="warning">Reset password</el-button>
+        </el-form>
+      </el-popover>
+      <el-button :loading="signingUp" @click="submitForm('loginDetails', true)">Sign up</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -17,6 +31,9 @@ export default {
   name: "login",
   data() {
     return {
+      passwordResetUsername: {
+        username: "",
+      },
       loginDetails: {
         username: "",
         password: "",
@@ -25,7 +42,8 @@ export default {
         username: [
           {
             required: true,
-            message: "Please input Username",
+            type: "email",
+            message: "Please input a valid email address",
             trigger: "blur",
           },
         ],
@@ -38,36 +56,43 @@ export default {
         ],
       },
       loggingIn: false,
+      signingUp: false,
     }
   },
   methods: {
-    async submitForm(loginDetails) {
-      this.$refs[loginDetails].validate((valid) => {
+    async submitForm(loginDetails, signup) {
+      this.$refs[loginDetails].validate(async (valid) => {
         if (!valid) {
-          alert("Please enter your username or password")
+          alert("Please enter a valid username and password")
+          return
         }
-      })
-      if (
-        this.loginDetails.username != "" &&
-        this.loginDetails.password != ""
-      ) {
-        this.loggingIn = true
-        try {
+        if (
+          this.loginDetails.username != "" &&
+          this.loginDetails.password != ""
+        ) {
+          if (!signup) {
+            this.loggingIn = true
+          } else {
+            this.signingUp = true
+          }
           await this.$store.dispatch("login", {
             username: this.loginDetails.username,
             password: this.loginDetails.password,
+            vm: this,
+            signup,
           })
-          this.$router.push({
-            name: "home",
-          })
-        } catch (e) {
-          this.$notify({
-            title: "Login failed",
-            message: "Username does not match password",
-          })
-          this.loggingIn = false
         }
-      }
+      })
+    },
+    resetPassword(reset) {
+      this.$refs[reset].validate(async (valid) => {
+        if (valid) {
+          this.$store.dispatch("resetPassword", {
+            email: this.passwordResetUsername.username,
+            vm: this,
+          })
+        }
+      })
     },
   },
 }
