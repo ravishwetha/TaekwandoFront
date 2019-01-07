@@ -1,6 +1,6 @@
 <template>
   <el-form :model="loginDetails" :rules="rules" ref="loginDetails">
-    <el-form-item label="Username" prop="username">
+    <el-form-item label="Email Address" prop="username">
       <el-input v-model="loginDetails.username"></el-input>
     </el-form-item>
     <el-form-item label="Password" prop="password">
@@ -12,7 +12,7 @@
         type="primary"
         @click="submitForm('loginDetails', false)"
       >Login</el-button>
-      <el-popover placement="top-start" width="400" trigger="click">
+      <el-popover style="margin-left: 20px;" placement="top-start" width="400" trigger="click">
         <el-button type="warning" slot="reference">Change/Forgot Password</el-button>
         <el-form :model="passwordResetUsername" :rules="rules" ref="reset">
           <el-form-item prop="username" label="Email Address">
@@ -21,7 +21,11 @@
           <el-button @click="resetPassword('reset')" type="warning">Reset password</el-button>
         </el-form>
       </el-popover>
-      <el-button :loading="signingUp" @click="submitForm('loginDetails', true)">Sign up</el-button>
+      <el-button
+        style="margin-left: 20px"
+        :loading="signingUp"
+        @click="submitForm('loginDetails', true)"
+      >Sign up</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -84,6 +88,7 @@ export default {
         }
       })
     },
+
     resetPassword(reset) {
       this.$refs[reset].validate(async (valid) => {
         if (valid) {

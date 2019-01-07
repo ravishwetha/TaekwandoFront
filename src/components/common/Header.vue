@@ -1,14 +1,14 @@
 <template>
-  <div id="nav">
-    <el-row style="width: 97%;">
-      <el-col :span="8" style="padding-top: 7%;"></el-col>
-      <el-col :offset="2" :span="8">
-        <router-link to="/">
-          <img src="@/assets/tkdlogo.jpg" style="width: 50%; height: 50%;">
-        </router-link>
-      </el-col>
-      <el-col :span="8"></el-col>
-    </el-row>
+  <div>
+    <div style="display: flex; justify-content: flex-end; padding-right: 3%">
+      <el-button v-if="loggedIn" @click="logout" type="danger">Log out</el-button>
+    </div>
+    <div id="nav">
+      <router-link to="/">
+        <img src="@/assets/tkdlogo.jpg" style="width: 250px; height: 150px;">
+      </router-link>
+      <div></div>
+    </div>
   </div>
 </template>
 
@@ -20,17 +20,18 @@ export default {
       required: true,
     },
   },
+  methods: {
+    logout() {
+      this.$store.dispatch("logout", this)
+    },
+  },
 }
 </script>
 
 <style scoped>
 #nav {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   padding-bottom: 20px;
-}
-#header {
-  display: flex;
-  justify-content: left;
 }
 </style>

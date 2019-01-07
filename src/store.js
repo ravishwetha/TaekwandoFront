@@ -44,6 +44,13 @@ export default new Vuex.Store({
         })
       }
     },
+    logout({ commit }, vm) {
+      sessionStorage.removeItem("token")
+      vm.$router.push({
+        name: "login",
+      })
+      commit("isLoggedIn", { loggedIn: false })
+    },
     async login({ commit }, { username, password, vm, signup }) {
       const keyString = process.env.VUE_APP_AES_ENCRYPTION_KEY
       const key = keyString.split(",").map((digit) => parseInt(digit))
