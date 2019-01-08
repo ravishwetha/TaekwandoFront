@@ -40,11 +40,20 @@
     >
       <el-button @click="editUser()" style="width: 44%; margin-left: 4%;" type="success">Edit User</el-button>
       <el-button
-        @click="deleteUser()"
+        @click="deleteUserDialogVisible = true"
         style="width: 44%; margin-right: 4%;"
         type="danger"
       >Terminate User</el-button>
     </div>
+    <el-dialog center title="Confirmation" :visible.sync="deleteUserDialogVisible">
+      <div style="display: flex; justify-content: center;">
+        <p>Are you sure you want to terminate this student?</p>
+      </div>
+      <span slot="footer">
+        <el-button type="danger" @click="deleteUser()">Terminate</el-button>
+        <el-button @click="deleteUserDialogVisible = false">Cancel</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -110,6 +119,7 @@ export default {
         contact: "",
         address: "",
       },
+      deleteUserDialogVisible: false,
     }
   },
   props: {

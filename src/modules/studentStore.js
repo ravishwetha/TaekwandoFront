@@ -186,7 +186,11 @@ const studentModule = {
               .child(deletionKey)
               .remove()
           })
-          Promise.all(deletionPromises)
+          const deleteUserLesson = usersRef
+            .child(userId)
+            .child("lessons")
+            .remove()
+          Promise.all([...deletionPromises, deleteUserLesson])
         }
       } catch (e) {
         console.log(e.response.data)

@@ -72,15 +72,14 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item v-for="form in payment.paymentForm" :key="form.key">
-          <span>Select {{form.lessonMisc}} item</span>
-          <br>
+          <p>Select {{form.lessonMisc}} Item:</p>
           <el-cascader
+            style="width: 100%"
             :options="form.lessonMisc === `LESSONS` ? lessonsPaymentCascaderOptions : miscPaymentCascaderOptions"
             v-model="form.type"
           ></el-cascader>
           <br>
-          <span>Description</span>
-          <br>
+          <p>Description</p>
           <el-input type="textarea" v-model="form.description"></el-input>
           <el-button @click.prevent="removePaymentItem(form)">Delete item</el-button>
         </el-form-item>
