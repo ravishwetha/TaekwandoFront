@@ -8,16 +8,12 @@
       max-height="730"
       :data="value"
       style="width: 100%"
+      @row-click="routeToUserDetails"
     >
       <el-table-column min-width="250" prop="name" label="Name"></el-table-column>
       <el-table-column prop="presentCount" label="Present"></el-table-column>
       <el-table-column prop="absentCount" label="Absent"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
-      <el-table-column label="Operations" fixed="right">
-        <template slot-scope="scope">
-          <el-button @click="routeToUserDetails(scope.row)" type="text" size="small">Details</el-button>
-        </template>
-      </el-table-column>
       <el-table-column prop="branch" label="Branch"></el-table-column>
     </el-table>
   </div>

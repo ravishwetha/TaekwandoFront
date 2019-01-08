@@ -12,8 +12,14 @@
             </div>
             <el-row id="commentsRow">
               <el-row>
-                <span style="margin-right: 20px">Select lesson to filter:</span>
-                <lesson-selector v-model="selectedLessonId"></lesson-selector>
+                <div>
+                  <span style="margin-right: 20px">Select lesson to filter:</span>
+                  <lesson-selector v-model="selectedLessonId"></lesson-selector>
+                </div>
+                <div>
+                  <span style="margin-right: 27px">Select dates to filter:</span>
+                  <date-selector v-model="attendanceDateRange"></date-selector>
+                </div>
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
                 <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
@@ -121,6 +127,7 @@ import LessonTable from "@/components/lessons/LessonTable"
 import CardRegistration from "@/components/common/CardRegistration"
 import StudentDetails from "@/components/studentDetails/StudentDetails"
 import PaymentHistory from "@/components/studentDetails/PaymentHistory"
+import { PRESENT, MAKEUP, ABSENT } from "../common/data"
 
 export default {
   components: {
@@ -141,9 +148,9 @@ export default {
     const contactDetails = _.pick(details, ["email"])
     this.contactDetails = contactDetails
     this.selectedLessonId = selectedLessonId
-    if (dateRange !== undefined) {
-      this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
-    }
+    // if (dateRange !== undefined) {
+    //   this.attendanceDateRange = dateRange.map((date) => moment(date).toDate())
+    // }
   },
   computed: {
     attendanceData() {
@@ -162,20 +169,33 @@ export default {
           return true
         }
       )
-      // if (
-      //   this.attendanceDateRange.length > 0 &&
-      //   !moment(this.attendanceDateRange[0]).isSame(moment(0))
-      // ) {
-      //   const startDate = this.attendanceDateRange[0]
-      //   const endDate = this.attendanceDateRange[1]
-      //   const selectionRange = moment.range(startDate, endDate)
-      //   filteredData = _.filter(filteredData, (user) => {
-      //     for (const attendance of _.values(user.attendance)) {
-      //       return selectionRange.contains(moment(attendance.timestamp))
-      //     }
-      //     return false
-      //   })
-      // }
+      if (
+        this.attendanceDateRange.length > 0 &&
+        !moment(this.attendanceDateRange[0]).isSame(moment(0))
+      ) {
+        const startDate = this.attendanceDateRange[0]
+        const endDate = this.attendanceDateRange[1]
+        const selectionRange = moment.range(startDate, endDate)
+        filteredData = _.filter(filteredData, (attendance) => {
+          return selectionRange.contains(moment(attendance.timestamp))
+        })
+      }
+      const sortingPriorityLevels = {
+        [PRESENT]: 1,
+        [MAKEUP]: 2,
+        [ABSENT]: 3,
+      }
+      // sort by presence
+      filteredData = _.sortBy(
+        filteredData,
+        (attendance) => sortingPriorityLevels[attendance.presence]
+      )
+
+      //sort by timestamp
+      filteredData = _.sortBy(
+        filteredData,
+        (attendance) => -moment(attendance.timestamp).unix()
+      )
       return _.map(filteredData, (attendanceData) => ({
         ...attendanceData,
         timestamp: moment(attendanceData.timestamp).format("DD-MM-YY, h:mma"),
