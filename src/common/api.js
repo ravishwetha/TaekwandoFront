@@ -58,11 +58,11 @@ export const smsAPI = async ({ studentData, messageText }) => {
     .then((r) => r.data)
 }
 
-export const absentSmsAPI = async ({ absenteeNumbers }) => {
+export const absentSmsAPI = async ({ absenteeNumbersAndNames }) => {
   const api = await axiosConfig()
   return api
     .post("/sms/absent", {
-      absenteeNumbers,
+      absenteeNumbersAndNames,
     })
     .then((r) => r.data)
 }

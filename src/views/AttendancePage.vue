@@ -524,13 +524,15 @@ export default {
           return null
         })
       )
-      const absenteeNumbers = _.compact(
+      const absenteeNumbersAndNames = _.compact(
         _.map(absent, (absentee) => {
           if (_.includes(_.keys(this.toBeUpdated), absentee.userId)) {
             return null
           }
           const details = this.$store.getters.getStudentInfo(absentee.userId)
-          return _.get(details, "contact", null)
+          return _.get(details, "contact", null) === null
+            ? null
+            : { contact: _.get(details, "contact", null), name: details.name }
         })
       )
       this.$store.dispatch("submitAttendance", {
@@ -538,7 +540,7 @@ export default {
         lessonId: this.lessonValue.lessonId,
         studentsToBeUpdated: this.toBeUpdated,
       })
-      absentSmsAPI({ absenteeNumbers })
+      absentSmsAPI({ absenteeNumbersAndNames })
       this.$router.push({
         name: "home",
       })
