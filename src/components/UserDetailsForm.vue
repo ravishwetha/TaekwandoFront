@@ -72,16 +72,20 @@
     >
       <el-form :model="payment.paymentForm" :rules="payment.rules" ref="paymentForm">
         <el-form-item v-for="form in payment.paymentForm" :key="form.key">
-          <p>Select {{form.lessonMisc}} Item:</p>
+          <p>Select {{form.lessonMisc}} item:</p>
           <el-cascader
             style="width: 100%"
             :options="form.lessonMisc === `LESSONS` ? lessonsPaymentCascaderOptions : miscPaymentCascaderOptions"
             v-model="form.type"
           ></el-cascader>
-          <br>
-          <p>Description</p>
+          <p>Discount to give:</p>
+          <el-input type="number" v-model="form.discount">
+            <template slot="prepend">$</template>
+          </el-input>
+          <p>Description:</p>
           <el-input type="textarea" v-model="form.description"></el-input>
           <el-button @click.prevent="removePaymentItem(form)">Delete item</el-button>
+          <hr>
         </el-form-item>
 
         <el-form-item
@@ -92,6 +96,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer">
+        <p>Total Price to Charge: ${{totalPriceToCharge}}</p>
         <el-button @click="addPaymentItem(`MISCELLEANEOUS`)">Add Misc Payment Item</el-button>
         <el-button @click="addPaymentItem(`LESSONS`)">Add Lesson Payment Item</el-button>
         <el-button
@@ -260,6 +265,18 @@ export default {
       })
       return options
     },
+    totalPriceToCharge() {
+      const priceArray = _.map(this.payment.paymentForm, (paymentForm) => {
+        const priceList = this.$store.getters.getPriceList
+        let price = priceList[paymentForm.lessonMisc]
+        for (const key of paymentForm.type) {
+          price = price[key]
+        }
+        const toCharge = price - Number.parseInt(paymentForm.discount)
+        return _.isNaN(toCharge) ? 0 : toCharge
+      })
+      return _.sum(priceArray)
+    },
   },
   data() {
     return {
@@ -276,6 +293,7 @@ export default {
           {
             type: "",
             description: "",
+            discount: 0,
             key: Math.random(),
             lessonMisc: MISCELLEANEOUS,
           },
@@ -319,6 +337,7 @@ export default {
         description: "",
         key: Math.random(),
         lessonMisc,
+        discount: 0,
       })
     },
     payCash(formName) {
@@ -330,6 +349,7 @@ export default {
             for (const key of paymentForm.type) {
               price = price[key]
             }
+            price = price - Number.parseInt(paymentForm.discount)
             return {
               paymentData: {
                 paymentInfo: {
@@ -375,6 +395,7 @@ export default {
             for (const key of paymentForm.type) {
               price = price[key]
             }
+            price = price - Number.parseInt(paymentForm.discount)
             return {
               paymentData: {
                 paymentInfo: {
