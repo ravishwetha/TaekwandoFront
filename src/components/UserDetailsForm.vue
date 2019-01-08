@@ -189,17 +189,18 @@ export default {
         [MAKEUP]: 2,
         [ABSENT]: 3,
       }
+      //sort by timestamp
+      filteredData = _.sortBy(
+        filteredData,
+        (attendance) => -moment(attendance.timestamp).unix()
+      )
+
       // sort by presence
       filteredData = _.sortBy(
         filteredData,
         (attendance) => sortingPriorityLevels[attendance.presence]
       )
 
-      //sort by timestamp
-      filteredData = _.sortBy(
-        filteredData,
-        (attendance) => -moment(attendance.timestamp).unix()
-      )
       return _.map(filteredData, (attendanceData) => ({
         ...attendanceData,
         timestamp: moment(attendanceData.timestamp).format("DD-MM-YY, h:mma"),
