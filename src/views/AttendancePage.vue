@@ -92,7 +92,7 @@
           </el-table-column>
         </el-table>
         <div style="text-align: center; padding-top: 30px;">
-          <el-button @click="submitAttendance" type="primary">Submit</el-button>
+          <el-button :loading="isSubmitting" @click="submitAttendance" type="primary">Submit</el-button>
         </div>
       </el-main>
     </el-container>
@@ -358,6 +358,7 @@ export default {
       modifiedBy: {},
       toBeUpdated: {},
       viewMakeUpModalVisible: false,
+      isSubmitting: false,
     }
   },
   methods: {
@@ -509,7 +510,7 @@ export default {
       })
       this.makeupModalVisible = false
     },
-    submitAttendance() {
+    async submitAttendance() {
       const present = _.compact(
         _.map(this.present, (value, key) => {
           if (value) {
@@ -549,10 +550,11 @@ export default {
             : { contact: _.get(details, "contact", null), name: details.name }
         })
       )
-      this.$store.dispatch("submitAttendance", {
+      await this.$store.dispatch("submitAttendance", {
         userIdsAndPresence: present.concat(absent),
         lessonId: this.lessonValue.lessonId,
         studentsToBeUpdated: this.toBeUpdated,
+        vm: this,
       })
       absentSmsAPI({ absenteeNumbersAndNames })
       this.$router.push({

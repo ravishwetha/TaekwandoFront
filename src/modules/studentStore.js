@@ -468,8 +468,9 @@ const studentModule = {
     },
     async submitAttendance(
       { dispatch },
-      { userIdsAndPresence, lessonId, studentsToBeUpdated }
+      { userIdsAndPresence, lessonId, studentsToBeUpdated, vm }
     ) {
+      vm.isSubmitting = true
       await Promise.all(
         userIdsAndPresence.map(async (userIdAndPresence) => {
           const attendanceToBeUpdated =
@@ -502,7 +503,9 @@ const studentModule = {
                 presence: userIdAndPresence.presence,
                 timestamp: moment().toISOString(),
                 modifiedBy: store.getters.getUserEmail,
-                description: userIdAndPresence.description,
+                description: userIdAndPresence.description
+                  ? userIdAndPresence.description
+                  : "",
               })
             if (
               userIdAndPresence.presence === ABSENT &&
@@ -533,6 +536,7 @@ const studentModule = {
         })
       )
       dispatch("loadStudentsData")
+      vm.isSubmitting = false
     },
   },
 }
