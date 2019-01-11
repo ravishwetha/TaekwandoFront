@@ -5,15 +5,15 @@
       @click="routeToAttendancePage()"
       type="primary"
       round
-    >Take attendance</el-button>
-    <el-button style="width: 200px" @click="routeToAddUser()" type="primary" round>Add student</el-button>
-    <el-button style="width: 200px" @click="routeToAddLesson()" type="primary" round>Add lesson</el-button>
+    >Take Attendance</el-button>
+    <el-button style="width: 200px" @click="routeToAddUser()" type="primary" round>Add Student</el-button>
+    <el-button style="width: 200px" @click="routeToAddLesson()" type="primary" round>Add Lesson</el-button>
     <el-button
       style="width: 200px"
       @click="openSendMessageModal"
       type="primary"
       round
-    >Send a message</el-button>
+    >Send a Message</el-button>
     <el-button
       style="width: 200px"
       @click="routeToPriceList()"

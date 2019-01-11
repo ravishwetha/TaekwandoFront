@@ -166,33 +166,47 @@ export default {
         ...lesson,
         id,
       }))
-      const timeslotToStudents = this.getTimeslotsToStudents()
-      const timeSlotOptions = _.map(_.keys(timeslotToStudents), (timeslot) => {
-        const todayLessonsWhichHasThisTimeslot = _.filter(
-          todayLessonWithId,
-          (lesson) => {
-            const lessonTimeslots = this.$store.getters.getLessonDayTimeslotsKeyedByDay(
-              lesson.id
-            )[getDayShort(this.selectedDate)]
 
-            return englishTimeslotInArray(lessonTimeslots, timeslot)
-          }
+      let timeslotObject = {}
+
+      // Get timeslot as keys
+      _.forEach(todayLessonWithId, (lesson) => {
+        const lessonTimeslots = this.$store.getters.getLessonDayTimeslotsKeyedByDay(
+          lesson.id
+        )[getDayShort(this.selectedDate)]
+        _.forEach(
+          lessonTimeslots,
+          (timeslot) =>
+            (timeslotObject[readableTimeslotParser(timeslot)] = {
+              label: readableTimeslotParser(timeslot),
+              options: [],
+            })
         )
-        return {
-          label: timeslot,
-          options: _.map(todayLessonsWhichHasThisTimeslot, (lesson) => ({
-            label: lesson.name,
-            value: {
-              lessonId: lesson.id,
-              timeslot,
-              key: Math.random(),
-            },
-          })),
-          key: Math.random(),
-        }
+        return null
       })
+      // Today lesson which has a certain timeslot
+      _.forEach(timeslotObject, (object, timeslot) => {
+        _.forEach(todayLessonWithId, (lesson) => {
+          const lessonTimeslots = this.$store.getters.getLessonDayTimeslotsKeyedByDay(
+            lesson.id
+          )[getDayShort(this.selectedDate)]
 
-      const sortedTimeslotOptions = _.sortBy(timeSlotOptions, (option) => {
+          if (englishTimeslotInArray(lessonTimeslots, timeslot)) {
+            timeslotObject[timeslot].options.push({
+              label: lesson.name,
+              value: {
+                lessonId: lesson.id,
+                timeslot,
+                key: Math.random(),
+              },
+              key: Math.random(),
+            })
+          }
+        })
+      })
+      const timeslotOptions = _.values(timeslotObject)
+
+      const sortedTimeslotOptions = _.sortBy(timeslotOptions, (option) => {
         const { from } = englishTimeslotToMoment(option.label)
         return from.unix()
       })
