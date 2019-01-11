@@ -525,7 +525,9 @@ const studentModule = {
                 timeslot: userIdAndPresence.timeslot,
                 dateOfLesson: userIdAndPresence.dateOfLesson,
                 takenBy: store.getters.getUserEmail,
-                description: userIdAndPresence.description,
+                description: userIdAndPresence.description
+                  ? userIdAndPresence.description
+                  : "",
               })
           }
         })

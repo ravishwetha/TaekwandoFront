@@ -22,11 +22,13 @@
                 </div>
               </el-row>
               <el-table max-height="500" :data="attendanceData" style="width: 90%">
-                <el-table-column prop="lessonType" label="Lesson Type"></el-table-column>
-                <el-table-column prop="timestamp" label="Attendance taken on"></el-table-column>
-                <el-table-column prop="presence" label="Presence"></el-table-column>
-                <el-table-column prop="takenBy" label="Taken By"></el-table-column>
-                <el-table-column prop="description" label="Description"></el-table-column>
+                <el-table-column width="130px" prop="lessonType" label="Lesson Type"></el-table-column>
+                <el-table-column width="70px" prop="day" label="Day"></el-table-column>
+                <el-table-column width="150px" prop="timeslot" label="Timeslot"></el-table-column>
+                <el-table-column width="150px" prop="timestamp" label="Taken on"></el-table-column>
+                <el-table-column width="100px" prop="presence" label="Presence"></el-table-column>
+                <el-table-column width="120px" prop="takenBy" label="Taken By"></el-table-column>
+                <el-table-column width="400px" prop="description" label="Description"></el-table-column>
               </el-table>
             </el-row>
             <br>
@@ -132,7 +134,7 @@ import LessonTable from "@/components/lessons/LessonTable"
 import CardRegistration from "@/components/common/CardRegistration"
 import StudentDetails from "@/components/studentDetails/StudentDetails"
 import PaymentHistory from "@/components/studentDetails/PaymentHistory"
-import { PRESENT, MAKEUP, ABSENT } from "../common/data"
+import { PRESENT, MAKEUP, ABSENT, NUMBER_DAYS } from "../common/data"
 
 export default {
   components: {
@@ -207,6 +209,7 @@ export default {
         timestamp: moment(attendanceData.timestamp).format("DD-MM-YY, h:mma"),
         lessonType: this.$store.getters.getLessonData(attendanceData.lessonId)
           .name,
+        day: NUMBER_DAYS[moment(attendanceData.dateOfLesson).day()],
       }))
     },
     paymentLoading() {
