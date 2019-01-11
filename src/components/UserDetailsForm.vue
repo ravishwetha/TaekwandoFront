@@ -26,6 +26,7 @@
                 <el-table-column prop="timestamp" label="Attendance taken on"></el-table-column>
                 <el-table-column prop="presence" label="Presence"></el-table-column>
                 <el-table-column prop="takenBy" label="Taken By"></el-table-column>
+                <el-table-column prop="description" label="Description"></el-table-column>
               </el-table>
             </el-row>
             <br>
