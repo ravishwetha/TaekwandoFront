@@ -502,6 +502,7 @@ const studentModule = {
                 presence: userIdAndPresence.presence,
                 timestamp: moment().toISOString(),
                 modifiedBy: store.getters.getUserEmail,
+                description: userIdAndPresence.description,
               })
             if (
               userIdAndPresence.presence === ABSENT &&
@@ -524,6 +525,7 @@ const studentModule = {
                 timeslot: userIdAndPresence.timeslot,
                 dateOfLesson: userIdAndPresence.dateOfLesson,
                 takenBy: store.getters.getUserEmail,
+                description: userIdAndPresence.description,
               })
           }
         })
