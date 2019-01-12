@@ -226,7 +226,11 @@ export default {
       const priceList = this.$store.getters.getPriceList[MISCELLEANEOUS]
       const options = _.map(priceList, (value, category) => {
         const subCategory = _.map(value, (price, subcategory) => {
-          const label = `${subcategory}, $${price}`
+          const label = (
+            <span>
+              {subcategory}, <b style="color: green;">${price}</b>
+            </span>
+          )
           const subCategoryOptions = {
             label,
             value: subcategory,
@@ -246,7 +250,11 @@ export default {
       const options = _.map(priceList, (value, category) => {
         const subCategory = _.map(value, (value, subcategory) => {
           if (typeof value !== "object") {
-            const label = `${subcategory} lessons, $${value}`
+            const label = (
+              <span>
+                {subcategory} lessons, <b style="color: green;">${value}</b>
+              </span>
+            )
             const subCategoryOptions = {
               label,
               value: subcategory,
@@ -254,7 +262,11 @@ export default {
             return subCategoryOptions
           } else {
             const children = _.map(value, (price, session) => {
-              const label = `${session} lessons, $${price}`
+              const label = (
+                <span>
+                  {subcategory} lessons, <b style="color: green;">${price}</b>
+                </span>
+              )
               const options = {
                 label,
                 value: session,
