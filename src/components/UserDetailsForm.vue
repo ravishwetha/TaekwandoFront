@@ -2,74 +2,76 @@
   <el-container>
     <student-details :userId="userId"></student-details>
     <el-footer>
-      <div>
-        <span id="commentsHeader">Activities</span>
-        <hr>
-        <el-container>
-          <el-col :span="12">
-            <div id="paymentAndAttendanceHeader">
-              <span>Student Attendance</span>
-            </div>
-            <el-row id="commentsRow">
-              <el-row>
-                <div>
-                  <span style="margin-right: 20px">Select lesson to filter:</span>
-                  <lesson-selector v-model="selectedLessonId"></lesson-selector>
-                </div>
-                <div>
-                  <span style="margin-right: 27px">Select dates to filter:</span>
-                  <date-selector v-model="attendanceDateRange"></date-selector>
-                </div>
+      <span id="commentsHeader">Activities</span>
+      <hr>
+      <el-collapse v-model="activeCollapse">
+        <el-collapse-item name="Payment Operations">
+          <template slot="title">
+            <span id="paymentAndAttendanceHeader">Payment Operations</span>
+          </template>
+          <div style="display: flex; flex-direction: row">
+            <div>
+              <el-switch
+                v-model="payment.paymentType"
+                inactive-text="Pay by credit/debit card"
+                active-text="Pay by cash/nets"
+                :active-value="CASHNETS"
+                :inactive-value="CARD"
+                inactive-color="#13ce66"
+                active-color="#0061ff"
+                style="padding-top: 10px;"
+                :width="60"
+              ></el-switch>
+              <el-row id="commentsRow">
+                <el-button
+                  :type="payment.paymentType === 'CARD' ? 'success' : 'primary'"
+                  @click="payment.paymentDialogLessonVisible = true"
+                >Payment</el-button>
               </el-row>
-              <el-table max-height="500" :data="attendanceData" style="width: 90%">
-                <el-table-column width="130px" prop="lessonType" label="Lesson Type"></el-table-column>
-                <el-table-column width="70px" prop="day" label="Day"></el-table-column>
-                <el-table-column width="150px" prop="timeslot" label="Timeslot"></el-table-column>
-                <el-table-column width="150px" prop="timestamp" label="Taken on"></el-table-column>
-                <el-table-column width="100px" prop="presence" label="Presence"></el-table-column>
-                <el-table-column width="120px" prop="takenBy" label="Taken By"></el-table-column>
-                <el-table-column width="400px" prop="description" label="Description"></el-table-column>
-                <el-table-column label="Operations" fixed="right">
-                  <template slot-scope="scope">
-                    <el-button type="text" size="small" @click="deleteAttendance(scope.row)">Delete</el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </el-row>
-            <br>
-            <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
-            <lesson-table :userId="userId"></lesson-table>
-          </el-col>
-          <el-col :span="12">
-            <div id="paymentAndAttendanceHeader">
-              <span>Payment Type</span>
             </div>
-            <el-switch
-              v-model="payment.paymentType"
-              inactive-text="Pay by credit/debit card"
-              active-text="Pay by cash/nets"
-              :active-value="CASHNETS"
-              :inactive-value="CARD"
-              inactive-color="#13ce66"
-              active-color="#0061ff"
-              style="padding-top: 10px;"
-              :width="60"
-            ></el-switch>
-            <el-row id="commentsRow">
-              <el-button
-                :type="payment.paymentType === 'CARD' ? 'success' : 'primary'"
-                @click="payment.paymentDialogLessonVisible = true"
-              >Payment</el-button>
-            </el-row>
-            <payment-history :userId="userId"></payment-history>
-            <br>
-            <span id="paymentAndAttendanceHeader">Register Credit/Debit Card</span>
-            <br>
-            <card-registration style="margin-top: 20px" :userId="userId"></card-registration>
-            <br>
-          </el-col>
-        </el-container>
-      </div>
+            <card-registration style="margin-left: 20px" :userId="userId"></card-registration>
+          </div>
+        </el-collapse-item>
+        <el-collapse-item name="Payment History">
+          <template slot="title">
+            <span id="paymentAndAttendanceHeader">Payment History</span>
+          </template>
+          <payment-history :userId="userId"></payment-history>
+        </el-collapse-item>
+        <el-collapse-item name="Student Attendance">
+          <template slot="title">
+            <span id="paymentAndAttendanceHeader">Student Attendance</span>
+          </template>
+          <div>
+            <span style="margin-right: 20px">Select lesson to filter:</span>
+            <lesson-selector v-model="selectedLessonId"></lesson-selector>
+          </div>
+          <div>
+            <span style="margin-right: 27px">Select dates to filter:</span>
+            <date-selector v-model="attendanceDateRange"></date-selector>
+          </div>
+          <el-table max-height="500" :data="attendanceData" style="width: 90%">
+            <el-table-column width="130px" prop="lessonType" label="Lesson Type"></el-table-column>
+            <el-table-column width="70px" prop="day" label="Day"></el-table-column>
+            <el-table-column width="150px" prop="timeslot" label="Timeslot"></el-table-column>
+            <el-table-column width="150px" prop="timestamp" label="Taken on"></el-table-column>
+            <el-table-column width="100px" prop="presence" label="Presence"></el-table-column>
+            <el-table-column width="120px" prop="takenBy" label="Taken By"></el-table-column>
+            <el-table-column width="400px" prop="description" label="Description"></el-table-column>
+            <el-table-column label="Operations" fixed="right">
+              <template slot-scope="scope">
+                <el-button type="text" size="small" @click="deleteAttendance(scope.row)">Delete</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-collapse-item>
+        <el-collapse-item name="Lessons Enrolled">
+          <template slot="title">
+            <span id="paymentAndAttendanceHeader">Lessons Enrolled</span>
+          </template>
+          <lesson-table :userId="userId"></lesson-table>
+        </el-collapse-item>
+      </el-collapse>
     </el-footer>
     <el-dialog
       title="Payment"
@@ -290,6 +292,7 @@ export default {
   },
   data() {
     return {
+      activeCollapse: ["Payment Operations"],
       active: true,
       contactDetails: {
         email: "",

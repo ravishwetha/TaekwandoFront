@@ -1,8 +1,5 @@
 <template>
   <div>
-    <div id="paymentAndAttendanceHeader">
-      <span>Payment History</span>
-    </div>
     <el-row id="commentsRow">
       <el-row>
         <span style="margin-right: 20px">Select date range to filter:</span>
@@ -107,9 +104,6 @@ export default {
 </script>
 
 <style scoped>
-#paymentAndAttendanceHeader {
-  font-size: 25px;
-}
 #commentsRow {
   margin-bottom: 20px;
   margin-top: 20px;
