@@ -1,12 +1,6 @@
 <template>
   <div>
-    <el-tree
-      :data="treeData"
-      node-key="id"
-      :expand-on-click-node="false"
-      :render-content="renderContent"
-      accordion
-    ></el-tree>
+    <el-tree :data="treeData" node-key="id" :render-content="renderContent"></el-tree>
     <el-dialog title="Edit item and price" :visible.sync="updateNamePriceModalVisible">
       <el-form>
         <el-form-item label="Name of priced Item (Input number only if it is for sessions)">
@@ -53,7 +47,7 @@ export default {
       const lessonsPriceList = this.$store.getters.getPriceList[LESSONS]
       const parsedMiscPriceList = _.map(miscPriceList, (value, category) => {
         const subCategory = _.map(value, (price, subcategory) => {
-          const label = `${subcategory}, $${price}`
+          const label = `${subcategory}`
           const subCategoryOptions = {
             label,
             value: subcategory,
@@ -72,7 +66,7 @@ export default {
         (value, category) => {
           const subCategory = _.map(value, (value, subcategory) => {
             if (typeof value !== "object") {
-              const label = `${subcategory} lessons, $${value}`
+              const label = `${subcategory} lessons`
               const subCategoryOptions = {
                 label,
                 value: subcategory,
@@ -81,7 +75,7 @@ export default {
               return subCategoryOptions
             } else {
               const children = _.map(value, (price, session) => {
-                const label = `${session} lessons, $${price}`
+                const label = `${session} lessons`
                 const options = {
                   label,
                   value: session,
@@ -196,7 +190,9 @@ export default {
       if (data.price) {
         return (
           <span id="custom-tree-node">
-            <span>{node.label}</span>
+            <span>
+              {node.label}, <b style="color: green;">${data.price}</b>
+            </span>
             <span>
               <el-button
                 size="mini"
