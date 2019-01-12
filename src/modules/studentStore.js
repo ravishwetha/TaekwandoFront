@@ -544,7 +544,11 @@ const studentModule = {
           }
         })
       )
-      dispatch("loadStudentsData")
+      await dispatch("loadStudentsData")
+      vm.$message({
+        message: "Attendance has been taken",
+        type: "success",
+      })
       vm.isSubmitting = false
     },
   },

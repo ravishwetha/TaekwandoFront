@@ -557,9 +557,6 @@ export default {
         vm: this,
       })
       absentSmsAPI({ absenteeNumbersAndNames })
-      this.$router.push({
-        name: "home",
-      })
     },
   },
 }
