@@ -12,7 +12,7 @@
       type="primary"
     >
       <span v-if="this.customerDetails !== undefined">Card is already registered</span>
-      <span v-else>Register</span>
+      <span v-else>Register Credit/Debit Card</span>
     </el-button>
     <el-button
       @click="unregisterCard"
