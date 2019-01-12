@@ -9,10 +9,10 @@
         <el-table-column width="100px" prop="mode" label="Mode"></el-table-column>
         <el-table-column width="400px" prop="type" label="Item"></el-table-column>
         <el-table-column width="100px" prop="created" label="Paid on"></el-table-column>
-        <el-table-column width="100px" prop="takenBy" label="Taken by"></el-table-column>
+        <el-table-column width="200px" prop="takenBy" label="Taken by"></el-table-column>
         <el-table-column prop="description" label="Desc"></el-table-column>
         <el-table-column prop="price" label="Amount"></el-table-column>
-        <el-table-column label="Ops" fixed="right">
+        <el-table-column label="Operations" fixed="right">
           <template slot-scope="scope">
             <div>
               <el-button @click="generateReceipt(scope.row)" type="text" size="small">Download</el-button>
