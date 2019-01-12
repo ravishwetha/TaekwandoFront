@@ -240,7 +240,7 @@ const studentModule = {
           paymentItems,
           userId
         )
-        ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
+        // ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
         paymentItems.forEach(async ({ paymentData }) => {
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {
@@ -458,7 +458,7 @@ const studentModule = {
         console.log(e.response.data)
       }
     },
-    //TODO: MOVE THIS TO THE SAME FUNCTION
+    //TODO: MOVE THIS TO THE SAME
     async deleteAttendanceRecord({ commit }, { userId, attendanceId }) {
       usersRef
         .child(userId)
@@ -572,6 +572,7 @@ const addCardPaymentNonCustomer = async (
         price: paymentData.paymentInfo.price,
         type: paymentData.paymentInfo.type,
         description: paymentData.paymentInfo.description,
+        takenBy: store.getters.getUserEmail,
       }
       const paymentKey = await usersRef
         .child(userId)
@@ -604,6 +605,7 @@ const addCardPaymentCustomer = async (
         price: paymentData.paymentInfo.price,
         type: paymentData.paymentInfo.type,
         description: paymentData.paymentInfo.description,
+        takenBy: store.getters.getUserEmail,
       }
       const paymentKey = await usersRef
         .child(userId)
@@ -623,6 +625,7 @@ const addCashNetsPayment = async (paymentItems, userId) => {
         price: paymentData.paymentInfo.price,
         type: paymentData.paymentInfo.type,
         description: paymentData.paymentInfo.description,
+        takenBy: store.getters.getUserEmail,
       }
       const paymentKey = await usersRef
         .child(userId)

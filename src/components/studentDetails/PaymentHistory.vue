@@ -9,6 +9,7 @@
         <el-table-column width="100px" prop="mode" label="Mode"></el-table-column>
         <el-table-column width="400px" prop="type" label="Item"></el-table-column>
         <el-table-column width="100px" prop="created" label="Paid on"></el-table-column>
+        <el-table-column width="100px" prop="takenBy" label="Taken by"></el-table-column>
         <el-table-column prop="description" label="Desc"></el-table-column>
         <el-table-column prop="price" label="Amount"></el-table-column>
         <el-table-column label="Ops" fixed="right">
