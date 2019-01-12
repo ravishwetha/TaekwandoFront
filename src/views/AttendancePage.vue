@@ -545,7 +545,8 @@ export default {
             return null
           }
           const details = this.$store.getters.getStudentInfo(absentee.userId)
-          return _.get(details, "contact", null) === null
+          return _.get(details, "contact", null) === null ||
+            details.lessons[this.lessonValue.lessonId].timeslot === UNLIMITED
             ? null
             : { contact: _.get(details, "contact", null), name: details.name }
         })
