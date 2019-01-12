@@ -44,6 +44,9 @@
               inactive-color="#13ce66"
             ></el-switch>
           </el-form-item>
+          <el-form-item v-if="formData.status === TRIAL" label="Trial Information">
+            <el-input v-model="formData.trialUserInformation"></el-input>
+          </el-form-item>
           <el-form-item label="Comments">
             <el-input type="textarea" v-model="formData.comments"></el-input>
           </el-form-item>
@@ -125,6 +128,7 @@ export default {
         "enrollmentDate",
         "comments",
         "status",
+        "trialUserInformation",
       ])
       const contactDetails = _.pick(details, ["email", "contact", "address"])
       return {
@@ -149,6 +153,7 @@ export default {
         contact: "",
         address: "",
         status: ACTIVE,
+        trialUserInformation: "",
       },
       addDialogVisible: false,
       rules,

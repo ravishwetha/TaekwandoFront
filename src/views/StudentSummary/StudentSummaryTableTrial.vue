@@ -9,7 +9,7 @@
       style="width: 100%"
     >
       <el-table-column prop="name" label="Name"></el-table-column>
-      <el-table-column prop="presentCount" label="Total Present Count"></el-table-column>
+      <el-table-column prop="trialUserInformation" label="Trial Info"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
 
       <el-table-column prop="branch" label="Branch"></el-table-column>
