@@ -152,7 +152,7 @@ const studentModule = {
     removeCustomer(state, { userId }) {
       Vue.delete(state.studentData[userId], "customer")
     },
-    deleteMakeupAttendance(state, { userId, attendanceId }) {
+    deleteAttendanceRecord(state, { userId, attendanceId }) {
       Vue.delete(state.studentData[userId].attendance, attendanceId)
     },
     autoDeductionStatus(state, { userId, autoDeduction }) {
@@ -458,13 +458,22 @@ const studentModule = {
         console.log(e.response.data)
       }
     },
+    //TODO: MOVE THIS TO THE SAME FUNCTION
+    async deleteAttendanceRecord({ commit }, { userId, attendanceId }) {
+      usersRef
+        .child(userId)
+        .child("attendance")
+        .child(attendanceId)
+        .remove()
+      commit("deleteAttendanceRecord", { userId, attendanceId })
+    },
     async deleteMakeupAttendance({ commit }, { userId, attendanceId }) {
       usersRef
         .child(userId)
         .child("attendance")
         .child(attendanceId)
         .remove()
-      commit("deleteMakeupAttendance", { userId, attendanceId })
+      commit("deleteAttendanceRecord", { userId, attendanceId })
     },
     async submitAttendance(
       { dispatch },

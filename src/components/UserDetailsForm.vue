@@ -29,6 +29,11 @@
                 <el-table-column width="100px" prop="presence" label="Presence"></el-table-column>
                 <el-table-column width="120px" prop="takenBy" label="Taken By"></el-table-column>
                 <el-table-column width="400px" prop="description" label="Description"></el-table-column>
+                <el-table-column label="Operations" fixed="right">
+                  <template slot-scope="scope">
+                    <el-button type="text" size="small" @click="deleteAttendance(scope.row)">Delete</el-button>
+                  </template>
+                </el-table-column>
               </el-table>
             </el-row>
             <br>
@@ -164,18 +169,19 @@ export default {
       const details = this.$store.getters.getStudentInfo(
         this.$route.query["userId"]
       )
-      let filteredData = _.filter(
+      let filteredData = _.map(
         _.get(details, "attendance", {}),
-        (attendance) => {
-          if (
-            this.selectedLessonId !== undefined &&
-            this.selectedLessonId.length !== 0
-          ) {
-            return attendance.lessonId === this.selectedLessonId
-          }
-          return true
-        }
+        (attendance, id) => ({ ...attendance, attendanceId: id })
       )
+      filteredData = _.filter(filteredData, (attendance) => {
+        if (
+          this.selectedLessonId !== undefined &&
+          this.selectedLessonId.length !== 0
+        ) {
+          return attendance.lessonId === this.selectedLessonId
+        }
+        return true
+      })
       if (
         this.attendanceDateRange.length > 0 &&
         !moment(this.attendanceDateRange[0]).isSame(moment(0))
@@ -203,7 +209,6 @@ export default {
         filteredData,
         (attendance) => sortingPriorityLevels[attendance.presence]
       )
-
       return _.map(filteredData, (attendanceData) => ({
         ...attendanceData,
         timestamp: moment(attendanceData.timestamp).format("DD-MM-YY, h:mma"),
@@ -330,6 +335,12 @@ export default {
     }
   },
   methods: {
+    deleteAttendance({ attendanceId }) {
+      this.$store.dispatch("deleteAttendanceRecord", {
+        attendanceId,
+        userId: this.userId,
+      })
+    },
     removePaymentItem(item) {
       const index = this.payment.paymentForm.indexOf(item)
       if (index !== -1) {
