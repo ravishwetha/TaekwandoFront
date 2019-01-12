@@ -1,13 +1,13 @@
 <template>
   <div>
-    <div style="display: flex; justify-content: flex-end; padding-right: 3%">
+    <div v-if="loggedIn" style="display: flex; justify-content: flex-end; padding-right: 3%">
       <el-button
         style="margin-left: 20px"
         :loading="signingUp"
         @click="signupDialogVisible = true"
         type="primary"
       >Sign up</el-button>
-      <el-button v-if="loggedIn" @click="logout" type="danger">Log out</el-button>
+      <el-button @click="logout" type="danger">Log out</el-button>
     </div>
     <div id="nav">
       <router-link to="/">
