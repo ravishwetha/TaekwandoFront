@@ -74,13 +74,14 @@ export default new Vuex.Store({
           vm.$notify({
             title: "Signup success",
             message: "Signup is successful!",
-            type: "Success",
+            type: "success",
+          })
+        } else {
+          commit("isLoggedIn", { loggedIn: true, userEmail: username })
+          vm.$router.push({
+            name: "home",
           })
         }
-        commit("isLoggedIn", { loggedIn: true, userEmail: username })
-        vm.$router.push({
-          name: "home",
-        })
       } catch (e) {
         vm.$notify({
           title: "Login failed",
