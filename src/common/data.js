@@ -53,3 +53,30 @@ export const TERMINATED = "TERMINATED"
 
 export const MISCELLEANEOUS = "MISCELLEANEOUS"
 export const LESSONS = "LESSONS"
+
+export const GRADING_SORTING_ORDER = [
+  "F3",
+  "F1-3",
+  "F1-2",
+  "WHITE_3_STARS",
+  "WHITE_YELLOW_BELT",
+  "YELLOW_BELT",
+  "YELLOW_GREEN_BELT",
+  "GREEN_BELT",
+  "GREEN_BLUE_BELT",
+  "BLUE_BELT",
+  "BLUE_RED_BELT",
+  "RED_BELT",
+  "RED_BLACK_BELT",
+  "POOM_1",
+  "POOM_2",
+  // "RED_BLACK (P-Pass)",
+  // "Poom/Dan_1 ",
+  // "Poom/Dan_1 (P-Pass)",
+  // "Poom/Dan_2",
+  // "Poom/Dan_2 (P-Pass)",
+  // "Poom/Dan_3",
+  // "Poom/Dan_3 (P-Pass)",
+  // "Poom/Dan_4",
+  // "Poom/Dan_4 (P-Pass)",
+]

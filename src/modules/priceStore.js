@@ -19,7 +19,7 @@ const priceModule = {
       })
       Vue.set(priceListObject, newName, payloadPrice)
     },
-    updatePriceList(state, { current, newName, newPrice }) {
+    editPriceList(state, { current, newName, newPrice }) {
       let priceRefToBeUpdated = state.priceList
       _.initial(current).forEach((ref) => {
         priceRefToBeUpdated = priceRefToBeUpdated[ref]
@@ -27,13 +27,21 @@ const priceModule = {
       Vue.delete(priceRefToBeUpdated, _.last(current))
       Vue.set(priceRefToBeUpdated, newName, newPrice)
     },
+    updatePriceList(state, newPriceList) {
+      state.priceList = { ...newPriceList }
+    },
   },
   actions: {
+    async updatePriceList({ commit }, newPriceList) {
+      await priceRef.remove()
+      await priceRef.set(newPriceList)
+      commit("updatePriceList", newPriceList)
+    },
     async loadPriceList({ commit }) {
       const data = await priceListAPI()
       commit("loadPriceList", data)
     },
-    async updatePriceList({ commit }, { current, newName, newPrice }) {
+    async editPriceList({ commit }, { current, newName, newPrice }) {
       let priceRefToBeUpdated = priceRef
       _.initial(current).forEach((ref) => {
         priceRefToBeUpdated = priceRefToBeUpdated.child(ref)
@@ -41,7 +49,7 @@ const priceModule = {
       const priceRefToBeRemoved = priceRefToBeUpdated.child(_.last(current))
       await priceRefToBeRemoved.remove()
       await priceRefToBeUpdated.update({ [newName]: parseFloat(newPrice) })
-      commit("updatePriceList", { current, newName, newPrice })
+      commit("editPriceList", { current, newName, newPrice })
     },
     addPriceList({ commit }, { current, newName, newPrice }) {
       let priceRefToBeUpdated = priceRef

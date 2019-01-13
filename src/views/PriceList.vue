@@ -1,5 +1,13 @@
 <template>
   <div>
+    <div style="display: flex; justify-content: space-around;">
+      <el-button
+        :loading="updating"
+        @click="updatePriceList"
+        type="success"
+        v-if="priceListModified"
+      >Save Price List</el-button>
+    </div>
     <el-tree :data="treeData" node-key="id" :render-content="renderContent"></el-tree>
     <el-dialog title="Edit item and price" :visible.sync="updateNamePriceModalVisible">
       <el-form>
@@ -40,13 +48,14 @@
 import _ from "lodash"
 import { MISCELLEANEOUS, LESSONS } from "@/common/data"
 import { dfsKeysArray } from "@/common/findUtils"
+import { GRADING_SORTING_ORDER } from "../common/data"
 export default {
   computed: {
     treeData() {
       const miscPriceList = this.$store.getters.getPriceList[MISCELLEANEOUS]
       const lessonsPriceList = this.$store.getters.getPriceList[LESSONS]
       const parsedMiscPriceList = _.map(miscPriceList, (value, category) => {
-        const subCategory = _.map(value, (price, subcategory) => {
+        let subCategory = _.map(value, (price, subcategory) => {
           const label = `${subcategory}`
           const subCategoryOptions = {
             label,
@@ -55,6 +64,15 @@ export default {
           }
           return subCategoryOptions
         })
+        if (category === "GRADING") {
+          subCategory = _.sortBy(subCategory, ({ value }) => {
+            // console.log(_.findIndex(GRADING_SORTING_ORDER, value))
+            return _.findIndex(
+              GRADING_SORTING_ORDER,
+              (order) => order === value
+            )
+          })
+        }
         return {
           label: category,
           value: category,
@@ -116,12 +134,37 @@ export default {
       updateNamePriceModalVisible: false,
       updating: false,
       addNamePriceModalVisible: false,
+      priceListModified: false,
     }
   },
   methods: {
+    // treeToPriceList(treeNodes) {
+    //   let priceListObject = {}
+    //   _.forEach(treeNodes, (node) => {
+    //     if (node.price || node.price > -1) {
+    //       priceListObject[node.value] = node.price
+    //     } else {
+    //       priceListObject[node.value] = this.treeToPriceList(node.children)
+    //     }
+    //   })
+    //   return priceListObject
+    // },
+    // async updatePriceList() {
+    //   this.updating = true
+    //   const newPriceList = this.treeToPriceList(this.treeData)
+    //   await this.$store.dispatch("updatePriceList", newPriceList)
+    //   this.updating = false
+    //   this.priceListModified = false
+    // },
+    // allowDrop(dragNode, dropNode, type) {
+    //   if (type === "inner") {
+    //     return false
+    //   }
+    //   return dragNode.parent.id === dropNode.parent.id
+    // },
     confirmEdit() {
       this.updating = true
-      this.$store.dispatch("updatePriceList", {
+      this.$store.dispatch("editPriceList", {
         current: this.currentSelection,
         newName: this.name,
         newPrice: this.price,
@@ -187,7 +230,7 @@ export default {
     },
 
     renderContent(h, { node, data, store }) {
-      if (data.price) {
+      if (data.price || data.price > -1) {
         return (
           <span id="custom-tree-node">
             <span>
