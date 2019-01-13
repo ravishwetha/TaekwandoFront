@@ -166,7 +166,6 @@ export default {
         ...lesson,
         id,
       }))
-
       let timeslotObject = {}
 
       // Get timeslot as keys
@@ -184,6 +183,8 @@ export default {
         )
         return null
       })
+      const timeslotToStudents = this.getTimeslotsToStudents()
+
       // Today lesson which has a certain timeslot
       _.forEach(timeslotObject, (object, timeslot) => {
         _.forEach(todayLessonWithId, (lesson) => {
@@ -193,7 +194,11 @@ export default {
 
           if (englishTimeslotInArray(lessonTimeslots, timeslot)) {
             timeslotObject[timeslot].options.push({
-              label: lesson.name,
+              label: `${lesson.name} (${
+                timeslotToStudents[timeslot]
+                  ? timeslotToStudents[timeslot].length
+                  : 0
+              })`,
               value: {
                 lessonId: lesson.id,
                 timeslot,
