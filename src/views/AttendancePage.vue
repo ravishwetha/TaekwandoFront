@@ -512,6 +512,7 @@ export default {
         userIdsAndPresence: userIdAndPresence,
         lessonId: this.lessonValue.lessonId,
         studentsToBeUpdated: this.toBeUpdated,
+        vm: this,
       })
       this.makeupModalVisible = false
     },
