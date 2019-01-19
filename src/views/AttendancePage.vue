@@ -374,8 +374,6 @@ export default {
       })
     },
     updatePresentAbsent() {
-      this.present = {}
-      this.absent = {}
       const { lessonId } = this.lessonValue
       _.forEach(this.$store.getters.getAllStudentsInfo, (student) => {
         _.forEach(student.attendance, (lessonsAttended, key) => {
@@ -416,6 +414,9 @@ export default {
       })
     },
     initializeAttendanceData(tableData) {
+      this.present = {}
+      this.absent = {}
+      this.description = {}
       this.initializePresentAbsent(tableData)
       this.updatePresentAbsent()
     },

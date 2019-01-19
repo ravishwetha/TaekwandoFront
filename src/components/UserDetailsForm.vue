@@ -226,13 +226,14 @@ export default {
       const priceList = this.$store.getters.getPriceList[MISCELLEANEOUS]
       const options = _.map(priceList, (value, category) => {
         const subCategory = _.map(value, (price, subcategory) => {
-          const label = (
-            <span>
-              {subcategory}, <b style="color: green;">${price}</b>
-            </span>
-          )
+          //Does not work
+          // const label = (
+          //   <span>
+          //     {subcategory}, <b style="color: green;">${price}</b>
+          //   </span>
+          // )
           const subCategoryOptions = {
-            label,
+            label: `${subcategory}, $${price}`,
             value: subcategory,
           }
           return subCategoryOptions
@@ -248,27 +249,27 @@ export default {
     lessonsPaymentCascaderOptions() {
       const priceList = this.$store.getters.getPriceList[LESSONS]
       const options = _.map(priceList, (value, category) => {
-        const subCategory = _.map(value, (value, subcategory) => {
+        const subCat = _.map(value, (value, subcategory) => {
           if (typeof value !== "object") {
-            const label = (
-              <span>
-                {subcategory} lessons, <b style="color: green;">${value}</b>
-              </span>
-            )
+            // const label = (
+            //   <span>
+            //     {subcategory} lessons, <b style="color: green;">${value}</b>
+            //   </span>
+            // )
             const subCategoryOptions = {
-              label,
+              label: `${subcategory} lessons, $${value}`,
               value: subcategory,
             }
             return subCategoryOptions
           } else {
             const children = _.map(value, (price, session) => {
-              const label = (
-                <span>
-                  {subcategory} lessons, <b style="color: green;">${price}</b>
-                </span>
-              )
+              // const label = (
+              //   <span>
+              //     {subcategory} lessons, <b style="color: green;">${price}</b>
+              //   </span>
+              // )
               const options = {
-                label,
+                label: `${session} lessons, $${price}`,
                 value: session,
               }
               return options
@@ -284,7 +285,7 @@ export default {
         return {
           label: category,
           value: category,
-          children: subCategory,
+          children: subCat,
         }
       })
       return options
