@@ -240,7 +240,7 @@ const studentModule = {
           paymentItems,
           userId
         )
-        // ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
+        ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
         paymentItems.forEach(async ({ paymentData }) => {
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {
