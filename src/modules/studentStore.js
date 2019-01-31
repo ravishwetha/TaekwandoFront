@@ -9,6 +9,7 @@ import {
   refundAPI,
   deleteCustomerAPI,
   ReceiptGeneratorAPI,
+  ReceiptSenderEmailAPI,
 } from "@/common/api"
 import {
   MAKEUP,
@@ -241,6 +242,7 @@ const studentModule = {
           userId
         )
         ReceiptGeneratorAPI(paymentItems, userId, CASHNETS)
+        ReceiptSenderEmailAPI(paymentItems, userId, CASHNETS)
         paymentItems.forEach(async ({ paymentData }) => {
           const lessonData = store.getters.getAllLessonData
           const lessonId = _.findKey(lessonData, (lesson) => {

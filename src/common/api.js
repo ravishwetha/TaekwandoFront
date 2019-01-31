@@ -80,6 +80,24 @@ export const tokenPaymentAPI = async (
     .then((r) => r.data)
 }
 
+export const ReceiptSenderEmailAPI = async (
+  paymentItems,
+  userId,
+  paymentType
+) => {
+  const api = await axiosConfig()
+  return api
+    .get("/payment/receipt/email", {
+      params: {
+        paymentItems,
+        userId,
+        paymentType,
+      },
+      responseType: "blob",
+    })
+    .then((r) => r.data)
+}
+
 export const ReceiptGeneratorAPI = async (
   paymentItems,
   userId,
