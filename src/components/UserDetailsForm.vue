@@ -197,7 +197,7 @@ export default {
       }
       const sortingPriorityLevels = {
         [PRESENT]: 1,
-        [MAKEUP]: 2,
+        [MAKEUP]: 1,
         [ABSENT]: 3,
       }
       //sort by timestamp
@@ -297,7 +297,7 @@ export default {
         for (const key of paymentForm.type) {
           price = price[key]
         }
-        const toCharge = price - Number.parseInt(paymentForm.discount)
+        const toCharge = price - Number.parseFloat(paymentForm.discount)
         return _.isNaN(toCharge) ? 0 : toCharge
       })
       return _.sum(priceArray)
@@ -381,7 +381,7 @@ export default {
             for (const key of paymentForm.type) {
               price = price[key]
             }
-            price = price - Number.parseInt(paymentForm.discount)
+            price = price - Number.parseFloat(paymentForm.discount)
             return {
               paymentData: {
                 paymentInfo: {
@@ -427,7 +427,7 @@ export default {
             for (const key of paymentForm.type) {
               price = price[key]
             }
-            price = price - Number.parseInt(paymentForm.discount)
+            price = price - Number.parseFloat(paymentForm.discount)
             return {
               paymentData: {
                 paymentInfo: {
