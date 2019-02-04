@@ -24,19 +24,25 @@
     <div v-if="!lessonAddingToUnlimited">
       <span>Select the day and timeslot to add the student into:</span>
       <br>
-      <el-select
-        style="margin-top: 10px; margin-bottom: 10px;"
-        v-model="lessonAddingToDayTimeslot"
-        value-key="key"
-        placeholder="Select"
+      <div
+        :key="JSON.stringify(dayTimeslot)+Math.random()"
+        v-for="dayTimeslot in lessonAddingToDayTimeslots"
       >
-        <el-option
-          v-for="item in selectedLessonTimeslots"
-          :key="item.label"
-          :label="item.label"
-          :value="item.val"
-        ></el-option>
-      </el-select>
+        <el-select
+          style="margin-top: 10px; margin-bottom: 10px;"
+          v-model="dayTimeslot.dayAndTimeslot"
+          value-key="key"
+          placeholder="Select"
+        >
+          <el-option
+            v-for="item in selectedLessonTimeslots"
+            :key="item.label"
+            :label="item.label"
+            :value="item.val"
+          ></el-option>
+        </el-select>
+      </div>
+      <el-button @click="addDayTimeslot()">Add Day and Timeslot</el-button>
     </div>
     <br>
     <el-checkbox label="Unlimited?" v-model="lessonAddingToUnlimited"></el-checkbox>
@@ -65,7 +71,11 @@ export default {
     return {
       lessonAddingTo: "",
       lessonAddingToSessions: "",
-      lessonAddingToDayTimeslot: "",
+      lessonAddingToDayTimeslots: [
+        {
+          dayAndTimeslot: "",
+        },
+      ],
       lessonAddingToUnlimited: "",
       sessionOptions: [4, 12, 24],
     }
@@ -91,6 +101,18 @@ export default {
     },
   },
   methods: {
+    removeDayTimeslot(dayTimeslot) {
+      const index = this.lessonAddingToDayTimeslots.indexOf(dayTimeslot)
+      if (index !== -1) {
+        this.lessonAddingToDayTimeslots.splice(index, 1)
+      }
+    },
+    addDayTimeslot() {
+      this.lessonAddingToDayTimeslots.push({
+        dayAndTimeslot: "",
+      })
+    },
+
     async addUserToLesson() {
       let payload
       if (this.lessonAddingToUnlimited) {
@@ -100,20 +122,24 @@ export default {
             {
               userId: this.userId,
               sessions: this.lessonAddingToSessions,
+              //To standardize
               timeslot: UNLIMITED,
             },
           ],
           lessonId: this.lessonAddingTo,
         }
       } else {
+        const dayTimeslots = _.map(
+          this.lessonAddingToDayTimeslots,
+          (dayTimeslot) => _.omit(dayTimeslot.dayAndTimeslot, ["key"])
+        )
         payload = {
           userIdsSessions: [
             //take note the S after userId
             {
               userId: this.userId,
               sessions: this.lessonAddingToSessions,
-              timeslot: this.lessonAddingToDayTimeslot.timeslot,
-              day: this.lessonAddingToDayTimeslot.day,
+              dayTimeslots,
             },
           ],
           lessonId: this.lessonAddingTo,

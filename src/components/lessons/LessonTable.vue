@@ -133,8 +133,8 @@ export default {
       const lessonNamePaymentCycleUserIsIn = _.map(
         details.lessons,
         (userLessonDetails, lessonId) => {
-          const timeslot = readableTimeslotParser(userLessonDetails.timeslot)
           let day
+          const timeslot = readableTimeslotParser(userLessonDetails.timeslot)
           if (timeslot === UNLIMITED) {
             day = UNLIMITED
           } else {

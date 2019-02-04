@@ -134,14 +134,16 @@ const lessonsModule = {
         return { key, userId }
       })
       const userPromises = userIdsSessions.map((userIdSession) => {
-        const { userId, sessions, timeslot, day } = userIdSession
+        const { userId, sessions, timeslot, dayTimeslots } = userIdSession
         let payload = {
           entitlement: 0,
           paymentPlan: sessions,
-          timeslot,
         }
-        if (day) {
-          payload = { ...payload, day }
+
+        if (dayTimeslots) {
+          payload = { ...payload, dayTimeslots }
+        } else {
+          payload = { ...payload, timeslot }
         }
         usersRef
           .child(userId)
