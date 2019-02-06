@@ -3,6 +3,7 @@
     v-if="single"
     :value="value"
     @input="(event) => $emit('input', event)"
+    @change="(event) => $emit('change', event)"
     type="date"
     placeholder="Pick a day"
     format="dd-MM-yyyy"
@@ -12,6 +13,7 @@
     v-else
     :value="value"
     @input="(event) => $emit('input', event)"
+    @change="(event) => $emit('change', event)"
     type="daterange"
     placeholder="Pick a day"
     range-separator="To"

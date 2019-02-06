@@ -66,7 +66,6 @@ export default {
         })
         if (category === "GRADING") {
           subCategory = _.sortBy(subCategory, ({ value }) => {
-            // console.log(_.findIndex(GRADING_SORTING_ORDER, value))
             return _.findIndex(
               GRADING_SORTING_ORDER,
               (order) => order === value

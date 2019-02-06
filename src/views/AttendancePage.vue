@@ -3,7 +3,7 @@
     <el-container>
       <el-header>
         <div id="header">
-          <date-selector v-model="selectedDate" single></date-selector>
+          <date-selector @change="lessonValue = ''" v-model="selectedDate" single></date-selector>
         </div>
       </el-header>
       <el-main>
