@@ -46,53 +46,14 @@
       :lessonData="swapLessonData"
       :userId="userId"
     ></add-user-to-lesson-modal>
-    <el-dialog title="Swap lesson" :visible.sync="swapDialogVisible">
-      <span>Select which lesson to swap to from below:</span>
-      <br>
-      <el-select v-model="lessonSwappingTo" style="margin-top: 10px; margin-bottom: 10px;">
-        <el-option
-          v-for="lesson in swapLessonData"
-          :key="lesson.id"
-          :value="lesson.id"
-          :label="lesson.name"
-        ></el-option>
-      </el-select>
-      <br>
-      <span>Select the number of sessions for payment plan:</span>
-      <br>
-      <el-select
-        style="margin-top: 10px; margin-bottom: 10px;"
-        v-model="lessonSwappingToSessions"
-        placeholder="Select"
-      >
-        <el-option v-for="item in sessionOptions" :key="item" :label="item" :value="item"></el-option>
-      </el-select>
-      <br>
-      <div v-if="!lessonSwappingToUnlimited">
-        <span>Select the day and timeslot to swap the student into:</span>
-        <br>
-        <el-select
-          style="margin-top: 10px; margin-bottom: 10px;"
-          v-model="lessonSwappingToDayTimeslot"
-          value-key="key"
-          placeholder="Select"
-        >
-          <el-option
-            v-for="item in selectedLessonTimeslots"
-            :key="item.label"
-            :label="item.label"
-            :value="item.val"
-          ></el-option>
-        </el-select>
-        <br>
-      </div>
-      <br>
-      <el-checkbox label="Unlimited?" v-model="lessonSwappingToUnlimited"></el-checkbox>
-      <span slot="footer">
-        <el-button type="primary" @click="conductSwap">Swap</el-button>
-        <el-button @click="swapDialogVisible = false">Cancel</el-button>
-      </span>
-    </el-dialog>
+    <add-user-to-lesson-modal
+      :dialogVisible="swapDialogVisible"
+      :closeDialog="closeSwapDialog"
+      :lessonData="swapLessonData"
+      :userId="userId"
+      :swapLessonId="lessonIdToBeSwapped"
+      :swap="true"
+    ></add-user-to-lesson-modal>
     <el-dialog
       title="Update new expected payment date and price"
       :visible.sync="expectPaymentEditDialogVisible"
@@ -181,14 +142,18 @@ export default {
               dayTimeslots = [`${userLessonDetails.day}, ${timeslot}`]
             }
           } else {
-            let dayTimeslotArray = _.map(
-              userLessonDetails.dayTimeslots,
-              ({ day, timeslot }) => {
-                const parsedTimeslot = readableTimeslotParser(timeslot)
-                return `${day}, ${parsedTimeslot}`
-              }
-            )
-            dayTimeslots = dayTimeslotArray
+            if (userLessonDetails.dayTimeslot === UNLIMITED) {
+              dayTimeslots = UNLIMITED
+            } else {
+              let dayTimeslotArray = _.map(
+                userLessonDetails.dayTimeslots,
+                ({ day, timeslot }) => {
+                  const parsedTimeslot = readableTimeslotParser(timeslot)
+                  return `${day}, ${parsedTimeslot}`
+                }
+              )
+              dayTimeslots = dayTimeslotArray
+            }
           }
           return {
             name: _.get(allLessonData[lessonId], "name"),
@@ -233,10 +198,6 @@ export default {
     return {
       swapLessonData: allLessonDataExceptUserInIds,
       lessonIdToBeSwapped: "",
-      lessonSwappingTo: "",
-      lessonSwappingToSessions: "",
-      lessonSwappingToDayTimeslot: "",
-      lessonSwappingToUnlimited: false,
       swapDialogVisible: false,
       addDialogVisible: false,
       sessionOptions: [4, 12, 24],
@@ -272,40 +233,14 @@ export default {
     closeAddDialog() {
       this.addDialogVisible = false
     },
+    closeSwapDialog() {
+      this.swapDialogVisible = false
+    },
     removeLesson({ id }) {
       this.$store.dispatch("removeUserFromLesson", {
         lessonId: id,
         userId: this.userId,
       })
-    },
-    async conductSwap() {
-      let swapLessonPayload = {
-        oldlessonId: this.lessonIdToBeSwapped,
-        newLessonId: this.lessonSwappingTo,
-      }
-      if (this.lessonSwappingToUnlimited) {
-        swapLessonPayload = {
-          ...swapLessonPayload,
-          userIdSessions: {
-            userId: this.userId,
-            timeslot: UNLIMITED,
-            sessions: this.lessonSwappingToSessions,
-          },
-        }
-      } else {
-        swapLessonPayload = {
-          ...swapLessonPayload,
-          userIdSessions: {
-            userId: this.userId,
-            sessions: this.lessonSwappingToSessions,
-            timeslot: this.lessonSwappingToDayTimeslot.timeslot,
-            day: this.lessonSwappingToDayTimeslot.day,
-          },
-        }
-      }
-
-      await this.$store.dispatch("swapLessonForUser", swapLessonPayload)
-      this.swapDialogVisible = false
     },
     async startPayment(lesson) {
       this.$store.dispatch("startPayment", {

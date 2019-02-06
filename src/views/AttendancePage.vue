@@ -284,27 +284,19 @@ export default {
     },
     tableData() {
       const { lessonId, timeslot } = this.lessonValue
+      let selectedDay = moment(this.selectedDate).day()
       let filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
         (student) => {
           return _.includes(_.keys(student.lessons), lessonId)
         }
       )
-      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-        return (
-          user.lessons[lessonId].timeslot === UNLIMITED ||
-          DAYS[user.lessons[lessonId].day] === moment(this.selectedDate).day()
-        )
-      })
-      filteredStudentInfo = _.filter(filteredStudentInfo, (user) => {
-        return (
-          user.lessons[lessonId].timeslot === UNLIMITED ||
-          _.includes(
-            timeslot,
-            readableTimeslotParser(user.lessons[lessonId].timeslot)
-          )
-        )
-      })
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) =>
+        this.studentLessonIsInDay(user.lessons[lessonId], selectedDay)
+      )
+      filteredStudentInfo = _.filter(filteredStudentInfo, (user) =>
+        this.studentLessonIsInTimeslot(user.lessons[lessonId], timeslot)
+      )
       return filteredStudentInfo
     },
     studentData() {
@@ -420,18 +412,62 @@ export default {
       this.initializePresentAbsent(tableData)
       this.updatePresentAbsent()
     },
+    studentLessonsIsInDay(lessons, day) {
+      return _.find(_.values(lessons), (lesson) =>
+        this.studentLessonIsInDay(lesson, day)
+      )
+    },
+    studentLessonIsInDay(lesson, selectedDay) {
+      let hasDay
+
+      if (lesson.day) {
+        hasDay =
+          selectedDay === DAYS[lesson.day] || lesson.timeslot === UNLIMITED // DEPRECIATED
+      } else {
+        hasDay = false
+        if (lesson.dayTimeslots !== UNLIMITED) {
+          for (const { day } of lesson.dayTimeslots) {
+            if (selectedDay === DAYS[day]) {
+              hasDay = true
+              break
+            }
+          }
+        } else {
+          hasDay = true
+        }
+      }
+      return hasDay
+    },
+
+    studentLessonIsInTimeslot(lesson, selectedTimeslot) {
+      if (lesson.timeslot) {
+        return (
+          lesson.timeslot === UNLIMITED ||
+          _.includes(selectedTimeslot, readableTimeslotParser(lesson.timeslot))
+        )
+      }
+      let hasDay
+      if (lesson.dayTimeslots !== UNLIMITED) {
+        hasDay = false
+        for (const { timeslot } of lesson.dayTimeslots) {
+          if (_.includes(selectedTimeslot, readableTimeslotParser(timeslot))) {
+            hasDay = true
+            break
+          }
+        }
+      } else {
+        hasDay = true
+      }
+
+      return hasDay
+    },
+
     getTimeslotsToStudents() {
       // Gets all students with lessons today or unlimited timeslots
+      let selectedDay = moment(this.selectedDate).day()
       let filteredStudentInfo = _.filter(
         this.$store.getters.getAllStudentsInfo,
-        (student) => {
-          return _.find(_.values(student.lessons), (lesson) => {
-            return moment(this.selectedDate).day() === DAYS[lesson.day] ||
-              lesson.timeslot === UNLIMITED
-              ? true
-              : false
-          })
-        }
+        (student) => this.studentLessonsIsInDay(student.lessons, selectedDay)
       )
       // Today's day in 3 letter string
       const todayDay = getDayShort(this.selectedDate)
@@ -439,32 +475,63 @@ export default {
       const timeslots = {}
       filteredStudentInfo.forEach((user) => {
         _.forEach(user.lessons, (lesson, lessonId) => {
-          if (lesson.timeslot === UNLIMITED) {
-            const todayTimeslots = _.get(
-              this.$store.getters.getLessonDayTimeslotsKeyedByDay(lessonId),
-              todayDay,
-              []
-            )
-            todayTimeslots.forEach((timeslot) => {
-              //Check if its already added
-              const englishTimeslot = readableTimeslotParser(timeslot)
+          if (lesson.timeslot) {
+            //DEPRECIATED
+            if (lesson.timeslot === UNLIMITED) {
+              const todayTimeslots = _.get(
+                this.$store.getters.getLessonDayTimeslotsKeyedByDay(lessonId),
+                todayDay,
+                []
+              )
+              todayTimeslots.forEach((timeslot) => {
+                //Check if its already added
+                const englishTimeslot = readableTimeslotParser(timeslot)
 
-              if (timeslots[englishTimeslot] === undefined) {
-                timeslots[englishTimeslot] = []
+                if (timeslots[englishTimeslot] === undefined) {
+                  timeslots[englishTimeslot] = []
+                }
+                timeslots[englishTimeslot].push(user)
+              })
+            } else {
+              if (lesson.day === todayDay) {
+                const englishTimeslot = readableTimeslotParser(lesson.timeslot)
+                if (timeslots[englishTimeslot] === undefined) {
+                  timeslots[englishTimeslot] = []
+                }
+                timeslots[englishTimeslot].push(user)
               }
-              timeslots[englishTimeslot].push(user)
-            })
+            }
           } else {
-            if (lesson.day === todayDay) {
-              const englishTimeslot = readableTimeslotParser(lesson.timeslot)
-              if (timeslots[englishTimeslot] === undefined) {
-                timeslots[englishTimeslot] = []
-              }
-              timeslots[englishTimeslot].push(user)
+            if (lesson.dayTimeslots === UNLIMITED) {
+              const todayTimeslots = _.get(
+                this.$store.getters.getLessonDayTimeslotsKeyedByDay(lessonId),
+                todayDay,
+                []
+              )
+              todayTimeslots.forEach((timeslot) => {
+                //Check if its already added
+                const englishTimeslot = readableTimeslotParser(timeslot)
+
+                if (timeslots[englishTimeslot] === undefined) {
+                  timeslots[englishTimeslot] = []
+                }
+                timeslots[englishTimeslot].push(user)
+              })
+            } else {
+              _.forEach(lesson.dayTimeslots, ({ day, timeslot }) => {
+                if (day === todayDay) {
+                  const englishTimeslot = readableTimeslotParser(timeslot)
+                  if (timeslots[englishTimeslot] === undefined) {
+                    timeslots[englishTimeslot] = []
+                  }
+                  timeslots[englishTimeslot].push(user)
+                }
+              })
             }
           }
         })
       })
+
       return timeslots
     },
     deleteMakeup(row) {

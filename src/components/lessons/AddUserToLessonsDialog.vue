@@ -1,6 +1,7 @@
 <template>
   <el-dialog title="Add student into lesson" :visible.sync="dialogVisible">
-    <span>Select which lesson to add student into:</span>
+    <span v-if="swap">Select which lesson to swap to from below:</span>
+    <span v-else>Select which lesson to add student into:</span>
     <br>
     <el-select v-model="lessonAddingTo" style="margin-top: 10px; margin-bottom: 10px;">
       <el-option
@@ -22,7 +23,8 @@
     </el-select>
     <br>
     <div v-if="!lessonAddingToUnlimited">
-      <span>Select the day and timeslot to add the student into:</span>
+      <span v-if="swap">Select the day and timeslot to swap the student into:</span>
+      <span v-else>Select the day and timeslot to add the student into:</span>
       <br>
       <div
         :key="JSON.stringify(dayTimeslot)+Math.random()"
@@ -41,13 +43,19 @@
             :value="item.val"
           ></el-option>
         </el-select>
+        <el-button
+          style="margin-left: 30px"
+          @click="removeDayTimeslot(dayTimeslot)"
+          type="warning"
+        >Remove</el-button>
       </div>
-      <el-button @click="addDayTimeslot()">Add Day and Timeslot</el-button>
+      <el-button @click="addDayTimeslot()" type="primary">Add Day and Timeslot</el-button>
     </div>
     <br>
     <el-checkbox label="Unlimited?" v-model="lessonAddingToUnlimited"></el-checkbox>
     <span slot="footer">
-      <el-button type="primary" @click="addUserToLesson">Add</el-button>
+      <el-button v-if="swap" type="primary" @click="conductSwap">Swap</el-button>
+      <el-button v-else type="primary" @click="addUserToLesson">Add</el-button>
       <el-button @click="closeDialog">Cancel</el-button>
     </span>
   </el-dialog>
@@ -122,8 +130,7 @@ export default {
             {
               userId: this.userId,
               sessions: this.lessonAddingToSessions,
-              //To standardize
-              timeslot: UNLIMITED,
+              dayTimeslots: UNLIMITED,
             },
           ],
           lessonId: this.lessonAddingTo,
@@ -149,6 +156,40 @@ export default {
       await this.$store.dispatch("addUsersToLesson", payload)
       this.closeDialog()
     },
+
+    async conductSwap() {
+      let swapLessonPayload = {
+        oldlessonId: this.swapLessonId,
+        newLessonId: this.lessonAddingTo,
+      }
+      if (this.lessonAddingToUnlimited) {
+        swapLessonPayload = {
+          ...swapLessonPayload,
+          userIdSessions: {
+            userId: this.userId,
+            dayTimeslots: UNLIMITED,
+            sessions: this.lessonAddingToSessions,
+          },
+        }
+      } else {
+        const dayTimeslots = _.map(
+          this.lessonAddingToDayTimeslots,
+          (dayTimeslot) => _.omit(dayTimeslot.dayAndTimeslot, ["key"])
+        )
+
+        swapLessonPayload = {
+          ...swapLessonPayload,
+          userIdSessions: {
+            userId: this.userId,
+            sessions: this.lessonAddingToSessions,
+            dayTimeslots,
+          },
+        }
+      }
+
+      await this.$store.dispatch("swapLessonForUser", swapLessonPayload)
+      this.closeDialog()
+    },
   },
   props: {
     closeDialog: {
@@ -164,6 +205,13 @@ export default {
       required: true,
     },
     userId: {
+      type: String,
+    },
+    swap: {
+      type: Boolean,
+      default: false,
+    },
+    swapLessonId: {
       type: String,
     },
   },
