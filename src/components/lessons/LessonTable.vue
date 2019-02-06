@@ -4,8 +4,15 @@
       <el-table-column prop="name" label="Name"></el-table-column>
       <el-table-column prop="lastPayment" label="Last Payment"></el-table-column>
       <el-table-column prop="expectPayment" label="Expected Payment"></el-table-column>
-      <el-table-column width="70px" prop="day" label="Day"></el-table-column>
-      <el-table-column width="150px" prop="timeslot" label="Timeslot"></el-table-column>
+      <el-table-column width="200px" prop="dayTimeslots" label="Day And Timeslot">
+        <template slot-scope="scope">
+          <p
+            v-for="dayTimeslot in scope.row.dayTimeslots"
+            :key="dayTimeslot"
+            style="margin-left: 10px"
+          >{{ dayTimeslot }}</p>
+        </template>
+      </el-table-column>
       <el-table-column width="70px" prop="price" label="Price"></el-table-column>
       <el-table-column width="120px" prop="entitlement" label="Lessons Left"></el-table-column>
       <el-table-column label="Operations" fixed="right">
@@ -133,13 +140,6 @@ export default {
       const lessonNamePaymentCycleUserIsIn = _.map(
         details.lessons,
         (userLessonDetails, lessonId) => {
-          let day
-          const timeslot = readableTimeslotParser(userLessonDetails.timeslot)
-          if (timeslot === UNLIMITED) {
-            day = UNLIMITED
-          } else {
-            day = userLessonDetails.day
-          }
           const lastPayment =
             userLessonDetails.lastPayment !== undefined
               ? moment(userLessonDetails.lastPayment).format("DD/MM/YYYY")
@@ -171,6 +171,25 @@ export default {
             userLessonDetails.price || userLessonDetails.price > -1
               ? userLessonDetails.price
               : sessionsPrice[userLessonDetails.paymentPlan]
+
+          let dayTimeslots
+          if (userLessonDetails.timeslot) {
+            const timeslot = readableTimeslotParser(userLessonDetails.timeslot)
+            if (timeslot === UNLIMITED) {
+              dayTimeslots = UNLIMITED
+            } else {
+              dayTimeslots = [`${userLessonDetails.day}, ${timeslot}`]
+            }
+          } else {
+            let dayTimeslotArray = _.map(
+              userLessonDetails.dayTimeslots,
+              ({ day, timeslot }) => {
+                const parsedTimeslot = readableTimeslotParser(timeslot)
+                return `${day}, ${parsedTimeslot}`
+              }
+            )
+            dayTimeslots = dayTimeslotArray
+          }
           return {
             name: _.get(allLessonData[lessonId], "name"),
             sessions: userLessonDetails.paymentPlan,
@@ -178,8 +197,7 @@ export default {
             lastPayment,
             expectPayment,
             customer: details.customer,
-            day,
-            timeslot,
+            dayTimeslots,
             price,
             entitlement: userLessonDetails.paymentPlan,
           }
