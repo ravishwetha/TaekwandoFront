@@ -420,7 +420,7 @@ export default {
     studentLessonIsInDay(lesson, selectedDay) {
       let hasDay
 
-      if (lesson.day) {
+      if (lesson.timeslot) {
         hasDay =
           selectedDay === DAYS[lesson.day] || lesson.timeslot === UNLIMITED // DEPRECIATED
       } else {
